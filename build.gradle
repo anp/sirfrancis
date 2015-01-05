@@ -33,6 +33,7 @@ dependencies {
 apply plugin: 'java'
 apply plugin: 'gradle-one-jar'
 apply plugin: 'application'
+apply plugin: 'idea'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -41,9 +42,11 @@ version = '0.1-LEARNING'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 //fill this out and uncomment
-mainClassName = 'io.sirfrancis.bacon.SomeClass'
-dropwizardVersion = '0.7.1'
-configPath = './src/dist/config/bacon.yml'
+ext {
+    mainClassName = 'io.sirfrancis.bacon.SomeClass'
+    dropwizardVersion = '0.7.1'
+    configPath = './src/dist/config/bacon.yml'
+}
 
 buildscript {
     repositories {
