@@ -19,11 +19,14 @@ repositories {
 
 dependencies {
     def dropwizardVersion = '0.7.1'
+    def orientDBVersion = '2.0-rc1'
     compile(
-            'io.dropwizard:dropwizard-core:' + dropwizardVersion//,
+            'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-hibernate:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-migrations:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
+            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion
     )
     testCompile 'junit:junit:4.11'
 }

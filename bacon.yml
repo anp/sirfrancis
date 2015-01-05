@@ -1,2 +1,16 @@
-template: Hello, %s!
-defaultName: Adam
+dbpath: plocal:C:\bacon\
+
+
+logging:
+  level: DEBUG
+
+  appenders:
+    - type: console
+      threshold: WARN
+      target: stderr
+
+    - type: file
+      currentLogFilename: ./logs/main.log
+      archivedLogFilenamePattern: ./logs/main-%d.log.gz
+      archivedFileCount: 5
+      timeZone: UTC
