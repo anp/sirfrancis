@@ -11,7 +11,7 @@ version = '0.1-LEARNING'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
 //fill this out and uncomment
-mainClassName = 'io.sirfrancis.bacon.SomeClass'
+mainClassName = 'io.sirfrancis.bacon.BaconApplication'
 
 repositories {
     mavenCentral()
@@ -25,10 +25,30 @@ dependencies {
             //'io.dropwizard:dropwizard-migrations:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
     )
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile 'junit:junit:4.11'
 }
 
 run {
     //MAKE SURE CONFIG PATH IS CORRECT
     args 'server', './src/dist/config/bacon.yml'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}
+
+// Configure the shadow jar task
+shadowJar {
+    mergeServiceFiles()
+    exclude('META-INF/*.DSA')
+    exclude('META-INF/*.RSA')
+}
+jar {
+    manifest {
+        attributes (
+            'Main-Class': mainClassName,
+            'Implementation-Title': "Bacon",
+            'Implementation-Version': version
+        )
+    }
 }
