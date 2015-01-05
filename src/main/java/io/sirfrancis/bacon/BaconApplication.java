@@ -3,8 +3,8 @@ package io.sirfrancis.bacon;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.sirfrancis.bacon.health.TemplateHealthCheck;
-import io.sirfrancis.bacon.resources.HelloWorldResource;
+import io.dropwizard.views.ViewBundle;
+import io.sirfrancis.bacon.cli.DBInitCommand;
 
 /**
  * Created by Adam on 1/4/2015.
@@ -21,21 +21,14 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 	@Override
 	public void initialize(Bootstrap<BaconConfiguration> bootstrap) {
-		//fill in later
+		//CLI command
+		bootstrap.addCommand(new DBInitCommand());
+		//add HTML rendering/views
+		bootstrap.addBundle(new ViewBundle());
 	}
 
 	@Override
 	public void run(BaconConfiguration config, Environment environment) {
-		final HelloWorldResource resource = new HelloWorldResource(
-				config.getTemplate(),
-				config.getDefaultName()
-		);
 
-
-		final TemplateHealthCheck healthCheck =
-				new TemplateHealthCheck(config.getTemplate());
-
-		environment.healthChecks().register("template",healthCheck);
-		environment.jersey().register(resource);
 	}
 }
