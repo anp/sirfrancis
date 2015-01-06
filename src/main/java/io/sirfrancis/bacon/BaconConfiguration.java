@@ -13,13 +13,26 @@ public class BaconConfiguration extends Configuration{
 	@NotNull
 	private String dbPath;
 
-	@JsonProperty("dbpath")
+	@NotNull
+	private String dbBackupPath;
+
+	@JsonProperty("db-path")
 	public String getDBPath() {
 		return dbPath;
 	}
 
-	@JsonProperty("dbpath")
+	@JsonProperty("db-path")
 	public void setDbPath(String dbPath) {
 		this.dbPath = dbPath;
+	}
+
+	@JsonProperty("backup-path")
+	public String getDbBackupPath() {
+		return dbBackupPath;
+	}
+
+	@JsonProperty("backup-path")
+	public void setDbBackupPath(String dbBackupPath) {
+		this.dbBackupPath = dbBackupPath;
 	}
 }
