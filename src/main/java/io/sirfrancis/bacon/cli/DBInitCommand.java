@@ -1,5 +1,7 @@
 package io.sirfrancis.bacon.cli;
 
+import com.orientechnologies.orient.core.command.OCommandOutputListener;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Parameter;
@@ -17,9 +19,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.StreamSupport;
 
 /**
  * Created by Adam on 1/4/2015.
@@ -34,10 +36,17 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 	private static int numMovies = 0;
 
+	private static String DB_PATH;
+	private static String BACKUP_PATH;
 	private static OrientGraph graph;
 
+	private static String currentInitTimestamp;
+
+	private static String OMDB_IMG_API_KEY = "2af3daf2";
+
+
 	public DBInitCommand() {
-		super("initdb", "Initialize the database with an omdbFull.txt file");
+		super("db", "Initialize the database with an omdbFull.txt file");
 		IGNORED_GENRES.addAll(Arrays.asList(IGNORED_GENRES_ARRAY));
 	}
 
@@ -49,11 +58,6 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 				.dest("omdb-export-path")
 				.help("The full path of the omdbFull.txt file.");
 
-		subparser.addArgument("-d", "--delete-current")
-				.action(Arguments.storeTrue())
-				.dest("delete-old-db")
-				.help("Optional: delete current db files before importing.");
-
 		subparser.addArgument("-u", "--username")
 				.action(Arguments.store())
 				.dest("admin-user")
@@ -64,7 +68,21 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 				.dest("admin-pass")
 				.help("DB admin password for admin ops (default: admin)");
 
-		subparser.setDefault("delete-old-db", false);
+		subparser.addArgument("-b", "--backup")
+				.action(Arguments.storeTrue())
+				.dest("backup")
+				.help("Create backup of current DB path before making any changes. NOT THREAD SAFE.");
+
+		subparser.addArgument("-t", "--rotten-tomatoes")
+				.action(Arguments.store())
+				.dest("rotten-export-path")
+				.help("The full path of the tomatoes.txt file.");
+
+		subparser.addArgument("-f", "--first-run")
+				.action(Arguments.storeTrue())
+				.dest("init-classes-indexes")
+				.help("Performs first-run configuration of database schema.");
+
 		subparser.setDefault("admin-user", "admin");
 		subparser.setDefault("admin-pass", "admin");
 	}
@@ -74,161 +92,170 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 					   Namespace namespace,
 					   BaconConfiguration configuration) throws Exception {
 
-		config = configuration;
-		String DB_PATH = config.getDBPath();
+		currentInitTimestamp = getTimestamp();
 
-		if (namespace.getBoolean("delete-old-db")) {
-			//TODO delete the old db files
-			System.out.println("Deleting old database...");
-		}
+		config = configuration;
+		DB_PATH = config.getDBPath();
+		BACKUP_PATH = config.getDbBackupPath();
+		String ADMIN_USER = namespace.getString("admin-user");
+		String ADMIN_PASS = namespace.getString("admin-pass");
 
 		String SOURCE_PATH = namespace.getString("omdb-export-path");
 
 		if (SOURCE_PATH == null) {
-			System.err.println("ERROR: You must specify the path of the OMDB export file.");
+			LOGGER.error("You must specify a valid path of the OMDB export file.");
+			return;
 		}
 
-		String ADMIN_USER = namespace.getString("admin-user");
-		String ADMIN_PASS = namespace.getString("admin-pass");
+		//backup database
+		if (namespace.getBoolean("backup")) {
+			File backupFolder = new File(BACKUP_PATH);
+			if (!backupFolder.exists()) {
+				backupFolder.mkdir();
+			} else if (!backupFolder.isDirectory()) {
+				LOGGER.error("Path to backup folder doesn't point to a folder. Check configuration.");
+				return;
+			}
+
+			ODatabaseDocumentTx db = new ODatabaseDocumentTx(DB_PATH);
+			db.open(ADMIN_USER, ADMIN_PASS);
+			try {
+				OCommandOutputListener listener = new OCommandOutputListener() {
+					@Override
+					public void onMessage(String iText) {
+						LOGGER.info(iText);
+					}
+				};
+
+				File backupFile = new File(backupFolder.getCanonicalPath()
+						+ File.separator + db.getName()
+						+ "_backup_" + getTimestamp() + ".zip");
+				OutputStream out = new FileOutputStream(backupFile);
+
+				db.backup(out, null, null, listener, 9, 2048);
+			} catch (Exception e) {
+				LOGGER.error("Problem backing up the database.", e);
+			} finally {
+				db.close();
+			}
+		}
+
+		File omdbFile = new File(SOURCE_PATH);
 
 		graph = new OrientGraph(DB_PATH, ADMIN_USER, ADMIN_PASS);
 
-		File omdbFile = new File(SOURCE_PATH);
 		try {
-
-			configureTypes();
-			configureIndices();
+			if (namespace.getBoolean("init-classes-indexes")) {
+				configureTypes();
+				configureIndices();
+			}
 
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(new FileInputStream(omdbFile), "UTF8"));
-			System.out.println("OMDB reader successfully initialized.");
 
 			String line = reader.readLine();
+			LOGGER.info("OMDB file reader successfully initialized.");
 
 			while ((line = reader.readLine()) != null) {
-				//System.out.println("Parsing movie...");
 				parseMovieToDB(line);
 				numMovies++;
 				if (numMovies % 10000 == 0) {
 					System.out.println("Processed " + numMovies + " so far.");
 				}
 			}
-			System.out.println("SUCCESS! Check the database out. " + numMovies + " parsed.");
+			LOGGER.info("Parsed " + numMovies + " total lines.");
 
-			System.out.println("deleting orphaned movies...");
+
+			List<Vertex> outOfDate = new ArrayList<>();
+			StreamSupport.stream(graph.getVerticesOfClass("Movie").spliterator(), false)
+					.filter(v -> !v.getProperty("updated").equals(currentInitTimestamp))
+					.forEach(outOfDate::add);
+
+			StreamSupport.stream(graph.getVerticesOfClass("Person").spliterator(), false)
+					.filter(v -> !v.getProperty("updated").equals(currentInitTimestamp))
+					.forEach(outOfDate::add);
+
+			LOGGER.info("Deleting " + outOfDate.size() + " out of date vertices.");
+			outOfDate.stream().forEach(graph::removeVertex);
+
+			int numOrphanedMovies = 0;
 			for (Vertex v : graph.getVerticesOfClass("Movie")) {
 				if (isOrphanedMovie(v)) {
-					//System.out.println(n.getProperty("title") + "," + n.getProperty("imdbID"));
-					System.out.println("Deleting orphaned movie: " + v.getProperty("title"));
+					numOrphanedMovies++;
 					graph.removeVertex(v);
 				}
 				graph.commit();
 			}
+			LOGGER.info("Deleted " + numOrphanedMovies + " orphaned movies.");
 
-			System.out.println("deleting unconnected vertices...");
+			int numUnconnected = 0;
 			for (Vertex v : graph.getVertices()) {
-				int numEdges = 0;
+				boolean delete = true;
 				for (Edge e : v.getEdges(Direction.BOTH)) {
-					numEdges++;
+					delete = false;
 					break;
 				}
-				if (numEdges == 0) {
+				//TODO don't delete users
+				if (delete) {
+					OrientVertex v2 = graph.getVertex(v.getId());
+					if (!v2.getLabel().equals("Movie") || !v2.getLabel().equals("Person")) {
+						continue;
+					}
+
 					graph.removeVertex(v);
+					numUnconnected++;
 				}
 				graph.commit();
 			}
+			LOGGER.info("Deleted " + numUnconnected + " unconnected vertices.");
 
-			System.out.println("Number of Movies:\t" + graph.countVertices("Movie"));
-			System.out.println("Number of People:\t" + graph.countVertices("Person"));
-			//System.out.println("Number of Roles:\t" + graph.countEdges("Acted"));
-			//System.out.println("Number of Writers:\t" + graph.countEdges("Wrote"));
-			//System.out.println("Number of Directors:\t" + graph.countEdges("Directed"));
-
+			LOGGER.info("Number of Movies:\t" + graph.countVertices("Movie"));
+			LOGGER.info("Number of People:\t" + graph.countVertices("Person"));
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage(),e);
+			LOGGER.error(e.getMessage(), e);
+			LOGGER.error("Rolling back in progress changes.");
 			graph.rollback();
 		} finally {
-			System.out.println("Shutting DB down...");
+			LOGGER.info("Done importing. Shutting DB connection down.");
 			graph.shutdown();
 		}
 
-	}
+		String rottenFilePath = namespace.getString("rotten-export-path");
+		if (rottenFilePath == null) return;
 
-	private static void configureTypes() {
-		if (graph.getVertexType("Movie") == null) {
-			graph.createVertexType("Movie");
-			System.out.println("Creating Movie vertex type...");
-		} else {
-			System.out.println("Movie vertex type already exists.");
-		}
+		LOGGER.info("Parsing Rotten Tomatoes information.");
 
-		if (graph.getVertexType("Person") == null) {
-			graph.createVertexType("Person");
-			System.out.println("Creating Person vertex type...");
-		} else {
-			System.out.println("Person vertex type already exists.");
-		}
-
-		if (graph.getVertexType("User") == null) {
-			graph.createVertexType("User");
-			System.out.println("Creating User vertex type...");
-		} else {
-			System.out.println("User vertex type already exists.");
-		}
-
-		if (graph.getEdgeType("Acted") == null) {
-			graph.createEdgeType("Acted");
-			System.out.println("Creating Acted edge type...");
-		} else {
-			System.out.println("Acted edge type already exists.");
-		}
-
-		if (graph.getEdgeType("Directed") == null) {
-			graph.createEdgeType("Directed");
-			System.out.println("Creating Directed edge type...");
-		} else {
-			System.out.println("Directed edge type already exists.");
-		}
-
-		if (graph.getEdgeType("Wrote") == null) {
-			graph.createEdgeType("Wrote");
-			System.out.println("Creating Wrote edge type...");
-		} else {
-			System.out.println("Wrote edge type already exists.");
-		}
-
-
-	}
-
-	private static void configureIndices() {
-		try {
-			graph.createKeyIndex("imdbID", Vertex.class,
-					new Parameter("type", "UNIQUE"), new Parameter("class", "Movie"));
-			System.out.println("Creating imdbid index...");
-		} catch (Exception e) {
-			System.out.println("Movie index on imdbid already exists.");
-		}
+		graph = new OrientGraph(DB_PATH, ADMIN_USER, ADMIN_PASS);
+		LOGGER.info("Database back online.");
 
 		try {
-			graph.createKeyIndex("title", Vertex.class,
-					new Parameter("class", "Movie"));
-			System.out.println("Creating movie title index...");
-		} catch (Exception e) {
-			System.out.println("Movie index on title already exists.");
-		}
 
-		try {
-			graph.createKeyIndex("name", Vertex.class,
-					new Parameter("type", "UNIQUE"), new Parameter("class", "Person"));
-			System.out.println("Creating person name index...");
+			BufferedReader reader = new BufferedReader(
+					new InputStreamReader(new FileInputStream(omdbFile), "UTF8"));
+
+			String line = reader.readLine();
+			LOGGER.info("Tomatoes file reader successfully initialized.");
+
+			int tomatoRatings = 0;
+			while ((line = reader.readLine()) != null) {
+				parseRTRatingsToDB(line);
+				tomatoRatings++;
+			}
+			LOGGER.info("Parsed " + tomatoRatings + " RT ratings into database.");
+
 		} catch (Exception e) {
-			System.out.println("Person index on name already exists.");
+			LOGGER.error(e.getMessage(), e);
+			LOGGER.error("Rolling back in progress changes.");
+			graph.rollback();
+		} finally {
+			LOGGER.info("Done importing Rotten Tomatoes information. Shutting DB connection down.");
+			graph.shutdown();
 		}
 	}
 
 	private static void parseMovieToDB(String line) {
 		String[] fields = line.split("\\t");
-		if (fields.length == 22 && fields[21].equals("movie")) {
+		if (fields.length == 21 || (fields.length == 22 && fields[21].equalsIgnoreCase("movie"))) {
 			String omdbID = fields[0];
 			String imdbID = fields[1];
 			String title = fields[2];
@@ -242,7 +269,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			String metascore = fields[11];
 			String imdbRating = fields[12];
 			String imdbVotes = fields[13];
-
+			String posterURL = "http://img.omdbapi.com/?i=" + imdbID + "&apikey=" + OMDB_IMG_API_KEY;
 			String[] genres = fields[6].split(", ");
 			for (String g : genres) {
 				if (IGNORED_GENRES.contains(g)) {
@@ -265,8 +292,6 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			} finally {
 				props.put("omdbID", id);
 			}
-
-			//props.put("freebaseID", -1000);
 
 			//"intrinsic" info
 
@@ -293,8 +318,9 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			props.put("metascore", metascore);
 			props.put("imdbRating", imdbRating);
 			props.put("imdbVotes", imdbVotes);
-
+			props.put("poserURL", posterURL);
 			props.put("genres", genres);
+			props.put("updated", currentInitTimestamp);
 
 			Vertex currentMovieVanilla = graph.getVertexByKey("Movie.imdbID", imdbID);
 			OrientVertex currentMovie;
@@ -309,8 +335,6 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 			currentMovie.setProperties(props);
 
-			//reset edges to be re-created
-			//System.out.println("Cleaning old relationships on " + title);
 			for (Edge e : currentMovie.getEdges(Direction.IN)) {
 				OrientEdge e2 = graph.getEdge(e.getId());
 				if ((e2.getLabel() == "Directed" || e2.getLabel() == "Wrote" | e2.getLabel() == "Acted")
@@ -346,6 +370,133 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		}
 	}
 
+	private static void parseRTRatingsToDB(String line) {
+		String[] fields = line.split("\\t");
+		String omdbID = fields[0];
+
+		int id;
+		try {
+			id = Integer.parseInt(omdbID);
+		} catch (Exception e) {
+			System.err.println(e.getLocalizedMessage());
+			id = (int) (Math.random() * -1000000);
+		}
+
+		Vertex currentMovieVanilla = graph.getVertexByKey("Movie.omdbID", id);
+		OrientVertex currentMovie;
+
+		//cut down on duplicate movies
+		if (currentMovieVanilla == null) {
+			return;
+		}
+
+		String rating = fields[2];
+		String meter = fields[3];
+		String reviews = fields[4];
+		String freshReviews = fields[5];
+		String rottenReviews = fields[6];
+		String consensus = fields[7];
+
+		currentMovie = graph.getVertex(currentMovieVanilla.getId());
+
+		currentMovie.setProperty("rtRating", rating);
+		currentMovie.setProperty("rtTomatoMeter", meter);
+		currentMovie.setProperty("rtNumReviews", reviews);
+		currentMovie.setProperty("rtNumFreshReviews", freshReviews);
+		currentMovie.setProperty("rtNumRottenReviews", rottenReviews);
+		currentMovie.setProperty("rtConsensus", consensus);
+
+		graph.commit();
+	}
+
+	private static void configureTypes() {
+		if (graph.getVertexType("Movie") == null) {
+			graph.commit();
+			graph.createVertexType("Movie");
+			System.out.println("Creating Movie vertex type...");
+		} else {
+			System.out.println("Movie vertex type already exists.");
+		}
+
+		if (graph.getVertexType("Person") == null) {
+			graph.commit();
+			graph.createVertexType("Person");
+			System.out.println("Creating Person vertex type...");
+		} else {
+			System.out.println("Person vertex type already exists.");
+		}
+
+		if (graph.getVertexType("User") == null) {
+			graph.commit();
+			graph.createVertexType("User");
+			System.out.println("Creating User vertex type...");
+		} else {
+			System.out.println("User vertex type already exists.");
+		}
+
+		if (graph.getEdgeType("Acted") == null) {
+			graph.commit();
+			graph.createEdgeType("Acted");
+			System.out.println("Creating Acted edge type...");
+		} else {
+			System.out.println("Acted edge type already exists.");
+		}
+
+		if (graph.getEdgeType("Directed") == null) {
+			graph.commit();
+			graph.createEdgeType("Directed");
+			System.out.println("Creating Directed edge type...");
+		} else {
+			System.out.println("Directed edge type already exists.");
+		}
+
+		if (graph.getEdgeType("Wrote") == null) {
+			graph.commit();
+			graph.createEdgeType("Wrote");
+			System.out.println("Creating Wrote edge type...");
+		} else {
+			System.out.println("Wrote edge type already exists.");
+		}
+	}
+
+	private static void configureIndices() {
+		try {
+			graph.commit();
+			graph.createKeyIndex("imdbID", Vertex.class,
+					new Parameter("type", "UNIQUE"), new Parameter("class", "Movie"));
+			System.out.println("Creating imdbid index...");
+		} catch (Exception e) {
+			System.out.println("Movie index on imdbid already exists.");
+		}
+
+		try {
+			graph.commit();
+			graph.createKeyIndex("omdbID", Vertex.class,
+					new Parameter("type", "UNIQUE"), new Parameter("class", "Movie"));
+			System.out.println("Creating omdbid index...");
+		} catch (Exception e) {
+			System.out.println("Movie index on omdbid already exists.");
+		}
+
+		try {
+			graph.commit();
+			graph.createKeyIndex("title", Vertex.class,
+					new Parameter("class", "Movie"));
+			System.out.println("Creating movie title index...");
+		} catch (Exception e) {
+			System.out.println("Movie index on title already exists.");
+		}
+
+		try {
+			graph.commit();
+			graph.createKeyIndex("name", Vertex.class,
+					new Parameter("type", "UNIQUE"), new Parameter("class", "Person"));
+			System.out.println("Creating person name index...");
+		} catch (Exception e) {
+			System.out.println("Person index on name already exists.");
+		}
+	}
+
 	private static OrientVertex getPersonNode(String name) {
 		Vertex personVanilla = graph.getVertexByKey("Person.name", name);
 		OrientVertex person;
@@ -353,9 +504,11 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		if (personVanilla == null) {
 			HashMap<String, String> nameMap = new HashMap<>();
 			nameMap.put("name", name);
+			nameMap.put("updated", currentInitTimestamp);
 			person = graph.addVertex("class:Person", nameMap);
 		} else {
 			person = graph.getVertex(personVanilla.getId());
+			person.setProperty("updated", currentInitTimestamp);
 		}
 		return person;
 	}
@@ -381,7 +534,10 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 				if (others > 1) return false;
 			}
 		}
-
 		return true;
+	}
+
+	private static String getTimestamp() {
+		return new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date());
 	}
 }

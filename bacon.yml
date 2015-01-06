@@ -1,4 +1,5 @@
-dbpath: plocal:C:\bacon\
+db-path: plocal:C:\bacon\
+backup-path: C:\Users\adamn_000\db_backups
 
 
 logging:
@@ -6,7 +7,7 @@ logging:
 
   appenders:
     - type: console
-      threshold: WARN
+      threshold: INFO
       target: stderr
 
     - type: file
@@ -14,3 +15,4 @@ logging:
       archivedLogFilenamePattern: ./logs/main-%d.log.gz
       archivedFileCount: 5
       timeZone: UTC
+      threshold: INFO
