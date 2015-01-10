@@ -15,18 +15,22 @@ mainClassName = 'io.sirfrancis.bacon.BaconApplication'
 
 repositories {
     mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
 }
 
 dependencies {
     def dropwizardVersion = '0.7.1'
-    def orientDBVersion = '2.0-rc1'
+    def orientDBVersion = '2.0-SNAPSHOT'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-hibernate:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-migrations:' + dropwizardVersion,
             //'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
             'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
-            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion
+            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
+            'com.google.guava:guava:18.0'
     )
     testCompile 'junit:junit:4.11'
 }

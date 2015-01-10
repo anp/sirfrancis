@@ -42,7 +42,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 	private static String currentInitTimestamp;
 
-	private static String OMDB_IMG_API_KEY = "2af3daf2";
+	private static String OMDB_IMG_API_KEY;
 
 
 	public DBInitCommand() {
@@ -97,6 +97,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		config = configuration;
 		DB_PATH = config.getDBPath();
 		BACKUP_PATH = config.getDbBackupPath();
+		OMDB_IMG_API_KEY = config.getOMDBAPIKey();
 		String ADMIN_USER = namespace.getString("admin-user");
 		String ADMIN_PASS = namespace.getString("admin-pass");
 
@@ -231,7 +232,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		try {
 
 			BufferedReader reader = new BufferedReader(
-					new InputStreamReader(new FileInputStream(omdbFile), "UTF8"));
+					new InputStreamReader(new FileInputStream(new File(rottenFilePath)), "UTF8"));
 
 			String line = reader.readLine();
 			LOGGER.info("Tomatoes file reader successfully initialized.");
