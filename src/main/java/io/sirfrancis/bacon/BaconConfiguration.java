@@ -6,15 +6,25 @@ package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
+import ru.vyarus.dropwizard.orient.configuration.HasOrientServerConfiguration;
+import ru.vyarus.dropwizard.orient.configuration.OrientServerConfiguration;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class BaconConfiguration extends Configuration{
+public class BaconConfiguration extends Configuration implements HasOrientServerConfiguration{
 	@NotNull
 	private String dbPath;
 
 	@NotNull
 	private String dbBackupPath;
+
+	@NotNull
+	private String omdbAPIKey;
+
+	@NotNull
+	@Valid
+	private OrientServerConfiguration orientServer;
 
 	@JsonProperty("db-path")
 	public String getDBPath() {
@@ -34,5 +44,25 @@ public class BaconConfiguration extends Configuration{
 	@JsonProperty("backup-path")
 	public void setDbBackupPath(String dbBackupPath) {
 		this.dbBackupPath = dbBackupPath;
+	}
+
+	@JsonProperty("omdb-api-key")
+	public String getOMDBAPIKey() {
+		return omdbAPIKey;
+	}
+
+	@JsonProperty("omdb-api-key")
+	public void setOmdbAPIKey(String newKey) {
+		omdbAPIKey = newKey;
+	}
+
+	@Override
+	public OrientServerConfiguration getOrientServerConfiguration() {
+		return orientServer;
+	}
+
+	@JsonProperty("orient-server")
+	void setOrientServer(OrientServerConfiguration orientServer) {
+		this.orientServer = orientServer;
 	}
 }
