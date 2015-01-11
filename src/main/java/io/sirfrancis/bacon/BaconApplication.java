@@ -34,5 +34,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 	@Override
 	public void run(BaconConfiguration config, Environment environment) {
 		environment.jersey().register(new HelloWorldResource("%s template","adam"));
+
 	}
 }
