@@ -20,6 +20,11 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	private String dbBackupPath;
 
+
+
+	@NotNull
+	private String staticContentPath;
+
 	@NotNull
 	private String omdbAPIKey;
 
@@ -70,6 +75,16 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@JsonProperty("orient-server")
 	void setOrientServer(OrientServerConfiguration orientServer) {
 		this.orientServer = orientServer;
+	}
+
+	@JsonProperty("static-content-path")
+	public String getStaticContentPath() {
+		return staticContentPath;
+	}
+
+	@JsonProperty("static-content-path")
+	public void setStaticContentPath(String staticContentPath) {
+		this.staticContentPath = staticContentPath;
 	}
 
 	public JerseyClientConfiguration getJerseyClientConfiguration() {

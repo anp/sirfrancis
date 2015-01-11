@@ -5,7 +5,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.sirfrancis.bacon.cli.DBInitCommand;
-import io.sirfrancis.bacon.resources.HelloWorldResource;
+import io.sirfrancis.bacon.resources.HomeResource;
 import ru.vyarus.dropwizard.orient.OrientServerBundle;
 
 /**
@@ -33,7 +33,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 	@Override
 	public void run(BaconConfiguration config, Environment environment) {
-		environment.jersey().register(new HelloWorldResource("%s template","adam"));
-
+		environment.jersey().register(new HomeResource());
 	}
 }
