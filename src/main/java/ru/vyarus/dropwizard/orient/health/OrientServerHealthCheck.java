@@ -29,6 +29,7 @@ public class OrientServerHealthCheck extends HealthCheck {
           //  result = Result.unhealthy(String.format("No memory available (used heap %s)",
           //          memoryWatchDog == null ? "unknown" : memoryWatchDog.getUsedHeapMemory()));
         //}
+		//TODO add memory checks for health
 		else {
             result = Result.healthy("OK");
         }

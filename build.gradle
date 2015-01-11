@@ -6,7 +6,7 @@ plugins {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-version = '0.1-LEARNING'
+version = '0.1-SNAPSHOT'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -25,12 +25,10 @@ dependencies {
     def orientDBVersion = '2.0-SNAPSHOT'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
-            //'io.dropwizard:dropwizard-hibernate:' + dropwizardVersion,
-            //'io.dropwizard:dropwizard-migrations:' + dropwizardVersion,
-            //'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-client:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
             'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
-            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
-            'com.google.guava:guava:18.0'
+            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion
     )
     testCompile 'junit:junit:4.11'
 }
@@ -50,6 +48,7 @@ shadowJar {
     exclude('META-INF/*.DSA')
     exclude('META-INF/*.RSA')
 }
+
 jar {
     manifest {
         attributes (

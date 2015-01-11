@@ -6,6 +6,7 @@ package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.Configuration;
+import io.dropwizard.client.JerseyClientConfiguration;
 import ru.vyarus.dropwizard.orient.configuration.HasOrientServerConfiguration;
 import ru.vyarus.dropwizard.orient.configuration.OrientServerConfiguration;
 
@@ -25,6 +26,11 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	@Valid
 	private OrientServerConfiguration orientServer;
+
+	@Valid
+	@NotNull
+	@JsonProperty
+	private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
 
 	@JsonProperty("db-path")
 	public String getDBPath() {
@@ -64,5 +70,9 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@JsonProperty("orient-server")
 	void setOrientServer(OrientServerConfiguration orientServer) {
 		this.orientServer = orientServer;
+	}
+
+	public JerseyClientConfiguration getJerseyClientConfiguration() {
+		return httpClient;
 	}
 }

@@ -1,6 +1,5 @@
 package ru.vyarus.dropwizard.orient.internal;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.orientechnologies.common.util.OCallable;
 import com.orientechnologies.orient.server.OServer;
@@ -13,8 +12,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.vyarus.dropwizard.orient.configuration.OrientServerConfiguration;
 
+import javax.annotation.Nullable;
 import java.io.BufferedInputStream;
 import java.net.URL;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Orient server managed object. Lifecycle must be managed by dropwizard.
@@ -71,7 +73,7 @@ public class EmbeddedOrientServer implements Managed {
             @Override
             public Object call(final String iArgument) {
                 final String fileName = "/ru/vyarus/dropwizard/orient/studio/"
-                        + MoreObjects.firstNonNull(Strings.emptyToNull(iArgument), "index.html");
+                        + firstNonNull(Strings.emptyToNull(iArgument), "index.html");
                 final URL url = getClass().getResource(fileName);
                 if (url != null) {
                     final OServerCommandGetStaticContent.OStaticContent content =
@@ -85,4 +87,8 @@ public class EmbeddedOrientServer implements Managed {
             }
         });
     }
+
+	public static <T> T firstNonNull(@Nullable T first, @Nullable T second) {
+		return first != null ? first : checkNotNull(second);
+	}
 }

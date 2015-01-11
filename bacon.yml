@@ -1,7 +1,11 @@
 db-path: plocal:C:\bacon\databases\bacon
 backup-path: C:\Users\anp68\db_backups
 omdb-api-key: 2af3daf2
+trakt-api-key:
 
+server:
+  gzip:
+    enabled: true
 
 logging:
   level: DEBUG
