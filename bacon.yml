@@ -1,7 +1,9 @@
 db-path: plocal:C:\bacon\databases\bacon
 backup-path: C:\Users\anp68\db_backups
+static-content-path: C:\Users\adamn_000\Documents\GitHub\sirfrancis\static
+
 omdb-api-key: 2af3daf2
-trakt-api-key:
+
 
 server:
   gzip:
