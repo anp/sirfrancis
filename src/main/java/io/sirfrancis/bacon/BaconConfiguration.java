@@ -20,8 +20,6 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	private String dbBackupPath;
 
-
-
 	@NotNull
 	private String staticContentPath;
 

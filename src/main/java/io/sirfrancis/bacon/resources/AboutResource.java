@@ -2,7 +2,7 @@ package io.sirfrancis.bacon.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import io.sirfrancis.bacon.BaconConfiguration;
-import io.sirfrancis.bacon.views.HomeView;
+import io.sirfrancis.bacon.views.AboutView;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -10,22 +10,21 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 /**
- * Created by Adam on 1/4/2015.
+ * Created by Adam on 1/11/2015.
  */
-
-@Path("/")
+@Path("/about")
 @Produces(MediaType.TEXT_HTML)
-
-public class HomeResource {
+public class AboutResource {
 	private BaconConfiguration config;
 
-	public HomeResource(BaconConfiguration config) {
+	public AboutResource(BaconConfiguration config) {
 		this.config = config;
 	}
 
 	@GET
 	@Timed
-	public HomeView showHome() {
-		return new HomeView(config.getStaticContentPath());
+	public AboutView showAbout() {
+		return new AboutView(config.getStaticContentPath());
 	}
+
 }
