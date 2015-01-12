@@ -34,7 +34,6 @@ import java.lang.reflect.Field;
 public class OrientServerBundle<T extends Configuration & HasOrientServerConfiguration>
         implements ConfiguredBundle<T> {
     private final Logger logger = LoggerFactory.getLogger(OrientServerBundle.class);
-
     private final Class<T> configClass;
 
     /**

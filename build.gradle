@@ -28,14 +28,15 @@ dependencies {
             'io.dropwizard:dropwizard-client:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
             'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
-            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion
+            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
+            'com.sendgrid:sendgrid-java:2.0.0'
     )
     testCompile 'junit:junit:4.11'
 }
 
 run {
     //MAKE SURE CONFIG PATH IS CORRECT
-    args 'server', './src/dist/config/bacon.yml'
+    args 'server', 'bacon-local.yml'
 }
 
 task wrapper(type: Wrapper) {
@@ -57,4 +58,8 @@ jar {
             'Implementation-Version': version
         )
     }
+}
+
+stage {
+
 }

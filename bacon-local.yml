@@ -1,13 +1,13 @@
-db-path: plocal:C:\bacon\databases\bacon
+db-path: plocal:C:\bacon_db\databases\bacon
 backup-path: C:\Users\anp68\db_backups
-static-content-path: C:\Users\adamn_000\Documents\GitHub\sirfrancis\static
+static-content-path: https://sirfrancis.io/static
 
 omdb-api-key: 2af3daf2
 
 
 server:
   gzip:
-    enabled: true
+    enabled: false
 
 logging:
   level: DEBUG
@@ -33,6 +33,9 @@ orient-server:
     users:
       - name: admin
         password: admin
+        resources: '*'
+      - name: root
+        password:
         resources: '*'
 
     handlers:
@@ -101,12 +104,6 @@ orient-server:
          # for multi-threaded environment level1 cache bound to thread - not much sense in it, but may be usefull in rare situations
        - name: cache.level1.enabled
          value: false
-         # datastore cache (global cache)
-       - name: cache.level2.enabled
-         value: true
-         # no restriction for cache size
-       - name: cache.level2.size
-         value: -1
          #important for embedded mode, because in other case "no ORIENT_HOME" warnings will be in logs
        - name: plugin.dynamic
          value: false

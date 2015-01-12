@@ -5,13 +5,19 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.sirfrancis.bacon.cli.DBInitCommand;
+import io.sirfrancis.bacon.db.OrientFactoryWrapper;
+import io.sirfrancis.bacon.resources.AboutResource;
+import io.sirfrancis.bacon.resources.AlmostConfirmedResource;
 import io.sirfrancis.bacon.resources.HomeResource;
+import io.sirfrancis.bacon.resources.SubConfirmedResource;
 import ru.vyarus.dropwizard.orient.OrientServerBundle;
 
 /**
  * Created by Adam on 1/4/2015.
  */
 public class BaconApplication extends Application<BaconConfiguration> {
+	private OrientFactoryWrapper factory;
+
 	public static void main(String[] args) throws Exception {
 		new BaconApplication().run(args);
 	}
@@ -33,6 +39,13 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 	@Override
 	public void run(BaconConfiguration config, Environment environment) {
-		environment.jersey().register(new HomeResource());
+		environment.jersey().register(new HomeResource(config));
+		environment.jersey().register(new AboutResource(config));
+		environment.jersey().register(new AlmostConfirmedResource(config));
+		environment.jersey().register(new SubConfirmedResource(config));
+	}
+
+	public OrientFactoryWrapper getFactory() {
+		return factory;
 	}
 }

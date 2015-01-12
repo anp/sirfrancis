@@ -71,7 +71,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		subparser.addArgument("-b", "--backup")
 				.action(Arguments.storeTrue())
 				.dest("backup")
-				.help("Create backup of current DB path before making any changes. NOT THREAD SAFE.");
+				.help("Create backup of current DB path before making any changes.");
 
 		subparser.addArgument("-t", "--rotten-tomatoes")
 				.action(Arguments.store())
