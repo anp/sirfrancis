@@ -28,9 +28,9 @@ dependencies {
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             'io.dropwizard:dropwizard-client:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
             'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
             'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
-            'com.sendgrid:sendgrid-java:2.0.0'
     )
     testCompile 'junit:junit:4.11'
 }
@@ -58,32 +58,5 @@ jar {
             'Implementation-Title': "Bacon",
             'Implementation-Version': version
         )
-    }
-}
-
-remotes {
-    main_server {
-        host = '192.241.204.245'
-        user = 'francis'
-        identity = new File('C:\\Users\\adamn_000\\Dropbox\\Projects\\Bacon\\technical\\francis_openssh.ppk')
-        passphrase = 'no one will know'
-    }
-}
-
-task deploy(dependsOn: ['clean', 'shadowJar']) {
-    ssh.run {
-        session(remotes.main_server) {
-            def localJar = 'sirfrancis-' + version + '-all.jar'
-            put 'build\\libs\\' + localJar, '/opt/bacon/'
-            put 'bacon-server.yml', '/opt/bacon/'
-            put 'static/', '/opt/bacon/'
-            //TODO prevent error if service not running or files not present
-            execute 'sudo stop sirfrancis'
-            execute 'rm /opt/bacon/sirfrancis-current.jar'
-            execute 'rm /opt/bacon/bacon.yml'
-            execute 'mv /opt/bacon/bacon-server.yml /opt/bacon/bacon.yml'
-            execute 'mv /opt/bacon/' + localJar + ' /opt/bacon/sirfrancis-current.jar'
-            execute 'sudo start sirfrancis'
-        }
     }
 }

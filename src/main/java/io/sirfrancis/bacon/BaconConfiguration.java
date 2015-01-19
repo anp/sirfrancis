@@ -5,6 +5,7 @@
 package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.JerseyClientConfiguration;
 import ru.vyarus.dropwizard.orient.configuration.HasOrientServerConfiguration;
@@ -27,8 +28,13 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	private String omdbAPIKey;
 
 	@NotNull
+	private String dbRemotePath;
+
+	@NotNull
 	@Valid
 	private OrientServerConfiguration orientServer;
+
+	private OrientGraphFactory factory;
 
 	@Valid
 	@NotNull
@@ -85,7 +91,25 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		this.staticContentPath = staticContentPath;
 	}
 
+	@JsonProperty("db-binary-conn-path")
+	public String getDbRemotePath() {
+		return dbRemotePath;
+	}
+
+	@JsonProperty("db-binary-conn-path")
+	public void setDbRemotePath(String dbRemotePath) {
+		this.dbRemotePath = dbRemotePath;
+	}
+
 	public JerseyClientConfiguration getJerseyClientConfiguration() {
 		return httpClient;
+	}
+
+	public void initFactory() {
+		factory = new OrientGraphFactory(dbPath);
+	}
+
+	public OrientGraphFactory getFactory() {
+		return factory;
 	}
 }

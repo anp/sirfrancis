@@ -1,9 +1,9 @@
 db-path: plocal:C:\bacon_db\databases\bacon
 backup-path: C:\Users\anp68\db_backups
 static-content-path: https://sirfrancis.io/static
+db-binary-conn-path: remote:localhost:2424/bacon
 
 omdb-api-key: 2af3daf2
-
 
 server:
   gzip:
@@ -26,7 +26,7 @@ logging:
 
 orient-server:
 #must contain $DIR/databases/{a bunch of databases}
-  files-path: C:\bacon\
+  files-path: C:\bacon_db\
   start: true
 
   config:
@@ -98,7 +98,7 @@ orient-server:
 
     properties:
        - name: db.pool.min
-         value: 1
+         value: 5
        - name: db.pool.max
          value: 50
          # for multi-threaded environment level1 cache bound to thread - not much sense in it, but may be usefull in rare situations
