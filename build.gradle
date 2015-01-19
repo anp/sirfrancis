@@ -27,9 +27,9 @@ dependencies {
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             'io.dropwizard:dropwizard-client:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
             'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
             'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
-            'com.sendgrid:sendgrid-java:2.0.0'
     )
     testCompile 'junit:junit:4.11'
 }
@@ -58,8 +58,4 @@ jar {
             'Implementation-Version': version
         )
     }
-}
-
-stage {
-
 }

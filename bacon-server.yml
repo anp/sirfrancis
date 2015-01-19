@@ -98,7 +98,7 @@ orient-server:
 
     properties:
        - name: db.pool.min
-         value: 1
+         value: 5
        - name: db.pool.max
          value: 50
          # for multi-threaded environment level1 cache bound to thread - not much sense in it, but may be usefull in rare situations

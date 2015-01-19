@@ -1,0 +1,11 @@
+All authenticated
+
+/recommendations : GET, POST
+/rating/add/{imdbid}/{value} : POST
+/rating/del/{imdbid} : POST
+/user/create/ : POST
+/user/property/{prop} : GET, POST
+/import/trakt/{traktuser} : POST
+
+Resources
+
