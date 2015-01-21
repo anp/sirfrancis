@@ -34,7 +34,7 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@Valid
 	private OrientServerConfiguration orientServer;
 
-	private OrientGraphFactory factory;
+	private static OrientGraphFactory factory;
 
 	@Valid
 	@NotNull
@@ -106,10 +106,10 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	}
 
 	public void initFactory() {
-		factory = new OrientGraphFactory(dbPath);
+		factory = new OrientGraphFactory(dbPath).setupPool(50,500);
 	}
 
-	public OrientGraphFactory getFactory() {
+	public static OrientGraphFactory getFactory() {
 		return factory;
 	}
 }

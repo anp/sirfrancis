@@ -2,19 +2,19 @@ package io.sirfrancis.bacon.cli;
 
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
+import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
-import com.tinkerpop.blueprints.Parameter;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientEdge;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import com.tinkerpop.blueprints.impls.orient.*;
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
 import io.sirfrancis.bacon.BaconConfiguration;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
+import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +38,9 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 	private static String DB_PATH;
 	private static String BACKUP_PATH;
+	private static String ADMIN_USER;
+	private static String ADMIN_PASS;
+
 	private static OrientGraph graph;
 
 	private static String currentInitTimestamp;
@@ -98,8 +101,8 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		DB_PATH = config.getDBPath();
 		BACKUP_PATH = config.getDbBackupPath();
 		OMDB_IMG_API_KEY = config.getOMDBAPIKey();
-		String ADMIN_USER = namespace.getString("admin-user");
-		String ADMIN_PASS = namespace.getString("admin-pass");
+		ADMIN_USER = namespace.getString("admin-user");
+		ADMIN_PASS = namespace.getString("admin-pass");
 
 		String SOURCE_PATH = namespace.getString("omdb-export-path");
 
@@ -147,10 +150,17 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 		try {
 			if (namespace.getBoolean("init-classes-indexes")) {
-				configureTypes();
-				configureIndices();
+				setupTypesAndIndices();
+				setupLuceneIndex();
+				graph.declareIntent(new OIntentMassiveInsert());
+				LOGGER.info("First run configuration complete.");
 			}
+		} catch (Exception e) {
+			e.printStackTrace(System.err);
+		}
 
+
+		try {
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(new FileInputStream(omdbFile), "UTF8"));
 
@@ -260,6 +270,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			String omdbID = fields[0];
 			String imdbID = fields[1];
 			String title = fields[2];
+			String indexTitle = QueryParserUtil.escape(fields[2]);
 			String runtime = fields[5];
 			String released = fields[7];
 			String language = fields[17];
@@ -284,12 +295,12 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 			HashMap<String, Object> props = new HashMap<>();
 
-			int id = 0;
+			long id = 0;
 			try {
 				id = Integer.parseInt(omdbID);
 			} catch (Exception e) {
 				System.err.println(e.getLocalizedMessage());
-				id = (int) (Math.random() * -1000000);
+				id = (long) (Math.random() * -1000000);
 			} finally {
 				props.put("omdbID", id);
 			}
@@ -297,6 +308,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			//"intrinsic" info
 
 			props.put("title", title);
+			props.put("indexTitle", indexTitle);
 			props.put("runtime", runtime);
 			props.put("released", released);
 			props.put("language", language);
@@ -319,7 +331,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			props.put("metascore", metascore);
 			props.put("imdbRating", imdbRating);
 			props.put("imdbVotes", imdbVotes);
-			props.put("poserURL", posterURL);
+			props.put("posterURL", posterURL);
 			props.put("genres", genres);
 			props.put("updated", currentInitTimestamp);
 
@@ -375,12 +387,12 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		String[] fields = line.split("\\t");
 		String omdbID = fields[0];
 
-		int id;
+		long id;
 		try {
 			id = Integer.parseInt(omdbID);
 		} catch (Exception e) {
 			System.err.println(e.getLocalizedMessage());
-			id = (int) (Math.random() * -1000000);
+			id = (long) (Math.random() * -1000000);
 		}
 
 		Vertex currentMovieVanilla = graph.getVertexByKey("Movie.omdbID", id);
@@ -410,92 +422,44 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		graph.commit();
 	}
 
-	private static void configureTypes() {
-		if (graph.getVertexType("Movie") == null) {
-			graph.commit();
-			graph.createVertexType("Movie");
-			System.out.println("Creating Movie vertex type...");
-		} else {
-			System.out.println("Movie vertex type already exists.");
-		}
+	private static void setupTypesAndIndices() {
+		OrientGraphNoTx graph = new OrientGraphNoTx(DB_PATH);
 
-		if (graph.getVertexType("Person") == null) {
-			graph.commit();
-			graph.createVertexType("Person");
-			System.out.println("Creating Person vertex type...");
-		} else {
-			System.out.println("Person vertex type already exists.");
-		}
+		OrientVertexType movieType = graph.createVertexType("Movie");
 
-		if (graph.getVertexType("User") == null) {
-			graph.commit();
-			graph.createVertexType("User");
-			System.out.println("Creating User vertex type...");
-		} else {
-			System.out.println("User vertex type already exists.");
-		}
+		movieType.createProperty("indexTitle", OType.STRING);
+		movieType.createProperty("imdbID", OType.STRING);
+		movieType.createProperty("omdbID", OType.LONG);
 
-		if (graph.getEdgeType("Acted") == null) {
-			graph.commit();
-			graph.createEdgeType("Acted");
-			System.out.println("Creating Acted edge type...");
-		} else {
-			System.out.println("Acted edge type already exists.");
-		}
+		movieType.createIndex("Movie.imdbID", "UNIQUE", "imdbID");
+		movieType.createIndex("Movie.omdbID", "UNIQUE", "omdbID");
 
-		if (graph.getEdgeType("Directed") == null) {
-			graph.commit();
-			graph.createEdgeType("Directed");
-			System.out.println("Creating Directed edge type...");
-		} else {
-			System.out.println("Directed edge type already exists.");
-		}
+		OrientVertexType personType = graph.createVertexType("Person");
+		personType.createProperty("name", OType.STRING);
+		personType.createIndex("Person.name", "UNIQUE", "name");
 
-		if (graph.getEdgeType("Wrote") == null) {
-			graph.commit();
-			graph.createEdgeType("Wrote");
-			System.out.println("Creating Wrote edge type...");
-		} else {
-			System.out.println("Wrote edge type already exists.");
-		}
+		OrientVertexType userType = graph.createVertexType("User");
+		userType.createProperty("username", OType.STRING);
+		userType.createIndex("User.username", "UNIQUE", "username");
+
+		graph.createEdgeType("Acted");
+		graph.createEdgeType("Directed");
+		graph.createEdgeType("Wrote");
+
+		graph.shutdown();
 	}
 
-	private static void configureIndices() {
-		try {
-			graph.commit();
-			graph.createKeyIndex("imdbID", Vertex.class,
-					new Parameter("type", "UNIQUE"), new Parameter("class", "Movie"));
-			System.out.println("Creating imdbid index...");
-		} catch (Exception e) {
-			System.out.println("Movie index on imdbid already exists.");
-		}
+	private static void setupLuceneIndex() {
+		OrientGraphNoTx graph = new OrientGraphNoTx(DB_PATH);
+		OrientVertexType movieType = graph.getVertexType("Movie");
 
-		try {
-			graph.commit();
-			graph.createKeyIndex("omdbID", Vertex.class,
-					new Parameter("type", "UNIQUE"), new Parameter("class", "Movie"));
-			System.out.println("Creating omdbid index...");
-		} catch (Exception e) {
-			System.out.println("Movie index on omdbid already exists.");
-		}
+		LOGGER.info("Creating Lucene index on Movie titles...");
 
-		try {
-			graph.commit();
-			graph.createKeyIndex("title", Vertex.class,
-					new Parameter("class", "Movie"));
-			System.out.println("Creating movie title index...");
-		} catch (Exception e) {
-			System.out.println("Movie index on title already exists.");
-		}
+		movieType.createIndex("Movie.indexTitle", "FULLTEXT", null, null, "LUCENE", new String[]{ "indexTitle" });
 
-		try {
-			graph.commit();
-			graph.createKeyIndex("name", Vertex.class,
-					new Parameter("type", "UNIQUE"), new Parameter("class", "Person"));
-			System.out.println("Creating person name index...");
-		} catch (Exception e) {
-			System.out.println("Person index on name already exists.");
-		}
+		LOGGER.info("Lucene index creation complete.");
+
+		graph.shutdown();
 	}
 
 	private static OrientVertex getPersonNode(String name) {

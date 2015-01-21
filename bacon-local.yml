@@ -1,7 +1,7 @@
 db-path: plocal:C:\bacon_db\databases\bacon
 backup-path: C:\Users\anp68\db_backups
 static-content-path: https://sirfrancis.io/static
-db-binary-conn-path: remote:localhost:2424/bacon
+db-binary-conn-path: plocal:C:\bacon_db\databases\bacon
 
 omdb-api-key: 2af3daf2
 
@@ -65,7 +65,7 @@ orient-server:
               value:
       - clazz: 'com.orientechnologies.orient.server.handler.OServerSideScriptInterpreter'
         parameters:
-            - name: disabled
+            - name: enabled
               value: false
 
     network:
@@ -100,7 +100,7 @@ orient-server:
        - name: db.pool.min
          value: 5
        - name: db.pool.max
-         value: 50
+         value: 100
          # for multi-threaded environment level1 cache bound to thread - not much sense in it, but may be usefull in rare situations
        - name: cache.level1.enabled
          value: false

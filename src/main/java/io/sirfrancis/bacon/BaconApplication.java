@@ -1,15 +1,15 @@
 package io.sirfrancis.bacon;
 
 import io.dropwizard.Application;
+import io.dropwizard.auth.basic.BasicAuthProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+import io.sirfrancis.bacon.auth.HTTPAuthenticator;
 import io.sirfrancis.bacon.cli.DBInitCommand;
+import io.sirfrancis.bacon.db.UserDAO;
 import io.sirfrancis.bacon.health.OrientHealthCheck;
-import io.sirfrancis.bacon.resources.AboutResource;
-import io.sirfrancis.bacon.resources.AlmostConfirmedResource;
-import io.sirfrancis.bacon.resources.HomeResource;
-import io.sirfrancis.bacon.resources.SubConfirmedResource;
+import io.sirfrancis.bacon.resources.*;
 import ru.vyarus.dropwizard.orient.OrientServerBundle;
 
 /**
@@ -44,6 +44,11 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.jersey().register(new AboutResource(config));
 		environment.jersey().register(new AlmostConfirmedResource(config));
 		environment.jersey().register(new SubConfirmedResource(config));
+
+		environment.jersey().register(new UserCreateResource(new UserDAO(config.getFactory())));
+		environment.jersey().register(new UserDeleteResource(new UserDAO(config.getFactory())));
+
+		environment.jersey().register(new BasicAuthProvider<>(new HTTPAuthenticator(), "sirfrancis.io"));
 
 		environment.healthChecks().register("database",new OrientHealthCheck(config.getFactory()));
 	}
