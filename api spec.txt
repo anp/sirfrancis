@@ -1,6 +1,7 @@
 All authenticated
 
 /recommendations : GET, POST
+/ratings/{user}
 /rating/add/{imdbid}/{value} : POST
 /rating/del/{imdbid} : POST
 /user/create/ : POST
@@ -9,3 +10,10 @@ All authenticated
 
 Resources
 
+Recommendations
+Ratings
+RatingAdd
+RatingDelete
+UserCreate
+UserUpdate
+ImportTrakt
