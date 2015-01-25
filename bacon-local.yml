@@ -1,13 +1,15 @@
-db-path: plocal:C:\bacon_db\databases\bacon
-backup-path: C:\Users\anp68\db_backups
+db-path: plocal:/opt/bacon/databases/bacon
+backup-path: /opt/bacon/backups
 static-content-path: https://sirfrancis.io/static
-db-binary-conn-path: plocal:C:\bacon_db\databases\bacon
+db-binary-conn-path: plocal:/opt/bacon/databases/bacon
 
 omdb-api-key: 2af3daf2
 
 server:
   gzip:
-    enabled: false
+    enabled: true
+    minimumEntitySize: 256B
+    bufferSize: 8KB
 
 logging:
   level: DEBUG
@@ -26,7 +28,7 @@ logging:
 
 orient-server:
 #must contain $DIR/databases/{a bunch of databases}
-  files-path: C:\bacon_db\
+  files-path: /opt/bacon
   start: true
 
   config:

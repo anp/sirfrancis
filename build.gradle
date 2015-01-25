@@ -1,13 +1,12 @@
 plugins {
     id 'java'
     id 'application'
-    id 'com.github.johnrengelman.shadow' version '1.2.0'
-    id 'org.hidetake.ssh' version '1.0.1'
+    id "us.kirchmeier.capsule" version "0.10.0"
 }
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-version = '0.1-COMINGSOON'
+version = '0.1-CAPSULE'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -23,7 +22,7 @@ repositories {
 
 dependencies {
     def dropwizardVersion = '0.7.1'
-    def orientDBVersion = '2.0-rc2'
+    def orientDBVersion = '2.0'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             'io.dropwizard:dropwizard-client:' + dropwizardVersion,
@@ -37,35 +36,42 @@ dependencies {
             'org.apache.lucene:lucene-queryparser:4.7.0',
             'org.apache.lucene:lucene-misc:4.7.0',
             'org.apache.lucene:lucene-spatial:4.7.0',
+            //fix the jackson classpath issue
+            'com.fasterxml.jackson.core:jackson-databind:2.3.3'
     )
     testCompile (
             'junit:junit:4.11',
-            'net.sf.opencsv:opencsv:2.3'
     )
-}
-
-run {
-    //MAKE SURE CONFIG PATH IS CORRECT
-    args 'server', 'bacon-local.yml'
 }
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.2.1'
 }
 
-// Configure the shadow jar task
-shadowJar {
-    mergeServiceFiles()
-    exclude('META-INF/*.DSA')
-    exclude('META-INF/*.RSA')
+task capsule(type: ThinCapsule) {
+    applicationClass mainClassName
+    reallyExecutable
 }
 
-jar {
-    manifest {
-        attributes (
-            'Main-Class': mainClassName,
-            'Implementation-Title': "Bacon",
-            'Implementation-Version': version
-        )
-    }
+task cleanCapsuleCache(type: Exec, dependsOn: capsule) {
+    commandLine('rm', '-drf', '~/.capsule/')
+}
+
+def execJarPath = './build/libs/sirfrancis-' + version + '-capsule.jar'
+
+task fullBuild(type: Exec, dependsOn: cleanCapsuleCache) {
+    commandLine('chmod', '+x', execJarPath)
+}
+
+task runServer(type: Exec, dependsOn: fullBuild) {
+    //MAKE SURE CONFIG PATH IS CORRECT
+    commandLine(execJarPath, 'server', 'bacon-local.yml')
+}
+
+task clearDB(type: Exec, dependsOn: fullBuild) {
+    commandLine('rm', '-drf', '/opt/bacon/databases/bacon')
+}
+
+task dbInit(type: Exec, dependsOn: clearDB) {
+    commandLine(execJarPath, 'db', '-f', '-s', 'omdb.txt', '-t', 'tomatoes.txt', 'bacon-local.yml')
 }

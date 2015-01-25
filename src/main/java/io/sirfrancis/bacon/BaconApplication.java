@@ -7,6 +7,7 @@ import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.sirfrancis.bacon.auth.HTTPAuthenticator;
 import io.sirfrancis.bacon.cli.DBInitCommand;
+import io.sirfrancis.bacon.db.MovieDAO;
 import io.sirfrancis.bacon.db.UserDAO;
 import io.sirfrancis.bacon.health.OrientHealthCheck;
 import io.sirfrancis.bacon.resources.*;
@@ -27,13 +28,14 @@ public class BaconApplication extends Application<BaconConfiguration> {
 	}
 
 	@Override
-	public void initialize(Bootstrap<BaconConfiguration> bootstrap) {
+	public void initialize(final Bootstrap<BaconConfiguration> bootstrap) {
 		//OrientDB
 		bootstrap.addBundle(new OrientServerBundle<>(getConfigurationClass()));
 		//CLI command
 		bootstrap.addCommand(new DBInitCommand());
 		//add HTML rendering/views
 		bootstrap.addBundle(new ViewBundle());
+		//add static content
 	}
 
 	@Override
@@ -45,11 +47,13 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.jersey().register(new AlmostConfirmedResource(config));
 		environment.jersey().register(new SubConfirmedResource(config));
 
-		environment.jersey().register(new UserCreateResource(new UserDAO(config.getFactory())));
-		environment.jersey().register(new UserDeleteResource(new UserDAO(config.getFactory())));
+		environment.jersey().register(new UserCreateResource(new UserDAO(BaconConfiguration.getFactory())));
+		environment.jersey().register(new UserDeleteResource(new UserDAO(BaconConfiguration.getFactory())));
+
+		environment.jersey().register(new MovieSearchResource(new MovieDAO(BaconConfiguration.getFactory())));
 
 		environment.jersey().register(new BasicAuthProvider<>(new HTTPAuthenticator(), "sirfrancis.io"));
 
-		environment.healthChecks().register("database",new OrientHealthCheck(config.getFactory()));
+		environment.healthChecks().register("database", new OrientHealthCheck(BaconConfiguration.getFactory()));
 	}
 }

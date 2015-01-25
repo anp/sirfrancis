@@ -28,12 +28,10 @@ import java.util.stream.StreamSupport;
  */
 public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DBInitCommand.class);
-	private static BaconConfiguration config;
-
 	private static final String[] IGNORED_GENRES_ARRAY =
 			{ "Short", "Talk-Show", "Reality-TV", "Game-Show", "Adult", "News" };
 	private static final HashSet<String> IGNORED_GENRES = new HashSet<>();
-
+	private static BaconConfiguration config;
 	private static int numMovies = 0;
 
 	private static String DB_PATH;
@@ -51,6 +49,312 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 	public DBInitCommand() {
 		super("db", "Initialize the database with an omdbFull.txt file");
 		IGNORED_GENRES.addAll(Arrays.asList(IGNORED_GENRES_ARRAY));
+	}
+
+	private static void parseMovieToDB(String line) {
+		String[] fields = line.split("\\t");
+		if (fields.length == 21 || (fields.length == 22 && fields[21].equalsIgnoreCase("movie"))) {
+			String omdbID = fields[0];
+			String imdbID = fields[1];
+			String title = fields[2];
+			String indexTitle = QueryParserUtil.escape(fields[2]).toLowerCase();
+			String runtime = fields[5];
+			String released = fields[7];
+			String language = fields[17];
+			String country = fields[18];
+			String yearStr = fields[3];
+			String awards = fields[19];
+			String mpaaRating = fields[4];
+			String metascoreStr = fields[11];
+			String imdbRatingStr = fields[12];
+			String imdbVotesStr = fields[13].replaceAll("[^0-9]+", "");
+			String posterURL = "http://img.omdbapi.com/?i=" + imdbID + "&apikey=" + OMDB_IMG_API_KEY;
+
+			String[] genreArray = fields[6].split(", ");
+			LinkedList<String> genres = new LinkedList<>();
+
+			for (String g : genreArray) {
+				if (IGNORED_GENRES.contains(g)) {
+					return;
+				}
+				genres.add(g);
+			}
+
+			String[] currentDirectors = fields[8].split(", ");
+			String[] currentWriters = fields[9].split(", ");
+			String[] currentCast = fields[10].split(", ");
+
+			HashMap<String, Object> props = new HashMap<>();
+
+			long id = 0;
+			try {
+				id = Integer.parseInt(omdbID);
+			} catch (Exception e) {
+				System.err.println(e.getLocalizedMessage());
+				id = (long) (Math.random() * -1000000);
+			} finally {
+				props.put("omdbID", id);
+			}
+
+			props.put("title", title);
+			props.put("indexTitle", indexTitle);
+			props.put("runtime", runtime);
+			props.put("released", released);
+			props.put("language", language);
+			props.put("country", country);
+
+			int imdbVotes;
+			try {
+				imdbVotes = Integer.parseInt(imdbVotesStr);
+			} catch (Exception e) {
+				imdbVotes = 0;
+			}
+
+			int metascore;
+			try {
+				metascore = Integer.parseInt(metascoreStr);
+			} catch (Exception e) {
+				metascore = 0;
+			}
+
+			double imdbRating;
+			try {
+				imdbRating = Double.parseDouble(imdbRatingStr);
+			} catch (Exception e) {
+				imdbRating = 0.0;
+			}
+
+			int year;
+			try {
+				year = Integer.parseInt(yearStr);
+			} catch (Exception e) {
+				year = 0;
+			}
+
+			//awards & ratings
+
+			props.put("awards", awards);
+			props.put("year", year);
+			props.put("mpaaRating", mpaaRating);
+			props.put("metascore", metascore);
+			props.put("imdbRating", imdbRating);
+			props.put("imdbVotes", imdbVotes);
+			props.put("posterURL", posterURL);
+			//props.put("genres", genres);
+			props.put("updated", currentInitTimestamp);
+
+			Vertex currentMovieVanilla = graph.getVertexByKey("Movie.imdbID", imdbID);
+			OrientVertex currentMovie;
+
+			//cut down on duplicate movies
+			if (currentMovieVanilla == null) {
+				currentMovie = graph.addVertex("class:Movie");
+				currentMovie.setProperty("imdbID", imdbID);
+			} else {
+				currentMovie = graph.getVertex(currentMovieVanilla.getId());
+			}
+
+			currentMovie.setProperties(props);
+
+			for (Edge e : currentMovie.getEdges(Direction.IN)) {
+				OrientEdge e2 = graph.getEdge(e.getId());
+				if ((e2.getLabel() == "Directed" || e2.getLabel() == "Wrote" | e2.getLabel() == "Acted")
+						&& e2.getProperty("source").equals("omdb"))
+					graph.removeEdge(e);
+			}
+
+			for (String name : currentDirectors) {
+				if (!name.equals("N/A")) {
+					OrientVertex director = getPersonNode(cleanString(name));
+					OrientEdge e = director.addEdge("Directed", currentMovie, "Directed");
+					e.setProperty("source", "omdb");
+				}
+			}
+
+			for (String name : currentWriters) {
+				if (!name.equals("N/A")) {
+					OrientVertex writer = getPersonNode(cleanString(name));
+					OrientEdge e = writer.addEdge("Wrote", currentMovie, "Wrote");
+					e.setProperty("source", "omdb");
+				}
+			}
+
+			for (String name : currentCast) {
+				if (!name.equals("N/A")) {
+					OrientVertex actor = getPersonNode(cleanString(name));
+					OrientEdge e = actor.addEdge("Acted", currentMovie, "Acted");
+					e.setProperty("source", "omdb");
+				}
+			}
+
+			graph.commit();
+		}
+	}
+
+	private static void parseRTRatingsToDB(String line) {
+		String[] fields = line.split("\\t");
+		String omdbID = fields[0];
+
+		long id;
+		try {
+			id = Integer.parseInt(omdbID);
+		} catch (Exception e) {
+			System.err.println(e.getLocalizedMessage());
+			id = (long) (Math.random() * -1000000);
+		}
+
+		Vertex currentMovieVanilla = graph.getVertexByKey("Movie.omdbID", id);
+		OrientVertex currentMovie;
+
+		//cut down on duplicate movies
+		if (currentMovieVanilla == null) {
+			return;
+		}
+
+		String rating = fields[2];
+		String meter = fields[3];
+		String reviews = fields[4];
+		String freshReviews = fields[5];
+		String rottenReviews = fields[6];
+		String consensus = fields[7];
+
+		int rtTomatoMeter;
+		try {
+			rtTomatoMeter = Integer.parseInt(meter);
+		} catch (Exception e) {
+			rtTomatoMeter = 0;
+		}
+
+		int rtNumReviews;
+		try {
+			rtNumReviews = Integer.parseInt(reviews);
+		} catch (Exception e) {
+			rtNumReviews = 0;
+		}
+
+		int rtNumFreshReviews;
+		try {
+			rtNumFreshReviews = Integer.parseInt(freshReviews);
+		} catch (Exception e) {
+			rtNumFreshReviews = 0;
+		}
+
+		int rtNumRottenReviews;
+		try {
+			rtNumRottenReviews = Integer.parseInt(rottenReviews);
+		} catch (Exception e) {
+			rtNumRottenReviews = 0;
+		}
+
+		double rtRating;
+		try {
+			rtRating = Double.parseDouble(rating);
+		} catch (Exception e) {
+			rtRating = 0.0;
+		}
+
+		currentMovie = graph.getVertex(currentMovieVanilla.getId());
+
+		currentMovie.setProperty("rtRating", rtRating);
+		currentMovie.setProperty("rtTomatoMeter", rtTomatoMeter);
+		currentMovie.setProperty("rtNumReviews", rtNumReviews);
+		currentMovie.setProperty("rtNumFreshReviews", rtNumFreshReviews);
+		currentMovie.setProperty("rtNumRottenReviews", rtNumRottenReviews);
+		currentMovie.setProperty("rtConsensus", consensus);
+
+		graph.commit();
+	}
+
+	private static void setupTypesAndIndices() {
+		OrientGraphNoTx graph = new OrientGraphNoTx(DB_PATH);
+
+		OrientVertexType movieType = graph.createVertexType("Movie");
+
+		movieType.createProperty("title", OType.STRING);
+		movieType.createProperty("indexTitle", OType.STRING);
+		movieType.createProperty("imdbID", OType.STRING);
+		movieType.createProperty("omdbID", OType.LONG);
+		movieType.createProperty("year", OType.INTEGER);
+
+		movieType.createIndex("Movie.imdbID", "UNIQUE", "imdbID");
+		movieType.createIndex("Movie.omdbID", "UNIQUE", "omdbID");
+		movieType.createIndex("Movie.indexTitle", "FULLTEXT", null, null, "LUCENE", new String[]{ "indexTitle" });
+
+		movieType.createProperty("runtime", OType.STRING);
+		movieType.createProperty("released", OType.STRING);
+		movieType.createProperty("language", OType.STRING);
+		movieType.createProperty("country", OType.STRING);
+		movieType.createProperty("awards", OType.STRING);
+		movieType.createProperty("mpaaRating", OType.STRING);
+		movieType.createProperty("metascore", OType.INTEGER);
+		movieType.createProperty("imdbRating", OType.DOUBLE);
+		movieType.createProperty("imdbVotes", OType.INTEGER);
+		movieType.createProperty("posterURL", OType.STRING);
+		//movieType.createProperty("genres", OType.LINKLIST);
+		movieType.createProperty("rtRating", OType.DOUBLE);
+		movieType.createProperty("rtTomatoMeter", OType.INTEGER);
+		movieType.createProperty("rtNumReviews", OType.INTEGER);
+		movieType.createProperty("rtNumFreshReviews", OType.INTEGER);
+		movieType.createProperty("rtNumRottenReviews", OType.INTEGER);
+		movieType.createProperty("rtConsensus", OType.STRING);
+
+		OrientVertexType personType = graph.createVertexType("Person");
+		personType.createProperty("name", OType.STRING);
+		personType.createIndex("Person.name", "UNIQUE", "name");
+
+		OrientVertexType userType = graph.createVertexType("User");
+		userType.createProperty("username", OType.STRING);
+		userType.createIndex("User.username", "UNIQUE", "username");
+
+		graph.createEdgeType("Acted");
+		graph.createEdgeType("Directed");
+		graph.createEdgeType("Wrote");
+
+		graph.shutdown();
+	}
+
+	private static OrientVertex getPersonNode(String name) {
+		Vertex personVanilla = graph.getVertexByKey("Person.name", name);
+		OrientVertex person;
+
+		if (personVanilla == null) {
+			HashMap<String, String> nameMap = new HashMap<>();
+			nameMap.put("name", name);
+			nameMap.put("updated", currentInitTimestamp);
+			person = graph.addVertex("class:Person", nameMap);
+		} else {
+			person = graph.getVertex(personVanilla.getId());
+			person.setProperty("updated", currentInitTimestamp);
+		}
+		return person;
+	}
+
+	private static String cleanString(String in) {
+		String NAME_TERMINATOR = " (";
+
+		String out = in;
+		out = out.replace("\\\\", "");
+		out = out.replace("\"", "\\\"");
+		out = out.replace("\'", "\\\'");
+		if (out.contains(NAME_TERMINATOR)) {
+			out = out.substring(0, out.indexOf(NAME_TERMINATOR));
+		}
+		return out;
+	}
+
+	private static boolean isOrphanedMovie(Vertex vertex) {
+		for (Vertex v : vertex.getVertices(Direction.IN)) {
+			int others = 0;
+			for (Vertex other : v.getVertices(Direction.OUT)) {
+				others++;
+				if (others > 1) return false;
+			}
+		}
+		return true;
+	}
+
+	private static String getTimestamp() {
+		return new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date());
 	}
 
 	@Override
@@ -151,7 +455,6 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		try {
 			if (namespace.getBoolean("init-classes-indexes")) {
 				setupTypesAndIndices();
-				setupLuceneIndex();
 				graph.declareIntent(new OIntentMassiveInsert());
 				LOGGER.info("First run configuration complete.");
 			}
@@ -254,6 +557,28 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			}
 			LOGGER.info("Parsed " + tomatoRatings + " RT ratings into database.");
 
+			for (Vertex v : graph.getVertices()) {
+				if (v.getProperty("rtRating") == null)
+					v.setProperty("rtRating", 0.0);
+
+				if (v.getProperty("rtTomatoMeter") == null)
+					v.setProperty("rtTomatoMeter", 0);
+
+				if (v.getProperty("rtNumReviews") == null)
+					v.setProperty("rtNumReviews", 0);
+
+				if (v.getProperty("rtNumFreshReviews") == null)
+					v.setProperty("rtNumFreshReviews", 0);
+
+				if (v.getProperty("rtNumRottenReviews") == null)
+					v.setProperty("rtNumRottenReviews", 0);
+
+				if (v.getProperty("rtConsensus") == null)
+					v.setProperty("rtConsensus", "N/A");
+
+				graph.commit();
+			}
+
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			LOGGER.error("Rolling back in progress changes.");
@@ -262,247 +587,5 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			LOGGER.info("Done importing Rotten Tomatoes information. Shutting DB connection down.");
 			graph.shutdown();
 		}
-	}
-
-	private static void parseMovieToDB(String line) {
-		String[] fields = line.split("\\t");
-		if (fields.length == 21 || (fields.length == 22 && fields[21].equalsIgnoreCase("movie"))) {
-			String omdbID = fields[0];
-			String imdbID = fields[1];
-			String title = fields[2];
-			String indexTitle = QueryParserUtil.escape(fields[2]);
-			String runtime = fields[5];
-			String released = fields[7];
-			String language = fields[17];
-			String country = fields[18];
-			String yearStr = fields[3];
-			String awards = fields[19];
-			String omdbRating = fields[4];
-			String metascore = fields[11];
-			String imdbRating = fields[12];
-			String imdbVotes = fields[13];
-			String posterURL = "http://img.omdbapi.com/?i=" + imdbID + "&apikey=" + OMDB_IMG_API_KEY;
-			String[] genres = fields[6].split(", ");
-			for (String g : genres) {
-				if (IGNORED_GENRES.contains(g)) {
-					return;
-				}
-			}
-
-			String[] currentDirectors = fields[8].split(", ");
-			String[] currentWriters = fields[9].split(", ");
-			String[] currentCast = fields[10].split(", ");
-
-			HashMap<String, Object> props = new HashMap<>();
-
-			long id = 0;
-			try {
-				id = Integer.parseInt(omdbID);
-			} catch (Exception e) {
-				System.err.println(e.getLocalizedMessage());
-				id = (long) (Math.random() * -1000000);
-			} finally {
-				props.put("omdbID", id);
-			}
-
-			//"intrinsic" info
-
-			props.put("title", title);
-			props.put("indexTitle", indexTitle);
-			props.put("runtime", runtime);
-			props.put("released", released);
-			props.put("language", language);
-			props.put("country", country);
-
-
-			try {
-				int year = Integer.parseInt(yearStr);
-				props.put("year", year);
-			} catch (Exception e) {
-				props.put("year", yearStr);
-			}
-
-			//awards & ratings
-
-			props.put("awards", awards);
-
-			//TODO parse into primitives
-			props.put("omdbRating", omdbRating);
-			props.put("metascore", metascore);
-			props.put("imdbRating", imdbRating);
-			props.put("imdbVotes", imdbVotes);
-			props.put("posterURL", posterURL);
-			props.put("genres", genres);
-			props.put("updated", currentInitTimestamp);
-
-			Vertex currentMovieVanilla = graph.getVertexByKey("Movie.imdbID", imdbID);
-			OrientVertex currentMovie;
-
-			//cut down on duplicate movies
-			if (currentMovieVanilla == null) {
-				currentMovie = graph.addVertex("class:Movie");
-				currentMovie.setProperty("imdbID", imdbID);
-			} else {
-				currentMovie = graph.getVertex(currentMovieVanilla.getId());
-			}
-
-			currentMovie.setProperties(props);
-
-			for (Edge e : currentMovie.getEdges(Direction.IN)) {
-				OrientEdge e2 = graph.getEdge(e.getId());
-				if ((e2.getLabel() == "Directed" || e2.getLabel() == "Wrote" | e2.getLabel() == "Acted")
-						&& e2.getProperty("source").equals("omdb"))
-					graph.removeEdge(e);
-			}
-
-			for (String name : currentDirectors) {
-				if (!name.equals("N/A")) {
-					OrientVertex director = getPersonNode(cleanString(name));
-					OrientEdge e = director.addEdge("Directed", currentMovie, "Directed");
-					e.setProperty("source", "omdb");
-				}
-			}
-
-			for (String name : currentWriters) {
-				if (!name.equals("N/A")) {
-					OrientVertex writer = getPersonNode(cleanString(name));
-					OrientEdge e = writer.addEdge("Wrote", currentMovie, "Wrote");
-					e.setProperty("source", "omdb");
-				}
-			}
-
-			for (String name : currentCast) {
-				if (!name.equals("N/A")) {
-					OrientVertex actor = getPersonNode(cleanString(name));
-					OrientEdge e = actor.addEdge("Acted", currentMovie, "Acted");
-					e.setProperty("source", "omdb");
-				}
-			}
-
-			graph.commit();
-		}
-	}
-
-	private static void parseRTRatingsToDB(String line) {
-		String[] fields = line.split("\\t");
-		String omdbID = fields[0];
-
-		long id;
-		try {
-			id = Integer.parseInt(omdbID);
-		} catch (Exception e) {
-			System.err.println(e.getLocalizedMessage());
-			id = (long) (Math.random() * -1000000);
-		}
-
-		Vertex currentMovieVanilla = graph.getVertexByKey("Movie.omdbID", id);
-		OrientVertex currentMovie;
-
-		//cut down on duplicate movies
-		if (currentMovieVanilla == null) {
-			return;
-		}
-
-		String rating = fields[2];
-		String meter = fields[3];
-		String reviews = fields[4];
-		String freshReviews = fields[5];
-		String rottenReviews = fields[6];
-		String consensus = fields[7];
-
-		currentMovie = graph.getVertex(currentMovieVanilla.getId());
-
-		currentMovie.setProperty("rtRating", rating);
-		currentMovie.setProperty("rtTomatoMeter", meter);
-		currentMovie.setProperty("rtNumReviews", reviews);
-		currentMovie.setProperty("rtNumFreshReviews", freshReviews);
-		currentMovie.setProperty("rtNumRottenReviews", rottenReviews);
-		currentMovie.setProperty("rtConsensus", consensus);
-
-		graph.commit();
-	}
-
-	private static void setupTypesAndIndices() {
-		OrientGraphNoTx graph = new OrientGraphNoTx(DB_PATH);
-
-		OrientVertexType movieType = graph.createVertexType("Movie");
-
-		movieType.createProperty("indexTitle", OType.STRING);
-		movieType.createProperty("imdbID", OType.STRING);
-		movieType.createProperty("omdbID", OType.LONG);
-
-		movieType.createIndex("Movie.imdbID", "UNIQUE", "imdbID");
-		movieType.createIndex("Movie.omdbID", "UNIQUE", "omdbID");
-
-		OrientVertexType personType = graph.createVertexType("Person");
-		personType.createProperty("name", OType.STRING);
-		personType.createIndex("Person.name", "UNIQUE", "name");
-
-		OrientVertexType userType = graph.createVertexType("User");
-		userType.createProperty("username", OType.STRING);
-		userType.createIndex("User.username", "UNIQUE", "username");
-
-		graph.createEdgeType("Acted");
-		graph.createEdgeType("Directed");
-		graph.createEdgeType("Wrote");
-
-		graph.shutdown();
-	}
-
-	private static void setupLuceneIndex() {
-		OrientGraphNoTx graph = new OrientGraphNoTx(DB_PATH);
-		OrientVertexType movieType = graph.getVertexType("Movie");
-
-		LOGGER.info("Creating Lucene index on Movie titles...");
-
-		movieType.createIndex("Movie.indexTitle", "FULLTEXT", null, null, "LUCENE", new String[]{ "indexTitle" });
-
-		LOGGER.info("Lucene index creation complete.");
-
-		graph.shutdown();
-	}
-
-	private static OrientVertex getPersonNode(String name) {
-		Vertex personVanilla = graph.getVertexByKey("Person.name", name);
-		OrientVertex person;
-
-		if (personVanilla == null) {
-			HashMap<String, String> nameMap = new HashMap<>();
-			nameMap.put("name", name);
-			nameMap.put("updated", currentInitTimestamp);
-			person = graph.addVertex("class:Person", nameMap);
-		} else {
-			person = graph.getVertex(personVanilla.getId());
-			person.setProperty("updated", currentInitTimestamp);
-		}
-		return person;
-	}
-
-	private static String cleanString(String in) {
-		String NAME_TERMINATOR = " (";
-
-		String out = in;
-		out = out.replace("\\\\", "");
-		out = out.replace("\"", "\\\"");
-		out = out.replace("\'", "\\\'");
-		if (out.contains(NAME_TERMINATOR)) {
-			out = out.substring(0, out.indexOf(NAME_TERMINATOR));
-		}
-		return out;
-	}
-
-	private static boolean isOrphanedMovie(Vertex vertex) {
-		for (Vertex v : vertex.getVertices(Direction.IN)) {
-			int others = 0;
-			for (Vertex other : v.getVertices(Direction.OUT)) {
-				others++;
-				if (others > 1) return false;
-			}
-		}
-		return true;
-	}
-
-	private static String getTimestamp() {
-		return new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date());
 	}
 }

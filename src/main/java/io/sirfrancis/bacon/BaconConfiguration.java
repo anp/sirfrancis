@@ -15,31 +15,28 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 public class BaconConfiguration extends Configuration implements HasOrientServerConfiguration{
+	private static OrientGraphFactory factory;
 	@NotNull
 	private String dbPath;
-
 	@NotNull
 	private String dbBackupPath;
-
 	@NotNull
 	private String staticContentPath;
-
 	@NotNull
 	private String omdbAPIKey;
-
 	@NotNull
 	private String dbRemotePath;
-
 	@NotNull
 	@Valid
 	private OrientServerConfiguration orientServer;
-
-	private static OrientGraphFactory factory;
-
 	@Valid
 	@NotNull
 	@JsonProperty
 	private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
+
+	public static OrientGraphFactory getFactory() {
+		return factory;
+	}
 
 	@JsonProperty("db-path")
 	public String getDBPath() {
@@ -106,10 +103,6 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	}
 
 	public void initFactory() {
-		factory = new OrientGraphFactory(dbPath).setupPool(50,500);
-	}
-
-	public static OrientGraphFactory getFactory() {
-		return factory;
+		factory = new OrientGraphFactory(dbPath).setupPool(10, 100);
 	}
 }
