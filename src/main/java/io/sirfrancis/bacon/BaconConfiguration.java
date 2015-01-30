@@ -33,9 +33,33 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	@JsonProperty
 	private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
+	@NotNull
+	private int dbPoolMin;
+	@NotNull
+	private int dbPoolMax;
 
 	public static OrientGraphFactory getFactory() {
 		return factory;
+	}
+
+	@JsonProperty("db-pool-min")
+	public int getDbPoolMin() {
+		return dbPoolMin;
+	}
+
+	@JsonProperty("db-pool-min")
+	public void setDbPoolMin(int dbPoolMin) {
+		this.dbPoolMin = dbPoolMin;
+	}
+
+	@JsonProperty("db-pool-max")
+	public int getDbPoolMax() {
+		return dbPoolMax;
+	}
+
+	@JsonProperty("db-pool-max")
+	public void setDbPoolMax(int dbPoolMax) {
+		this.dbPoolMax = dbPoolMax;
 	}
 
 	@JsonProperty("db-path")
@@ -103,6 +127,6 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	}
 
 	public void initFactory() {
-		factory = new OrientGraphFactory(dbPath).setupPool(10, 100);
+		factory = new OrientGraphFactory(dbPath).setupPool(dbPoolMin, dbPoolMax);
 	}
 }

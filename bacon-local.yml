@@ -1,7 +1,10 @@
 db-path: plocal:/opt/bacon/databases/bacon
 backup-path: /opt/bacon/backups
 static-content-path: https://sirfrancis.io/static
-db-binary-conn-path: plocal:/opt/bacon/databases/bacon
+db-binary-conn-path: remote:localhost:2424
+
+db-pool-min: 10
+db-pool-max: 100
 
 omdb-api-key: 2af3daf2
 

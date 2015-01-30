@@ -12,6 +12,7 @@ public class Movie {
 	private String runtime;
 	private String released;
 	private String language;
+	private String genres;
 	private String country;
 	private int year;
 	private String awards;
@@ -31,6 +32,16 @@ public class Movie {
 		this.imdbID = imdbID;
 		this.omdbID = omdbID;
 		this.title = title;
+	}
+
+	@JsonProperty
+	public String getGenres() {
+		return genres;
+	}
+
+	@JsonProperty
+	public void setGenres(String genres) {
+		this.genres = genres;
 	}
 
 	@JsonProperty

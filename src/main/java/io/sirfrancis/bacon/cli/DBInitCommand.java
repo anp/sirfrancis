@@ -47,7 +47,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 
 	public DBInitCommand() {
-		super("db", "Initialize the database with an omdbFull.txt file");
+		super("db", "Initialize the database with an omdb.txt file");
 		IGNORED_GENRES.addAll(Arrays.asList(IGNORED_GENRES_ARRAY));
 	}
 
@@ -70,14 +70,11 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			String imdbVotesStr = fields[13].replaceAll("[^0-9]+", "");
 			String posterURL = "http://img.omdbapi.com/?i=" + imdbID + "&apikey=" + OMDB_IMG_API_KEY;
 
-			String[] genreArray = fields[6].split(", ");
-			LinkedList<String> genres = new LinkedList<>();
-
-			for (String g : genreArray) {
+			String genres = fields[6];
+			for (String g : genres.split(", ")) {
 				if (IGNORED_GENRES.contains(g)) {
 					return;
 				}
-				genres.add(g);
 			}
 
 			String[] currentDirectors = fields[8].split(", ");
@@ -140,7 +137,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			props.put("imdbRating", imdbRating);
 			props.put("imdbVotes", imdbVotes);
 			props.put("posterURL", posterURL);
-			//props.put("genres", genres);
+			props.put("genres", genres);
 			props.put("updated", currentInitTimestamp);
 
 			Vertex currentMovieVanilla = graph.getVertexByKey("Movie.imdbID", imdbID);
@@ -186,8 +183,6 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 					e.setProperty("source", "omdb");
 				}
 			}
-
-			graph.commit();
 		}
 	}
 
@@ -290,7 +285,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		movieType.createProperty("imdbRating", OType.DOUBLE);
 		movieType.createProperty("imdbVotes", OType.INTEGER);
 		movieType.createProperty("posterURL", OType.STRING);
-		//movieType.createProperty("genres", OType.LINKLIST);
+		movieType.createProperty("genres", OType.STRING);
 		movieType.createProperty("rtRating", OType.DOUBLE);
 		movieType.createProperty("rtTomatoMeter", OType.INTEGER);
 		movieType.createProperty("rtNumReviews", OType.INTEGER);
@@ -455,7 +450,6 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		try {
 			if (namespace.getBoolean("init-classes-indexes")) {
 				setupTypesAndIndices();
-				graph.declareIntent(new OIntentMassiveInsert());
 				LOGGER.info("First run configuration complete.");
 			}
 		} catch (Exception e) {
@@ -470,11 +464,16 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			String line = reader.readLine();
 			LOGGER.info("OMDB file reader successfully initialized.");
 
+			graph.declareIntent(new OIntentMassiveInsert());
+
 			while ((line = reader.readLine()) != null) {
 				parseMovieToDB(line);
 				numMovies++;
 				if (numMovies % 10000 == 0) {
 					System.out.println("Processed " + numMovies + " so far.");
+				}
+				if (numMovies % 50 == 0) {
+					graph.commit();
 				}
 			}
 			LOGGER.info("Parsed " + numMovies + " total lines.");
