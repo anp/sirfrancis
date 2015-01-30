@@ -17,9 +17,6 @@ import io.sirfrancis.bacon.resources.*;
 import io.sirfrancis.bacon.tasks.DBWarmupTask;
 import ru.vyarus.dropwizard.orient.OrientServerBundle;
 
-/**
- * Created by Adam on 1/4/2015.
- */
 public class BaconApplication extends Application<BaconConfiguration> {
 
 	public static void main(String[] args) throws Exception {
@@ -55,22 +52,38 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.jersey().register(new SubConfirmedResource(config));
 
 		//user creation/deletion api resources
-		environment.jersey().register(new UserCreateResource(new UserDAO(factory)));
-		environment.jersey().register(new UserDeleteResource(new UserDAO(factory)));
+		environment.jersey().register(
+				new UserCreateResource(
+						new UserDAO(factory, BaconConfiguration.getMaxDbRetries())));
+		environment.jersey().register(
+				new UserDeleteResource(
+						new UserDAO(factory, BaconConfiguration.getMaxDbRetries())));
 
 		//movie search api resource
-		environment.jersey().register(new MovieSearchResource(new MovieDAO(factory)));
+		environment.jersey().register(
+				new MovieSearchResource(
+						new MovieDAO(factory)));
 
 		//rating add/list/ignore resources
-		environment.jersey().register(new RatingAddResource(new RatingDAO(factory)));
-		environment.jersey().register(new RatingGetResource(new RatingDAO(factory)));
-		environment.jersey().register(new RatingIgnoreResource(new RatingDAO(factory)));
+		environment.jersey().register(
+				new RatingAddResource(
+						new RatingDAO(factory, BaconConfiguration.getMaxDbRetries())));
+		environment.jersey().register(
+				new RatingGetResource(
+						new RatingDAO(factory, BaconConfiguration.getMaxDbRetries())));
+		environment.jersey().register(
+				new RatingIgnoreResource(
+						new RatingDAO(factory, BaconConfiguration.getMaxDbRetries())));
 
 		//recommendations resource
-		environment.jersey().register(new RecommendationsResource(new RecommendationsDAO(factory)));
+		environment.jersey().register(
+				new RecommendationsResource(
+						new RecommendationsDAO(factory, BaconConfiguration.getMaxDbRetries())));
 
 		//authentication
-		environment.jersey().register(new BasicAuthProvider<>(new HTTPAuthenticator(), "sirfrancis.io"));
+		environment.jersey().register(
+				new BasicAuthProvider<>(
+						new HTTPAuthenticator(), "sirfrancis.io"));
 
 		//db healthcheck
 		environment.healthChecks().register("database", new OrientHealthCheck(factory));

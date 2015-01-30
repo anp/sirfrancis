@@ -23,9 +23,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.StreamSupport;
 
-/**
- * Created by Adam on 1/4/2015.
- */
 public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DBInitCommand.class);
 	private static final String[] IGNORED_GENRES_ARRAY =
@@ -155,7 +152,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 			for (Edge e : currentMovie.getEdges(Direction.IN)) {
 				OrientEdge e2 = graph.getEdge(e.getId());
-				if ((e2.getLabel() == "Directed" || e2.getLabel() == "Wrote" | e2.getLabel() == "Acted")
+				if ((e2.getLabel().equals("Directed") || e2.getLabel().equals("Wrote") | e2.getLabel().equals("Acted"))
 						&& e2.getProperty("source").equals("omdb"))
 					graph.removeEdge(e);
 			}
@@ -414,7 +411,10 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		if (namespace.getBoolean("backup")) {
 			File backupFolder = new File(BACKUP_PATH);
 			if (!backupFolder.exists()) {
-				backupFolder.mkdir();
+				boolean successful = backupFolder.mkdir();
+				if (!successful) {
+					throw new IOException("Unable to create backup directory.");
+				}
 			} else if (!backupFolder.isDirectory()) {
 				LOGGER.error("Path to backup folder doesn't point to a folder. Check configuration.");
 				return;
@@ -423,12 +423,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			ODatabaseDocumentTx db = new ODatabaseDocumentTx(DB_PATH);
 			db.open(ADMIN_USER, ADMIN_PASS);
 			try {
-				OCommandOutputListener listener = new OCommandOutputListener() {
-					@Override
-					public void onMessage(String iText) {
-						LOGGER.info(iText);
-					}
-				};
+				OCommandOutputListener listener = LOGGER::info;
 
 				File backupFile = new File(backupFolder.getCanonicalPath()
 						+ File.separator + db.getName()
@@ -461,6 +456,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(new FileInputStream(omdbFile), "UTF8"));
 
+			//ignore headers
 			String line = reader.readLine();
 			LOGGER.info("OMDB file reader successfully initialized.");
 
@@ -503,12 +499,9 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 
 			int numUnconnected = 0;
 			for (Vertex v : graph.getVertices()) {
-				boolean delete = true;
-				for (Edge e : v.getEdges(Direction.BOTH)) {
-					delete = false;
-					break;
-				}
-				//TODO don't delete users
+				//check to see if any edges are connected at all
+				boolean delete = v.getEdges(Direction.BOTH).iterator().hasNext();
+
 				if (delete) {
 					OrientVertex v2 = graph.getVertex(v.getId());
 					if (!v2.getLabel().equals("Movie") || !v2.getLabel().equals("Person")) {

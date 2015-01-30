@@ -16,27 +16,21 @@ import io.sirfrancis.bacon.core.User;
 
 import java.util.*;
 
-/**
- * Created by adam on 1/26/15.
- */
 public class RecommendationsDAO {
 	private OrientGraphFactory factory;
 	private MovieDAO movieDAO;
+	private int maxRetries;
 
-	public RecommendationsDAO(OrientGraphFactory factory) {
+	public RecommendationsDAO(OrientGraphFactory factory, int maxRetries) {
 		this.factory = factory;
 		movieDAO = new MovieDAO(factory);
+		this.maxRetries = maxRetries;
 	}
 
-	public static <K extends Comparable, V extends Comparable> Map<K, V> sortByValues(Map<K, V> map) {
+	public static <K extends Comparable<? super K>, V extends Comparable<? super V>> Map<K, V> sortByValues(Map<K, V> map) {
 		List<Map.Entry<K, V>> entries = new LinkedList<>(map.entrySet());
 
-		Collections.sort(entries, new Comparator<Map.Entry<K, V>>() {
-			@Override
-			public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
-				return o2.getValue().compareTo(o1.getValue());
-			}
-		});
+		Collections.sort(entries, (o1, o2) -> o2.getValue().compareTo(o1.getValue()));
 
 		Map<K, V> sortedMap = new LinkedHashMap<>();
 
@@ -153,7 +147,8 @@ public class RecommendationsDAO {
 
 			Map<String, Integer> sortedRecMap = sortByValues(recMap);
 
-			sortedRecMap.entrySet()
+			sortedRecMap
+					.entrySet()
 					.stream()    //get a stream
 					.filter(
 							//don't show any crappy recommendations or ones we've ignored
@@ -162,7 +157,7 @@ public class RecommendationsDAO {
 					.limit(maxRecommendations)  //only show the first n recommendations
 					.forEach(entry -> {
 						//handle problems with concurrent version exceptions
-						for (int retry = 0; retry < 10; retry++) {
+						for (int retry = 0; retry < maxRetries; retry++) {
 							try {
 								//send the first n recommendations back to the database
 								String imdbID = entry.getKey();
@@ -172,14 +167,13 @@ public class RecommendationsDAO {
 
 								Edge e = graph.addEdge(null, movieToRecommend, userVertex, "recommended");
 								e.setProperty("score", score);
+								graph.commit();
 								break;
 							} catch (OTransactionException e) {
 								//no need to take action, next iteration will reload variables
 							}
 						}
 					});
-
-			graph.commit();
 
 		} catch (Exception e) {
 			graph.rollback();

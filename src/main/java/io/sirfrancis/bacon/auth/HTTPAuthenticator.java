@@ -8,15 +8,12 @@ import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.UserDAO;
 
-/**
- * Created by Adam on 1/19/2015.
- */
 public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> {
 
 
 	@Override
 	public Optional<User> authenticate(BasicCredentials creds) throws AuthenticationException {
-		UserDAO dao = new UserDAO(BaconConfiguration.getFactory());
+		UserDAO dao = new UserDAO(BaconConfiguration.getFactory(), BaconConfiguration.getMaxDbRetries());
 
 		User user = dao.getUser(creds.getUsername());
 

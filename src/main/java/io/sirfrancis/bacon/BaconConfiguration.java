@@ -1,7 +1,3 @@
-/**
- * Created by Adam on 1/4/2015.
- */
-
 package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,6 +12,8 @@ import javax.validation.constraints.NotNull;
 
 public class BaconConfiguration extends Configuration implements HasOrientServerConfiguration{
 	private static OrientGraphFactory factory;
+	@NotNull
+	private static int maxDbRetries;
 	@NotNull
 	private String dbPath;
 	@NotNull
@@ -37,6 +35,16 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	private int dbPoolMin;
 	@NotNull
 	private int dbPoolMax;
+
+	@JsonProperty("max-db-write-retries")
+	public static int getMaxDbRetries() {
+		return maxDbRetries;
+	}
+
+	@JsonProperty("max-db-write-retries")
+	public static void setMaxDbRetries(int maxDbRetries) {
+		BaconConfiguration.maxDbRetries = maxDbRetries;
+	}
 
 	public static OrientGraphFactory getFactory() {
 		return factory;

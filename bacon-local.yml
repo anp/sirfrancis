@@ -6,6 +6,8 @@ db-binary-conn-path: remote:localhost:2424
 db-pool-min: 10
 db-pool-max: 100
 
+max-db-write-retries: 10
+
 omdb-api-key: 2af3daf2
 
 server:
