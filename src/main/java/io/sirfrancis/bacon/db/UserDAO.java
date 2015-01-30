@@ -22,59 +22,63 @@ public class UserDAO {
 
 	public Optional<User> createUser(String username, String password) {
 		OrientGraph graph = factory.getTx();
+		Optional<User> returned = Optional.absent();
+		try {
+			Vertex userVertex = graph.getVertexByKey("User.username", username);
+			if (userVertex == null) {
+				SecureRandom random = new SecureRandom();
 
-		Vertex userVertex = graph.getVertexByKey("User.username", username);
-		if (userVertex == null) {
-			SecureRandom random = new SecureRandom();
+				byte[] salt = new byte[16];
+				random.nextBytes(salt);
 
-			byte[] salt = new byte[16];
-			random.nextBytes(salt);
+				SaltedHasher hasher = new SaltedHasher(password, salt);
 
-			SaltedHasher hasher = new SaltedHasher(password, salt);
+				HashMap<String, Object> userProps = new HashMap<>();
+				userProps.put("username", username);
+				userProps.put("salt", hasher.getSalt());
+				userProps.put("hash", hasher.getHash());
 
-			HashMap<String, Object> userProps = new HashMap<>();
-			userProps.put("username", username);
-			userProps.put("salt", hasher.getSalt());
-			userProps.put("hash", hasher.getHash());
+				userVertex = graph.addVertex("class:User", userProps);
 
-			userVertex = graph.addVertex("class:User", userProps);
-
-			User user = buildUser(userVertex);
-			graph.commit();
-
-			return Optional.of(user);
+				User user = buildUser(userVertex);
+				returned = Optional.of(user);
+				graph.commit();
+			}
+		} finally {
+			graph.shutdown();
+			return returned;
 		}
-
-		graph.shutdown();
-		return Optional.absent();
 	}
 
 	public boolean deleteUser(User user) {
 		OrientGraph graph = factory.getTx();
 		boolean deleted = false;
+		try {
+			Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());
+			if (userVertex != null) {
+				System.out.println("Deleting user.");
+				graph.removeVertex(userVertex);
+				deleted = true;
+			}
 
-		Vertex userVertex = graph.getVertexByKey("User.username",user.getUsername());
-		if (userVertex != null) {
-			System.out.println("Deleting user.");
-			graph.removeVertex(userVertex);
-			deleted = true;
+			graph.commit();
+		} finally {
+			graph.shutdown();
 		}
-
-		graph.commit();
-		graph.shutdown();
 		return deleted;
 	}
 
 	public User getUser(String username) {
 		OrientGraph graph = factory.getTx();
 		User returnedUser = null;
-
-		Vertex userVertex = graph.getVertexByKey("User.username", username);
-		if (userVertex != null) {
-			returnedUser = buildUser(userVertex);
+		try {
+			Vertex userVertex = graph.getVertexByKey("User.username", username);
+			if (userVertex != null) {
+				returnedUser = buildUser(userVertex);
+			}
+		} finally {
+			graph.shutdown();
 		}
-
-		graph.shutdown();
 		return returnedUser;
 	}
 
