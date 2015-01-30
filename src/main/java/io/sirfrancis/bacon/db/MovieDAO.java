@@ -6,13 +6,9 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import io.sirfrancis.bacon.core.Movie;
 
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Created by adam on 1/24/15.
- */
 public class MovieDAO {
 	private OrientGraphFactory factory;
 
@@ -95,16 +91,5 @@ public class MovieDAO {
 		}
 
 		return thisMovie;
-	}
-
-	private class IMDBVoteComparator implements Comparator<Movie> {
-
-		public int compare(Movie first, Movie second) {
-			if (first.getImdbVotes() == second.getImdbVotes()) {
-				return first.getTitle().compareTo(second.getTitle());
-			}
-
-			return second.getImdbVotes() - first.getImdbVotes();
-		}
 	}
 }

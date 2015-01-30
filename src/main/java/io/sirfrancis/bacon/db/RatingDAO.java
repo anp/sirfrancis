@@ -1,5 +1,6 @@
 package io.sirfrancis.bacon.db;
 
+import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -15,18 +16,15 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
-/**
- * Created by adam on 1/25/15.
- */
 public class RatingDAO {
 	private OrientGraphFactory factory;
 	private MovieDAO movieDAO;
-	private UserDAO userDAO;
+	private int maxRetries;
 
-	public RatingDAO(OrientGraphFactory factory) {
+	public RatingDAO(OrientGraphFactory factory, int maxRetries) {
 		this.factory = factory;
 		this.movieDAO = new MovieDAO(factory);
-		this.userDAO = new UserDAO(factory);
+		this.maxRetries = maxRetries;
 	}
 
 	public Rating addRating(User user, String imdbID, int rating) {
@@ -34,26 +32,29 @@ public class RatingDAO {
 			throw new IllegalArgumentException("Invalid number for rating.");
 
 		OrientGraph graph = factory.getTx();
-		Rating addedRating;
+		Rating addedRating = null;
 
-		try {
-			OrientVertex userVertex = graph.getVertex(graph.getVertexByKey("User.username", user.getUsername()).getId());
-			OrientVertex movieVertex = graph.getVertex(graph.getVertexByKey("Movie.imdbID", imdbID).getId());
+		for (int retry = 0; retry < maxRetries; retry++) {
+			try {
+				OrientVertex userVertex = graph.getVertex(graph.getVertexByKey("User.username", user.getUsername()).getId());
+				OrientVertex movieVertex = graph.getVertex(graph.getVertexByKey("Movie.imdbID", imdbID).getId());
 
-			for (Edge e : userVertex.getEdges(movieVertex, Direction.OUT, "rated")) {
-				graph.removeEdge(e);
+				for (Edge e : userVertex.getEdges(movieVertex, Direction.OUT, "rated")) {
+					graph.removeEdge(e);
+				}
+
+				Edge ratingEdge = graph.addEdge(null, userVertex, movieVertex, "rated");
+				ratingEdge.setProperty("rating", rating);
+
+				Movie ratedMovie = movieDAO.buildMovie(movieVertex);
+				addedRating = new Rating(ratedMovie, rating);
+
+				graph.commit();
+				break;
+			} catch (OTransactionException e) {
 			}
-
-			Edge ratingEdge = graph.addEdge(null, userVertex, movieVertex, "rated");
-			ratingEdge.setProperty("rating", rating);
-
-			Movie ratedMovie = movieDAO.buildMovie(movieVertex);
-			addedRating = new Rating(ratedMovie, rating);
-
-			graph.commit();
-		} finally {
-			graph.shutdown();
 		}
+		graph.shutdown();
 
 		return addedRating;
 	}
@@ -73,8 +74,6 @@ public class RatingDAO {
 
 				ratings.add(new Rating(movie, rating));
 			}
-
-			graph.commit();
 		} finally {
 			graph.shutdown();
 		}
