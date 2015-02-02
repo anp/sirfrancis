@@ -3,38 +3,39 @@ package io.sirfrancis.bacon;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import io.dropwizard.Configuration;
-import io.dropwizard.client.JerseyClientConfiguration;
 import ru.vyarus.dropwizard.orient.configuration.HasOrientServerConfiguration;
 import ru.vyarus.dropwizard.orient.configuration.OrientServerConfiguration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class BaconConfiguration extends Configuration implements HasOrientServerConfiguration{
+public class BaconConfiguration extends Configuration implements HasOrientServerConfiguration {
 	private static OrientGraphFactory factory;
 	@NotNull
 	private static int maxDbRetries;
 	@NotNull
-	private String dbPath;
+	private static int warmupIterations;
+	@NotNull
+	private String dbLocalPath;
 	@NotNull
 	private String dbBackupPath;
 	@NotNull
-	private String staticContentPath;
+	private String dbRemotePath;
 	@NotNull
 	private String omdbAPIKey;
 	@NotNull
-	private String dbRemotePath;
+	private String omdbDBEmail;
 	@NotNull
 	@Valid
 	private OrientServerConfiguration orientServer;
-	@Valid
-	@NotNull
-	@JsonProperty
-	private JerseyClientConfiguration httpClient = new JerseyClientConfiguration();
 	@NotNull
 	private int dbPoolMin;
 	@NotNull
 	private int dbPoolMax;
+	@NotNull
+	private boolean restrictUserCreation;
+	@NotNull
+	private String amazonPrefix;
 
 	@JsonProperty("max-db-write-retries")
 	public static int getMaxDbRetries() {
@@ -42,12 +43,52 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	}
 
 	@JsonProperty("max-db-write-retries")
-	public static void setMaxDbRetries(int maxDbRetries) {
+	public void setMaxDbRetries(int maxDbRetries) {
 		BaconConfiguration.maxDbRetries = maxDbRetries;
+	}
+
+	@JsonProperty("warmup-iterations")
+	public static int getWarmupIterations() {
+		return warmupIterations;
+	}
+
+	@JsonProperty("warmup-iterations")
+	public void setWarmupIterations(int warmupIterations) {
+		BaconConfiguration.warmupIterations = warmupIterations;
 	}
 
 	public static OrientGraphFactory getFactory() {
 		return factory;
+	}
+
+	@JsonProperty("omdb-download-url")
+	public String getOmdbDBEmail() {
+		return omdbDBEmail;
+	}
+
+	@JsonProperty("omdb-download-url")
+	public void setOmdbDBEmail(String omdbDBEmail) {
+		this.omdbDBEmail = omdbDBEmail;
+	}
+
+	@JsonProperty("amazon-url-prefix")
+	public String getAmazonPrefix() {
+		return this.amazonPrefix;
+	}
+
+	@JsonProperty("amazon-url-prefix")
+	public void setAmazonPrefix(String amazonPrefix) {
+		this.amazonPrefix = amazonPrefix;
+	}
+
+	@JsonProperty("restrict-create-user")
+	public boolean isRestrictUserCreation() {
+		return restrictUserCreation;
+	}
+
+	@JsonProperty("restrict-create-user")
+	public void setRestrictUserCreation(boolean restrictUserCreation) {
+		this.restrictUserCreation = restrictUserCreation;
 	}
 
 	@JsonProperty("db-pool-min")
@@ -72,12 +113,12 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 
 	@JsonProperty("db-path")
 	public String getDBPath() {
-		return dbPath;
+		return dbLocalPath;
 	}
 
 	@JsonProperty("db-path")
-	public void setDbPath(String dbPath) {
-		this.dbPath = dbPath;
+	public void setDbLocalPath(String dbLocalPath) {
+		this.dbLocalPath = dbLocalPath;
 	}
 
 	@JsonProperty("backup-path")
@@ -110,16 +151,6 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		this.orientServer = orientServer;
 	}
 
-	@JsonProperty("static-content-path")
-	public String getStaticContentPath() {
-		return staticContentPath;
-	}
-
-	@JsonProperty("static-content-path")
-	public void setStaticContentPath(String staticContentPath) {
-		this.staticContentPath = staticContentPath;
-	}
-
 	@JsonProperty("db-binary-conn-path")
 	public String getDbRemotePath() {
 		return dbRemotePath;
@@ -130,11 +161,7 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		this.dbRemotePath = dbRemotePath;
 	}
 
-	public JerseyClientConfiguration getJerseyClientConfiguration() {
-		return httpClient;
-	}
-
 	public void initFactory() {
-		factory = new OrientGraphFactory(dbPath).setupPool(dbPoolMin, dbPoolMax);
+		factory = new OrientGraphFactory(dbLocalPath).setupPool(dbPoolMin, dbPoolMax);
 	}
 }

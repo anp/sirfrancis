@@ -1,13 +1,25 @@
+restrict-create-user: true
+
 db-path: plocal:/opt/bacon/databases/bacon
-backup-path: /opt/bacon_backups
-static-content-path: https://sirfrancis.io/static
+backup-path: /opt/bacon/backups
+db-binary-conn-path: remote:localhost:2424
+
+db-pool-min: 10
+db-pool-max: 100
+
+max-db-write-retries: 10
+
+warmup-iterations: 1000
 
 omdb-api-key: 2af3daf2
-
+omdb-download-url: http://beforethecode.com/projects/omdb/download.aspx?e=EMAIL&tsv=movies
+amazon-url-prefix: http://www.amazon.com/s/ref=nb_sb_noss?tag=sirfr-20&url=search-alias%3Dmovies-tv&field-keywords=
 
 server:
   gzip:
-    enabled: false
+    enabled: true
+    minimumEntitySize: 256B
+    bufferSize: 8KB
 
 logging:
   level: DEBUG
@@ -18,7 +30,7 @@ logging:
       target: stderr
 
     - type: file
-      currentLogFilename: /var/log/sirfrancis.log
+      currentLogFilename: ./logs/main.log
       archivedLogFilenamePattern: ./logs/main-%d.log.gz
       archivedFileCount: 5
       timeZone: UTC
@@ -65,7 +77,7 @@ orient-server:
               value:
       - clazz: 'com.orientechnologies.orient.server.handler.OServerSideScriptInterpreter'
         parameters:
-            - name: disabled
+            - name: enabled
               value: false
 
     network:
@@ -100,7 +112,7 @@ orient-server:
        - name: db.pool.min
          value: 5
        - name: db.pool.max
-         value: 50
+         value: 100
          # for multi-threaded environment level1 cache bound to thread - not much sense in it, but may be usefull in rare situations
        - name: cache.level1.enabled
          value: false

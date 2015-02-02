@@ -23,8 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.StreamSupport;
 
-public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
-	private static final Logger LOGGER = LoggerFactory.getLogger(DBInitCommand.class);
+public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
+	private static final Logger LOGGER = LoggerFactory.getLogger(BootstrapDBCommand.class);
 	private static final String[] IGNORED_GENRES_ARRAY =
 			{ "Short", "Talk-Show", "Reality-TV", "Game-Show", "Adult", "News" };
 	private static final HashSet<String> IGNORED_GENRES = new HashSet<>();
@@ -43,7 +43,7 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 	private static String OMDB_IMG_API_KEY;
 
 
-	public DBInitCommand() {
+	public BootstrapDBCommand() {
 		super("db", "Initialize the database with an omdb.txt file");
 		IGNORED_GENRES.addAll(Arrays.asList(IGNORED_GENRES_ARRAY));
 	}
@@ -301,6 +301,8 @@ public class DBInitCommand extends ConfiguredCommand<BaconConfiguration> {
 		graph.createEdgeType("Acted");
 		graph.createEdgeType("Directed");
 		graph.createEdgeType("Wrote");
+		graph.createEdgeType("rated");
+		graph.createEdgeType("recommended");
 
 		graph.shutdown();
 	}

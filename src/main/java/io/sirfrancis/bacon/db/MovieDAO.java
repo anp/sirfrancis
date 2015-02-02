@@ -11,9 +11,11 @@ import java.util.List;
 
 public class MovieDAO {
 	private OrientGraphFactory factory;
+	private String amazonPrefix;
 
-	public MovieDAO(OrientGraphFactory factory) {
+	public MovieDAO(OrientGraphFactory factory, String amazonPrefix) {
 		this.factory = factory;
+		this.amazonPrefix = amazonPrefix;
 	}
 
 	public List<Movie> searchMovies(String rawSearch, int maxNumberOfResults) {
@@ -86,6 +88,8 @@ public class MovieDAO {
 			thisMovie.setRtNumFreshReviews(rtNumFreshReviews);
 			thisMovie.setRtNumRottenReviews(rtNumRottenReviews);
 			thisMovie.setRtConsensus(rtConsensus);
+
+			thisMovie.setAmazonURL(amazonPrefix + title);
 		} finally {
 			graph.shutdown();
 		}

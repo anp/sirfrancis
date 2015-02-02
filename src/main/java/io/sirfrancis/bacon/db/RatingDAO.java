@@ -21,9 +21,9 @@ public class RatingDAO {
 	private MovieDAO movieDAO;
 	private int maxRetries;
 
-	public RatingDAO(OrientGraphFactory factory, int maxRetries) {
+	public RatingDAO(OrientGraphFactory factory, int maxRetries, String amazonPrefix) {
 		this.factory = factory;
-		this.movieDAO = new MovieDAO(factory);
+		this.movieDAO = new MovieDAO(factory, amazonPrefix);
 		this.maxRetries = maxRetries;
 	}
 

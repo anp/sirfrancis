@@ -7,14 +7,14 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
 import io.sirfrancis.bacon.auth.HTTPAuthenticator;
-import io.sirfrancis.bacon.cli.DBInitCommand;
+import io.sirfrancis.bacon.cli.BootstrapDBCommand;
 import io.sirfrancis.bacon.db.MovieDAO;
 import io.sirfrancis.bacon.db.RatingDAO;
 import io.sirfrancis.bacon.db.RecommendationsDAO;
 import io.sirfrancis.bacon.db.UserDAO;
 import io.sirfrancis.bacon.health.OrientHealthCheck;
 import io.sirfrancis.bacon.resources.*;
-import io.sirfrancis.bacon.tasks.DBWarmupTask;
+import io.sirfrancis.bacon.tasks.WarmupTask;
 import ru.vyarus.dropwizard.orient.OrientServerBundle;
 
 public class BaconApplication extends Application<BaconConfiguration> {
@@ -33,7 +33,7 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		//OrientDB
 		bootstrap.addBundle(new OrientServerBundle<>(getConfigurationClass()));
 		//CLI command
-		bootstrap.addCommand(new DBInitCommand());
+		bootstrap.addCommand(new BootstrapDBCommand());
 		//add HTML rendering/views
 		bootstrap.addBundle(new ViewBundle());
 		//add static content
@@ -45,16 +45,11 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 		OrientGraphFactory factory = BaconConfiguration.getFactory();
 
-		//views to be replaced by front-end
-		environment.jersey().register(new HomeResource(config));
-		environment.jersey().register(new AboutResource(config));
-		environment.jersey().register(new AlmostConfirmedResource(config));
-		environment.jersey().register(new SubConfirmedResource(config));
-
 		//user creation/deletion api resources
 		environment.jersey().register(
 				new UserCreateResource(
 						new UserDAO(factory, BaconConfiguration.getMaxDbRetries())));
+
 		environment.jersey().register(
 				new UserDeleteResource(
 						new UserDAO(factory, BaconConfiguration.getMaxDbRetries())));
@@ -62,23 +57,28 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		//movie search api resource
 		environment.jersey().register(
 				new MovieSearchResource(
-						new MovieDAO(factory)));
+						new MovieDAO(factory, config.getAmazonPrefix())));
 
 		//rating add/list/ignore resources
 		environment.jersey().register(
 				new RatingAddResource(
-						new RatingDAO(factory, BaconConfiguration.getMaxDbRetries())));
+						new RatingDAO(
+								factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
+
 		environment.jersey().register(
 				new RatingGetResource(
-						new RatingDAO(factory, BaconConfiguration.getMaxDbRetries())));
+						new RatingDAO(
+								factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
+
 		environment.jersey().register(
 				new RatingIgnoreResource(
-						new RatingDAO(factory, BaconConfiguration.getMaxDbRetries())));
+						new RatingDAO(
+								factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
 
 		//recommendations resource
 		environment.jersey().register(
 				new RecommendationsResource(
-						new RecommendationsDAO(factory, BaconConfiguration.getMaxDbRetries())));
+						new RecommendationsDAO(factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
 
 		//authentication
 		environment.jersey().register(
@@ -89,6 +89,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.healthChecks().register("database", new OrientHealthCheck(factory));
 
 		//db warmup task
-		environment.admin().addTask(new DBWarmupTask(factory));
+		environment.admin().addTask(new WarmupTask(factory, config.getAmazonPrefix()));
 	}
 }

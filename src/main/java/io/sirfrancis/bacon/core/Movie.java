@@ -21,17 +21,27 @@ public class Movie {
 	private double imdbRating;
 	private int imdbVotes;
 	private String posterURL;
+	private String amazonURL;
 	private double rtRating;
 	private int tomatoMeter;
 	private int rtNumReviews;
 	private int rtNumFreshReviews;
 	private int rtNumRottenReviews;
 	private String rtConsensus;
-
 	public Movie(String imdbID, long omdbID, String title) {
 		this.imdbID = imdbID;
 		this.omdbID = omdbID;
 		this.title = title;
+	}
+
+	@JsonProperty
+	public String getAmazonURL() {
+		return amazonURL;
+	}
+
+	@JsonProperty
+	public void setAmazonURL(String amazonURL) {
+		this.amazonURL = amazonURL;
 	}
 
 	@JsonProperty

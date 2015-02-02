@@ -48,18 +48,14 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.2.1'
 }
 
-task capsule(type: ThinCapsule) {
+task capsule(type: FatCapsule) {
     applicationClass mainClassName
     reallyExecutable
 }
 
-task cleanCapsuleCache(type: Exec, dependsOn: capsule) {
-    commandLine('rm', '-drf', '~/.capsule/')
-}
-
 def execJarPath = './build/libs/sirfrancis-' + version + '-capsule.jar'
 
-task fullBuild(type: Exec, dependsOn: cleanCapsuleCache) {
+task fullBuild(type: Exec, dependsOn: capsule) {
     commandLine('chmod', '+x', execJarPath)
 }
 

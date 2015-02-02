@@ -1,6 +1,7 @@
+restrict-create-user: true
+
 db-path: plocal:/opt/bacon/databases/bacon
 backup-path: /opt/bacon/backups
-static-content-path: https://sirfrancis.io/static
 db-binary-conn-path: remote:localhost:2424
 
 db-pool-min: 10
@@ -8,7 +9,11 @@ db-pool-max: 100
 
 max-db-write-retries: 10
 
+warmup-iterations: 1000
+
 omdb-api-key: 2af3daf2
+omdb-download-url: http://beforethecode.com/projects/omdb/download.aspx?e=adam.n.perry%40gmail.com&tsv=movies
+amazon-url-prefix: http://www.amazon.com/s/ref=nb_sb_noss?tag=sirfr-20&url=search-alias%3Dmovies-tv&field-keywords=
 
 server:
   gzip:
