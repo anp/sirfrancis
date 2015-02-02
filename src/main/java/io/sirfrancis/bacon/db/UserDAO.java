@@ -14,10 +14,12 @@ import java.util.HashMap;
 public class UserDAO {
 	private OrientGraphFactory factory;
 	private int maxRetries;
+	private SecureRandom random;
 
 	public UserDAO(OrientGraphFactory factory, int maxRetries) {
 		this.factory = factory;
 		this.maxRetries = maxRetries;
+		random = new SecureRandom();
 	}
 
 	public Optional<User> createUser(String username, String password) {
@@ -28,7 +30,6 @@ public class UserDAO {
 			try {
 				Vertex userVertex = graph.getVertexByKey("User.username", username);
 				if (userVertex == null) {
-					SecureRandom random = new SecureRandom();
 
 					byte[] salt = new byte[16];
 					random.nextBytes(salt);
@@ -37,6 +38,7 @@ public class UserDAO {
 
 					HashMap<String, Object> userProps = new HashMap<>();
 					userProps.put("username", username);
+					userProps.put("email", username);
 					userProps.put("salt", hasher.getSalt());
 					userProps.put("hash", hasher.getHash());
 
@@ -45,6 +47,8 @@ public class UserDAO {
 					User user = buildUser(userVertex);
 					returned = Optional.of(user);
 					graph.commit();
+					break;
+				} else {
 					break;
 				}
 			} catch (OTransactionException e) {
@@ -63,7 +67,6 @@ public class UserDAO {
 			for (int i = 0; i < maxRetries; i++) {
 				Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());
 				if (userVertex != null) {
-					System.out.println("Deleting user.");
 					graph.removeVertex(userVertex);
 					deleted = true;
 				}
