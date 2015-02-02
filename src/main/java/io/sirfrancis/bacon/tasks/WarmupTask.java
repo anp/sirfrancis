@@ -3,8 +3,6 @@ package io.sirfrancis.bacon.tasks;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMultimap;
-import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
@@ -24,11 +22,11 @@ public class WarmupTask extends Task {
 	private RatingDAO ratingDAO;
 	private RecommendationsDAO recommendationsDAO;
 	private RandomString randomizer = new RandomString(15);
-	private int maxRetries = BaconConfiguration.getMaxDbRetries();
 
 	public WarmupTask(OrientGraphFactory factory, String amazonPrefix) {
 		super("warmup");
 		this.factory = factory;
+		int maxRetries = BaconConfiguration.getMaxDbRetries();
 		userDAO = new UserDAO(factory, maxRetries);
 		ratingDAO = new RatingDAO(factory, maxRetries, amazonPrefix);
 		recommendationsDAO = new RecommendationsDAO(factory, maxRetries, amazonPrefix);
@@ -37,30 +35,7 @@ public class WarmupTask extends Task {
 	@Override
 	@Timed
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
-		warmupDB();
 		warmupJIT(BaconConfiguration.getWarmupIterations());
-	}
-
-	private void warmupDB() {
-		OrientGraph graph = factory.getTx();
-
-		try {
-			for (Vertex v : graph.getVertices()) {
-				for (Edge e : v.getEdges(Direction.BOTH)) {
-					for (String key : e.getPropertyKeys()) {
-						Object assigner = e.getProperty(key);
-						int hashCode = assigner.hashCode();
-					}
-				}
-
-				for (String key : v.getPropertyKeys()) {
-					Object assigner = v.getProperty(key);
-					int hashCode = assigner.hashCode();
-				}
-			}
-		} finally {
-			graph.shutdown();
-		}
 	}
 
 	private void warmupJIT(int cycles) {
