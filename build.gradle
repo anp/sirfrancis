@@ -25,19 +25,16 @@ dependencies {
     def orientDBVersion = '2.0'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
-            'io.dropwizard:dropwizard-client:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
-            'io.dropwizard:dropwizard-jdbi:' + dropwizardVersion,
-            'io.dropwizard:dropwizard-views-mustache:' + dropwizardVersion,
             'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
             'com.orientechnologies:orientdb-lucene:' + orientDBVersion,
             'org.apache.lucene:lucene-core:4.7.0',
             'org.apache.lucene:lucene-analyzers-common:4.7.0',
             'org.apache.lucene:lucene-queryparser:4.7.0',
             'org.apache.lucene:lucene-misc:4.7.0',
-            'org.apache.lucene:lucene-spatial:4.7.0',
             //fix the jackson classpath issue
-            'com.fasterxml.jackson.core:jackson-databind:2.3.3'
+            'com.fasterxml.jackson.core:jackson-databind:2.3.3',
+            'com.sendgrid:sendgrid-java:2.0.0'
     )
     testCompile (
             'junit:junit:4.11',

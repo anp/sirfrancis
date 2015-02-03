@@ -5,7 +5,6 @@ import io.dropwizard.Application;
 import io.dropwizard.auth.basic.BasicAuthProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.views.ViewBundle;
 import io.sirfrancis.bacon.auth.HTTPAuthenticator;
 import io.sirfrancis.bacon.cli.BootstrapDBCommand;
 import io.sirfrancis.bacon.db.MovieDAO;
@@ -34,9 +33,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		bootstrap.addBundle(new OrientServerBundle<>(getConfigurationClass()));
 		//CLI command
 		bootstrap.addCommand(new BootstrapDBCommand());
-		//add HTML rendering/views
-		bootstrap.addBundle(new ViewBundle());
-		//add static content
 	}
 
 	@Override
@@ -46,39 +42,36 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		OrientGraphFactory factory = BaconConfiguration.getFactory();
 
 		//user creation/deletion api resources
-		environment.jersey().register(
-				new UserCreateResource(
-						new UserDAO(factory, BaconConfiguration.getMaxDbRetries())));
+		int maxDbRetries = BaconConfiguration.getMaxDbRetries();
+		UserDAO userDAO = new UserDAO(factory, maxDbRetries);
 
-		environment.jersey().register(
-				new UserDeleteResource(
-						new UserDAO(factory, BaconConfiguration.getMaxDbRetries())));
+		environment.jersey().register(new UserCreateResource(userDAO));
+
+		environment.jersey().register(new UserCreateConfirmResource(userDAO));
+
+		environment.jersey().register(new UserDeleteResource(userDAO));
+
+		environment.jersey().register(new UserForgotPasswordResource(userDAO));
+
+		environment.jersey().register(new UserChangePasswordResource(userDAO));
 
 		//movie search api resource
-		environment.jersey().register(
-				new MovieSearchResource(
-						new MovieDAO(factory, config.getAmazonPrefix())));
+		MovieDAO movieDAO = new MovieDAO(factory, config.getAmazonPrefix());
+		environment.jersey().register(new MovieSearchResource(movieDAO));
 
 		//rating add/list/ignore resources
-		environment.jersey().register(
-				new RatingAddResource(
-						new RatingDAO(
-								factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
+		RatingDAO ratingDAO = new RatingDAO(factory, maxDbRetries, config.getAmazonPrefix());
 
-		environment.jersey().register(
-				new RatingGetResource(
-						new RatingDAO(
-								factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
+		environment.jersey().register(new RatingAddResource(ratingDAO));
 
-		environment.jersey().register(
-				new RatingIgnoreResource(
-						new RatingDAO(
-								factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
+		environment.jersey().register(new RatingGetResource(ratingDAO));
+
+		environment.jersey().register(new RatingIgnoreResource(ratingDAO));
 
 		//recommendations resource
-		environment.jersey().register(
-				new RecommendationsResource(
-						new RecommendationsDAO(factory, BaconConfiguration.getMaxDbRetries(), config.getAmazonPrefix())));
+		RecommendationsDAO recommendationsDAO = new RecommendationsDAO(factory, maxDbRetries, config.getAmazonPrefix());
+
+		environment.jersey().register(new RecommendationsResource(recommendationsDAO));
 
 		//authentication
 		environment.jersey().register(

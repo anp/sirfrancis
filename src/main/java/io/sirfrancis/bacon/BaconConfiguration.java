@@ -16,6 +16,14 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	private static int warmupIterations;
 	@NotNull
+	private static String accountCreationConfirmURL;
+	@NotNull
+	private static String passwordChangeConfirmURL;
+	@NotNull
+	private static String sendgridUsername;
+	@NotNull
+	private static String sendgridPassword;
+	@NotNull
 	private String dbLocalPath;
 	@NotNull
 	private String dbBackupPath;
@@ -36,6 +44,36 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	private boolean restrictUserCreation;
 	@NotNull
 	private String amazonPrefix;
+
+	@JsonProperty("password-change-confirm-url")
+	public static String getPasswordChangeConfirmURL() {
+		return passwordChangeConfirmURL;
+	}
+
+	@JsonProperty("password-change-confirm-url")
+	public void setPasswordChangeConfirmURL(String passwordChangeConfirmURL) {
+		BaconConfiguration.passwordChangeConfirmURL = passwordChangeConfirmURL;
+	}
+
+	@JsonProperty("sendgrid-username")
+	public static String getSendgridUsername() {
+		return sendgridUsername;
+	}
+
+	@JsonProperty("sendgrid-username")
+	public void setSendgridUsername(String sendgridUsername) {
+		BaconConfiguration.sendgridUsername = sendgridUsername;
+	}
+
+	@JsonProperty("sendgrid-password")
+	public static String getSendgridPassword() {
+		return sendgridPassword;
+	}
+
+	@JsonProperty("sendgrid-password")
+	public void setSendgridPassword(String sendgridPassword) {
+		BaconConfiguration.sendgridPassword = sendgridPassword;
+	}
 
 	@JsonProperty("max-db-write-retries")
 	public static int getMaxDbRetries() {
@@ -59,6 +97,16 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 
 	public static OrientGraphFactory getFactory() {
 		return factory;
+	}
+
+	@JsonProperty("account-creation-confirm-url")
+	public static String getAccountCreationConfirmURL() {
+		return accountCreationConfirmURL;
+	}
+
+	@JsonProperty("account-creation-confirm-url")
+	public void setAccountCreationConfirmURL(String accountCreationConfirmURL) {
+		BaconConfiguration.accountCreationConfirmURL = accountCreationConfirmURL;
 	}
 
 	@JsonProperty("omdb-download-url")

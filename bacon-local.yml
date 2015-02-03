@@ -15,6 +15,12 @@ omdb-api-key: 2af3daf2
 omdb-download-url: http://beforethecode.com/projects/omdb/download.aspx?e=adam.n.perry%40gmail.com&tsv=movies
 amazon-url-prefix: http://www.amazon.com/s/ref=nb_sb_noss?tag=sirfr-20&url=search-alias%3Dmovies-tv&field-keywords=
 
+#%e for email %k for confirmkey
+account-creation-confirm-url: http://localhost:8080/user/create/confirm/%e/%k/
+password-change-confirm-url: http://localhost:8080/user/password/change/%e/%p/%k/
+sendgrid-username: dikaiosune
+sendgrid-password: 8v8662Gebmt%
+
 server:
   gzip:
     enabled: true

@@ -11,11 +11,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-/**
- * Created by Adam on 1/19/2015.
- */
-
-@Path("/create/{user}/{password}")
+@Path("/user/create/new/{email}/{password}")
 @Produces(MediaType.APPLICATION_JSON)
 public class UserCreateResource {
 	UserDAO dao;
@@ -27,8 +23,8 @@ public class UserCreateResource {
 
 	@POST
 	@Timed
-	public Optional<User> createUser(@PathParam("user") String username, @PathParam("password") String password) {
-
+	public Optional<User> createUser(@PathParam("email") String username,
+									 @PathParam("password") String password) {
 		return dao.createUser(username,password);
 	}
 }

@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
  * Created by Adam on 1/19/2015.
  */
 
-@Path("/delete-account/")
+@Path("/user/delete/")
 @Produces(MediaType.APPLICATION_JSON)
 public class UserDeleteResource {
 	UserDAO dao;
