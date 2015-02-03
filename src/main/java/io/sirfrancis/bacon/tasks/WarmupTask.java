@@ -12,6 +12,7 @@ import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.RatingDAO;
 import io.sirfrancis.bacon.db.RecommendationsDAO;
 import io.sirfrancis.bacon.db.UserDAO;
+import io.sirfrancis.bacon.util.StringRandomizer;
 
 import java.io.PrintWriter;
 import java.util.Random;
@@ -21,7 +22,7 @@ public class WarmupTask extends Task {
 	private UserDAO userDAO;
 	private RatingDAO ratingDAO;
 	private RecommendationsDAO recommendationsDAO;
-	private RandomString randomizer = new RandomString(15);
+	private StringRandomizer randomizer = new StringRandomizer(15);
 
 	public WarmupTask(OrientGraphFactory factory, String amazonPrefix) {
 		super("warmup");
@@ -72,32 +73,6 @@ public class WarmupTask extends Task {
 			}
 		} finally {
 			graph.shutdown();
-		}
-	}
-
-	private class RandomString {
-
-		private final Random random = new Random();
-		private char[] symbols;
-		private char[] buf;
-
-		public RandomString(int length) {
-			StringBuilder tmp = new StringBuilder();
-			for (char ch = '0'; ch <= '9'; ++ch)
-				tmp.append(ch);
-			for (char ch = 'a'; ch <= 'z'; ++ch)
-				tmp.append(ch);
-			symbols = tmp.toString().toCharArray();
-
-			if (length < 1)
-				throw new IllegalArgumentException("length < 1: " + length);
-			buf = new char[length];
-		}
-
-		public String nextString() {
-			for (int idx = 0; idx < buf.length; ++idx)
-				buf[idx] = symbols[random.nextInt(symbols.length)];
-			return new String(buf);
 		}
 	}
 }

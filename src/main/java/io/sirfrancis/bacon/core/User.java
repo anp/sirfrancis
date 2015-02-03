@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.validation.constraints.NotNull;
 
-/**
- * Created by Adam on 1/19/2015.
- */
 public class User {
 	@NotNull
 	private String username;
@@ -17,11 +14,23 @@ public class User {
 
 	@NotNull
 	private byte[] salt;
+	@NotNull
+	private boolean emailConfirmed;
 
 	public User(String username, byte[] salt, byte[] hash) {
 		this.username = username;
 		this.salt = salt;
 		this.hash = hash;
+	}
+
+	@JsonProperty
+	public boolean isEmailConfirmed() {
+		return emailConfirmed;
+	}
+
+	@JsonProperty
+	public void setEmailConfirmed(boolean emailConfirmed) {
+		this.emailConfirmed = emailConfirmed;
 	}
 
 	@JsonProperty

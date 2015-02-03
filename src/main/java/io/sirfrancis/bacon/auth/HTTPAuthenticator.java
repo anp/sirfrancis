@@ -13,7 +13,8 @@ public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> 
 
 	@Override
 	public Optional<User> authenticate(BasicCredentials creds) throws AuthenticationException {
-		UserDAO dao = new UserDAO(BaconConfiguration.getFactory(), BaconConfiguration.getMaxDbRetries());
+		UserDAO dao = new UserDAO(BaconConfiguration.getFactory(),
+				BaconConfiguration.getMaxDbRetries());
 
 		User user = dao.getUser(creds.getUsername());
 
