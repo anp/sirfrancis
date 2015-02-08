@@ -23,12 +23,12 @@ public class UserDAO {
 	private NewUserMailer newUserMailer;
 	private ChangePasswordMailer changePasswordMailer;
 
-	public UserDAO(OrientGraphFactory factory, int maxRetries) {
+	public UserDAO(OrientGraphFactory factory) {
 		String sendgridUsername = BaconConfiguration.getSendgridUsername();
 		String sendgridPassword = BaconConfiguration.getSendgridPassword();
 
 		this.factory = factory;
-		this.maxRetries = maxRetries;
+		this.maxRetries = BaconConfiguration.getMaxDbRetries();
 		random = new SecureRandom();
 		randomizer = new StringRandomizer(30);
 		newUserMailer = new NewUserMailer(sendgridUsername,

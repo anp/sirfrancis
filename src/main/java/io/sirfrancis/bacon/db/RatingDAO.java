@@ -4,10 +4,8 @@ import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientEdge;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import com.tinkerpop.blueprints.impls.orient.*;
+import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.Rating;
 import io.sirfrancis.bacon.core.User;
@@ -21,10 +19,10 @@ public class RatingDAO {
 	private MovieDAO movieDAO;
 	private int maxRetries;
 
-	public RatingDAO(OrientGraphFactory factory, int maxRetries, String amazonPrefix) {
+	public RatingDAO(OrientGraphFactory factory) {
 		this.factory = factory;
-		this.movieDAO = new MovieDAO(factory, amazonPrefix);
-		this.maxRetries = maxRetries;
+		this.movieDAO = new MovieDAO(factory);
+		this.maxRetries = BaconConfiguration.getMaxDbRetries();
 	}
 
 	public Rating addRating(User user, String imdbID, int rating) {
@@ -60,7 +58,7 @@ public class RatingDAO {
 	}
 
 	public List<Rating> getRatings(User user) {
-		OrientGraph graph = factory.getTx();
+		OrientGraphNoTx graph = factory.getNoTx();
 		List<Rating> ratings = new LinkedList<>();
 
 		try {

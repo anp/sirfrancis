@@ -1,6 +1,7 @@
 package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.cache.CacheBuilderSpec;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import io.dropwizard.Configuration;
 import ru.vyarus.dropwizard.orient.configuration.HasOrientServerConfiguration;
@@ -24,6 +25,8 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	private static String sendgridPassword;
 	@NotNull
+	private static String amazonPrefix;
+	@NotNull
 	private String dbLocalPath;
 	@NotNull
 	private String dbBackupPath;
@@ -43,7 +46,7 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	private boolean restrictUserCreation;
 	@NotNull
-	private String amazonPrefix;
+	private CacheBuilderSpec authenticationCachePolicy;
 
 	@JsonProperty("password-change-confirm-url")
 	public static String getPasswordChangeConfirmURL() {
@@ -109,6 +112,26 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		BaconConfiguration.accountCreationConfirmURL = accountCreationConfirmURL;
 	}
 
+	@JsonProperty("amazon-url-prefix")
+	public static String getAmazonPrefix() {
+		return amazonPrefix;
+	}
+
+	@JsonProperty("amazon-url-prefix")
+	public void setAmazonPrefix(String amazonPrefix) {
+		BaconConfiguration.amazonPrefix = amazonPrefix;
+	}
+
+	@JsonProperty("authenticationCachePolicy")
+	public CacheBuilderSpec getAuthenticationCachePolicy() {
+		return authenticationCachePolicy;
+	}
+
+	@JsonProperty("authenticationCachePolicy")
+	public void setAuthenticationCachePolicy(CacheBuilderSpec authenticationCachePolicy) {
+		this.authenticationCachePolicy = authenticationCachePolicy;
+	}
+
 	@JsonProperty("omdb-download-url")
 	public String getOmdbDBEmail() {
 		return omdbDBEmail;
@@ -117,16 +140,6 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@JsonProperty("omdb-download-url")
 	public void setOmdbDBEmail(String omdbDBEmail) {
 		this.omdbDBEmail = omdbDBEmail;
-	}
-
-	@JsonProperty("amazon-url-prefix")
-	public String getAmazonPrefix() {
-		return this.amazonPrefix;
-	}
-
-	@JsonProperty("amazon-url-prefix")
-	public void setAmazonPrefix(String amazonPrefix) {
-		this.amazonPrefix = amazonPrefix;
 	}
 
 	@JsonProperty("restrict-create-user")
@@ -160,7 +173,7 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	}
 
 	@JsonProperty("db-path")
-	public String getDBPath() {
+	public String getDBLocalPath() {
 		return dbLocalPath;
 	}
 

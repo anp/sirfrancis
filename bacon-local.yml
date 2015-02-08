@@ -18,6 +18,9 @@ amazon-url-prefix: http://www.amazon.com/s/ref=nb_sb_noss?tag=sirfr-20&url=searc
 #%e for email %k for confirmkey
 account-creation-confirm-url: http://localhost:8080/user/create/confirm/%e/%k/
 password-change-confirm-url: http://localhost:8080/user/password/change/%e/%p/%k/
+
+authenticationCachePolicy: maximumSize=10000, expireAfterAccess=10m
+
 sendgrid-username: dikaiosune
 sendgrid-password: 8v8662Gebmt%
 

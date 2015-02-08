@@ -6,10 +6,8 @@ import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.OrientEdge;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientVertex;
+import com.tinkerpop.blueprints.impls.orient.*;
+import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.Recommendation;
 import io.sirfrancis.bacon.core.User;
@@ -21,10 +19,10 @@ public class RecommendationsDAO {
 	private MovieDAO movieDAO;
 	private int maxRetries;
 
-	public RecommendationsDAO(OrientGraphFactory factory, int maxRetries, String amazonPrefix) {
+	public RecommendationsDAO(OrientGraphFactory factory) {
 		this.factory = factory;
-		movieDAO = new MovieDAO(factory, amazonPrefix);
-		this.maxRetries = maxRetries;
+		movieDAO = new MovieDAO(factory);
+		this.maxRetries = BaconConfiguration.getMaxDbRetries();
 	}
 
 	public static <K extends Comparable<? super K>, V extends Comparable<? super V>> Map<K, V> sortByValues(Map<K, V> map) {
@@ -45,7 +43,7 @@ public class RecommendationsDAO {
 	@Metered
 	public List<Recommendation> getRecommendations(User user) {
 		List<Recommendation> recommendations = new LinkedList<>();
-		OrientGraph graph = factory.getTx();
+		OrientGraphNoTx graph = factory.getNoTx();
 
 		try {
 			Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());

@@ -26739,7 +26739,7 @@ var requiredDirective = function() {
       var validator = function(value) {
         if (attr.required && ctrl.$isEmpty(value)) {
           ctrl.$setValidity('required', false);
-          return;
+
         } else {
           ctrl.$setValidity('required', true);
           return value;
@@ -33191,7 +33191,7 @@ angular.module('ngAnimate', ['ng'])
           event.stopPropagation();
           var ev = event.originalEvent || event;
           var timeStamp = ev.$manualTimeStamp || ev.timeStamp || Date.now();
-          
+
           /* Firefox (or possibly just Gecko) likes to not round values up
            * when a ms measurement is used for the animation */
           var elapsedTime = parseFloat(ev.elapsedTime.toFixed(ELAPSED_TIME_MAX_DECIMAL_PLACES));
@@ -34321,10 +34321,10 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 (function(root, factory) {
 
   /* CommonJS */
-  if (typeof exports == 'object')  module.exports = factory()
+  if (typeof exports == 'object')  module.exports = factory();
 
   /* AMD module */
-  else if (typeof define == 'function' && define.amd) define(factory)
+  else if (typeof define == 'function' && define.amd) define(factory);
 
   /* Browser global */
   else root.Spinner = factory()
@@ -34334,7 +34334,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
   var prefixes = ['webkit', 'Moz', 'ms', 'O'] /* Vendor prefixes */
     , animations = {} /* Animation rules keyed by their name */
-    , useCssAnimations /* Whether to use CSS animations or setTimeout */
+    , useCssAnimations; /* Whether to use CSS animations or setTimeout */
 
   /**
    * Utility function to create elements. If no tag name is given,
@@ -34342,7 +34342,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
    */
   function createEl(tag, prop) {
     var el = document.createElement(tag || 'div')
-      , n
+      , n;
 
     for(n in prop) el[n] = prop[n]
     return el
@@ -34362,10 +34362,10 @@ function ngViewFillContentFactory($compile, $controller, $route) {
    * Insert a new stylesheet to hold the @keyframe or VML rules.
    */
   var sheet = (function() {
-    var el = createEl('style', {type : 'text/css'})
-    ins(document.getElementsByTagName('head')[0], el)
+    var el = createEl('style', {type : 'text/css'});
+    ins(document.getElementsByTagName('head')[0], el);
     return el.sheet || el.styleSheet
-  }())
+  }());
 
   /**
    * Creates an opacity keyframe animation rule and returns its name.
@@ -34377,7 +34377,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
       , start = 0.01 + i/lines * 100
       , z = Math.max(1 - (1-alpha) / trail * (100-start), alpha)
       , prefix = useCssAnimations.substring(0, useCssAnimations.indexOf('Animation')).toLowerCase()
-      , pre = prefix && '-' + prefix + '-' || ''
+      , pre = prefix && '-' + prefix + '-' || '';
 
     if (!animations[name]) {
       sheet.insertRule(
@@ -34387,7 +34387,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
         (start+0.01) + '%{opacity:1}' +
         (start+trail) % 100 + '%{opacity:' + alpha + '}' +
         '100%{opacity:' + z + '}' +
-        '}', sheet.cssRules.length)
+        '}', sheet.cssRules.length);
 
       animations[name] = 1
     }
@@ -34401,11 +34401,11 @@ function ngViewFillContentFactory($compile, $controller, $route) {
   function vendor(el, prop) {
     var s = el.style
       , pp
-      , i
+      , i;
 
-    prop = prop.charAt(0).toUpperCase() + prop.slice(1)
+    prop = prop.charAt(0).toUpperCase() + prop.slice(1);
     for(i=0; i<prefixes.length; i++) {
-      pp = prefixes[i]+prop
+      pp = prefixes[i]+prop;
       if(s[pp] !== undefined) return pp
     }
     if(s[prop] !== undefined) return prop
@@ -34426,7 +34426,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
    */
   function merge(obj) {
     for (var i=1; i < arguments.length; i++) {
-      var def = arguments[i]
+      var def = arguments[i];
       for (var n in def)
         if (obj[n] === undefined) obj[n] = def[n]
     }
@@ -34437,9 +34437,9 @@ function ngViewFillContentFactory($compile, $controller, $route) {
    * Returns the absolute page-offset of the given element.
    */
   function pos(el) {
-    var o = { x:el.offsetLeft, y:el.offsetTop }
+    var o = { x:el.offsetLeft, y:el.offsetTop };
     while((el = el.offsetParent))
-      o.x+=el.offsetLeft, o.y+=el.offsetTop
+      o.x+=el.offsetLeft, o.y+=el.offsetTop;
 
     return o
   }
@@ -34471,7 +34471,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
     top: '50%',           // center vertically
     left: '50%',          // center horizontally
     position: 'absolute'  // element position
-  }
+  };
 
   /** The constructor */
   function Spinner(o) {
@@ -34479,7 +34479,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
   }
 
   // Global defaults that override the built-ins:
-  Spinner.defaults = {}
+  Spinner.defaults = {};
 
   merge(Spinner.prototype, {
 
@@ -34489,23 +34489,23 @@ function ngViewFillContentFactory($compile, $controller, $route) {
      * stop() internally.
      */
     spin: function(target) {
-      this.stop()
+      this.stop();
 
       var self = this
         , o = self.opts
         , el = self.el = css(createEl(0, {className: o.className}), {position: o.position, width: 0, zIndex: o.zIndex})
-        , mid = o.radius+o.length+o.width
+        , mid = o.radius+o.length+o.width;
 
       if (target) {
-        target.insertBefore(el, target.firstChild||null)
+        target.insertBefore(el, target.firstChild||null);
         css(el, {
           left: o.left,
           top: o.top
         })
       }
 
-      el.setAttribute('role', 'progressbar')
-      self.lines(el, self.opts)
+      el.setAttribute('role', 'progressbar');
+      self.lines(el, self.opts);
 
       if (!useCssAnimations) {
         // No CSS animation support, use setTimeout() instead
@@ -34520,7 +34520,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
         ;(function anim() {
           i++;
           for (var j = 0; j < o.lines; j++) {
-            alpha = Math.max(1 - (i + (o.lines - j) * astep) % f * ostep, o.opacity)
+            alpha = Math.max(1 - (i + (o.lines - j) * astep) % f * ostep, o.opacity);
 
             self.opacity(el, j * o.direction + start, alpha, o)
           }
@@ -34534,10 +34534,10 @@ function ngViewFillContentFactory($compile, $controller, $route) {
      * Stops and removes the Spinner.
      */
     stop: function() {
-      var el = this.el
+      var el = this.el;
       if (el) {
-        clearTimeout(this.timeout)
-        if (el.parentNode) el.parentNode.removeChild(el)
+        clearTimeout(this.timeout);
+        if (el.parentNode) el.parentNode.removeChild(el);
         this.el = undefined
       }
       return this
@@ -34550,7 +34550,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
     lines: function(el, o) {
       var i = 0
         , start = (o.lines - 1) * (1 - o.direction) / 2
-        , seg
+        , seg;
 
       function fill(color, shadow) {
         return css(createEl(), {
@@ -34572,9 +34572,9 @@ function ngViewFillContentFactory($compile, $controller, $route) {
           transform: o.hwaccel ? 'translate3d(0,0,0)' : '',
           opacity: o.opacity,
           animation: useCssAnimations && addAnimation(o.opacity, o.trail, start + i * o.direction, o.lines) + ' ' + 1/o.speed + 's linear infinite'
-        })
+        });
 
-        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px ' + '#000'), {top: 2+'px'}))
+        if (o.shadow) ins(seg, css(fill('#000', '0 0 4px ' + '#000'), {top: 2+'px'}));
         ins(el, ins(seg, fill(getColor(o.color, i), '0 0 1px rgba(0,0,0,.1)')))
       }
       return el
@@ -34588,7 +34588,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
       if (i < el.childNodes.length) el.childNodes[i].style.opacity = val
     }
 
-  })
+  });
 
 
   function initVML() {
@@ -34599,11 +34599,11 @@ function ngViewFillContentFactory($compile, $controller, $route) {
     }
 
     // No CSS transforms but VML support, add a CSS rule for VML elements:
-    sheet.addRule('.spin-vml', 'behavior:url(#default#VML)')
+    sheet.addRule('.spin-vml', 'behavior:url(#default#VML)');
 
     Spinner.prototype.lines = function(el, o) {
       var r = o.length+o.width
-        , s = 2*r
+        , s = 2*r;
 
       function grp() {
         return css(
@@ -34617,7 +34617,7 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
       var margin = -(o.width+o.length)*2 + 'px'
         , g = css(grp(), {position: 'absolute', top: margin, left: margin})
-        , i
+        , i;
 
       function seg(i, dx, filter) {
         ins(g,
@@ -34642,22 +34642,22 @@ function ngViewFillContentFactory($compile, $controller, $route) {
 
       for (i = 1; i <= o.lines; i++) seg(i)
       return ins(el, g)
-    }
+    };
 
     Spinner.prototype.opacity = function(el, i, val, o) {
-      var c = el.firstChild
-      o = o.shadow && o.lines || 0
+      var c = el.firstChild;
+      o = o.shadow && o.lines || 0;
       if (c && i+o < c.childNodes.length) {
-        c = c.childNodes[i+o]; c = c && c.firstChild; c = c && c.firstChild
+        c = c.childNodes[i+o]; c = c && c.firstChild; c = c && c.firstChild;
         if (c) c.opacity = val
       }
     }
   }
 
-  var probe = css(createEl('group'), {behavior: 'url(#default#VML)'})
+  var probe = css(createEl('group'), {behavior: 'url(#default#VML)'});
 
-  if (!vendor(probe, 'transform') && probe.adj) initVML()
-  else useCssAnimations = vendor(probe, 'animation')
+  if (!vendor(probe, 'transform') && probe.adj) initVML();
+  else useCssAnimations = vendor(probe, 'animation');
 
   return Spinner
 
@@ -34735,11 +34735,11 @@ function ngViewFillContentFactory($compile, $controller, $route) {
         return b.replace(/[\s\S]{1,3}/g, cb_encode);
     };
     var _encode = buffer
-        ? function (u) { return (new buffer(u)).toString('base64') } 
+        ? function (u) { return (new buffer(u)).toString('base64') }
     : function (u) { return btoa(utob(u)) }
     ;
     var encode = function(u, urisafe) {
-        return !urisafe 
+        return !urisafe
             ? _encode(u)
             : _encode(u).replace(/[+\/]/g, function(m0) {
                 return m0 == '+' ? '-' : '_';
@@ -37493,7 +37493,7 @@ if (this['Meteor']) {
 
       /**
        * The format pattern mapping from Java format to momentjs.
-       * 
+       *
        * @property javaFormatMapping
        * @type {Object}
        */
@@ -37535,7 +37535,7 @@ if (this['Meteor']) {
 
       /**
        * The format pattern mapping from Java format to momentjs.
-       * 
+       *
        * @property momentFormatMapping
        * @type {Object}
        */
@@ -38607,7 +38607,7 @@ if (this['Meteor']) {
                 return viewValue;
               } else {
                 controller.$setValidity('time', false);
-                return;
+
               }
             });
           }
@@ -38773,7 +38773,7 @@ if (this['Meteor']) {
             ,  'OTransition'      : 'oTransitionEnd otransitionend'
             ,  'transition'       : 'transitionend'
             }
-          , name
+          , name;
 
         for (name in transEndEventNames){
           if (el.style[name] !== undefined) {
@@ -38781,7 +38781,7 @@ if (this['Meteor']) {
           }
         }
 
-      }())
+      }());
 
       return transitionEnd && {
         end: transitionEnd
@@ -38822,29 +38822,29 @@ if (this['Meteor']) {
   var dismiss = '[data-dismiss="alert"]'
     , Alert = function (el) {
         $(el).on('click', dismiss, this.close)
-      }
+      };
 
   Alert.prototype.close = function (e) {
     var $this = $(this)
       , selector = $this.attr('data-target')
-      , $parent
+      , $parent;
 
     if (!selector) {
-      selector = $this.attr('href')
-      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      selector = $this.attr('href');
+      selector = selector && selector.replace(/.*(?=#[^\s]*$)/, ''); //strip for ie7
     }
 
-    $parent = $(selector)
+    $parent = $(selector);
 
-    e && e.preventDefault()
+    e && e.preventDefault();
 
-    $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent())
+    $parent.length || ($parent = $this.hasClass('alert') ? $this : $this.parent());
 
-    $parent.trigger(e = $.Event('close'))
+    $parent.trigger(e = $.Event('close'));
 
-    if (e.isDefaultPrevented()) return
+    if (e.isDefaultPrevented()) return;
 
-    $parent.removeClass('in')
+    $parent.removeClass('in');
 
     function removeElement() {
       $parent
@@ -38855,33 +38855,33 @@ if (this['Meteor']) {
     $.support.transition && $parent.hasClass('fade') ?
       $parent.on($.support.transition.end, removeElement) :
       removeElement()
-  }
+  };
 
 
  /* ALERT PLUGIN DEFINITION
   * ======================= */
 
-  var old = $.fn.alert
+  var old = $.fn.alert;
 
   $.fn.alert = function (option) {
     return this.each(function () {
       var $this = $(this)
-        , data = $this.data('alert')
-      if (!data) $this.data('alert', (data = new Alert(this)))
+        , data = $this.data('alert');
+      if (!data) $this.data('alert', (data = new Alert(this)));
       if (typeof option == 'string') data[option].call($this)
     })
-  }
+  };
 
-  $.fn.alert.Constructor = Alert
+  $.fn.alert.Constructor = Alert;
 
 
  /* ALERT NO CONFLICT
   * ================= */
 
   $.fn.alert.noConflict = function () {
-    $.fn.alert = old
+    $.fn.alert = old;
     return this
-  }
+  };
 
 
  /* ALERT DATA-API
@@ -38918,20 +38918,20 @@ if (this['Meteor']) {
   * ============================== */
 
   var Button = function (element, options) {
-    this.$element = $(element)
+    this.$element = $(element);
     this.options = $.extend({}, $.fn.button.defaults, options)
-  }
+  };
 
   Button.prototype.setState = function (state) {
     var d = 'disabled'
       , $el = this.$element
       , data = $el.data()
-      , val = $el.is('input') ? 'val' : 'html'
+      , val = $el.is('input') ? 'val' : 'html';
 
-    state = state + 'Text'
-    data.resetText || $el.data('resetText', $el[val]())
+    state = state + 'Text';
+    data.resetText || $el.data('resetText', $el[val]());
 
-    $el[val](data[state] || this.options[state])
+    $el[val](data[state] || this.options[state]);
 
     // push to event loop to allow forms to submit
     setTimeout(function () {
@@ -38939,57 +38939,57 @@ if (this['Meteor']) {
         $el.addClass(d).attr(d, d) :
         $el.removeClass(d).removeAttr(d)
     }, 0)
-  }
+  };
 
   Button.prototype.toggle = function () {
-    var $parent = this.$element.closest('[data-toggle="buttons-radio"]')
+    var $parent = this.$element.closest('[data-toggle="buttons-radio"]');
 
     $parent && $parent
       .find('.active')
-      .removeClass('active')
+      .removeClass('active');
 
     this.$element.toggleClass('active')
-  }
+  };
 
 
  /* BUTTON PLUGIN DEFINITION
   * ======================== */
 
-  var old = $.fn.button
+  var old = $.fn.button;
 
   $.fn.button = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('button')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('button', (data = new Button(this, options)))
-      if (option == 'toggle') data.toggle()
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('button', (data = new Button(this, options)));
+      if (option == 'toggle') data.toggle();
       else if (option) data.setState(option)
     })
-  }
+  };
 
   $.fn.button.defaults = {
     loadingText: 'loading...'
-  }
+  };
 
-  $.fn.button.Constructor = Button
+  $.fn.button.Constructor = Button;
 
 
  /* BUTTON NO CONFLICT
   * ================== */
 
   $.fn.button.noConflict = function () {
-    $.fn.button = old
+    $.fn.button = old;
     return this
-  }
+  };
 
 
  /* BUTTON DATA-API
   * =============== */
 
   $(document).on('click.button.data-api', '[data-toggle^=button]', function (e) {
-    var $btn = $(e.target)
-    if (!$btn.hasClass('btn')) $btn = $btn.closest('.btn')
+    var $btn = $(e.target);
+    if (!$btn.hasClass('btn')) $btn = $btn.closest('.btn');
     $btn.button('toggle')
   })
 
@@ -39022,36 +39022,36 @@ if (this['Meteor']) {
   * ========================= */
 
   var Carousel = function (element, options) {
-    this.$element = $(element)
-    this.$indicators = this.$element.find('.carousel-indicators')
-    this.options = options
+    this.$element = $(element);
+    this.$indicators = this.$element.find('.carousel-indicators');
+    this.options = options;
     this.options.pause == 'hover' && this.$element
       .on('mouseenter', $.proxy(this.pause, this))
       .on('mouseleave', $.proxy(this.cycle, this))
-  }
+  };
 
   Carousel.prototype = {
 
     cycle: function (e) {
-      if (!e) this.paused = false
+      if (!e) this.paused = false;
       if (this.interval) clearInterval(this.interval);
       this.options.interval
         && !this.paused
-        && (this.interval = setInterval($.proxy(this.next, this), this.options.interval))
+        && (this.interval = setInterval($.proxy(this.next, this), this.options.interval));
       return this
     }
 
   , getActiveIndex: function () {
-      this.$active = this.$element.find('.item.active')
-      this.$items = this.$active.parent().children()
+      this.$active = this.$element.find('.item.active');
+      this.$items = this.$active.parent().children();
       return this.$items.index(this.$active)
     }
 
   , to: function (pos) {
       var activeIndex = this.getActiveIndex()
-        , that = this
+        , that = this;
 
-      if (pos > (this.$items.length - 1) || pos < 0) return
+      if (pos > (this.$items.length - 1) || pos < 0) return;
 
       if (this.sliding) {
         return this.$element.one('slid', function () {
@@ -39067,23 +39067,23 @@ if (this['Meteor']) {
     }
 
   , pause: function (e) {
-      if (!e) this.paused = true
+      if (!e) this.paused = true;
       if (this.$element.find('.next, .prev').length && $.support.transition.end) {
-        this.$element.trigger($.support.transition.end)
+        this.$element.trigger($.support.transition.end);
         this.cycle(true)
       }
-      clearInterval(this.interval)
-      this.interval = null
+      clearInterval(this.interval);
+      this.interval = null;
       return this
     }
 
   , next: function () {
-      if (this.sliding) return
+      if (this.sliding) return;
       return this.slide('next')
     }
 
   , prev: function () {
-      if (this.sliding) return
+      if (this.sliding) return;
       return this.slide('prev')
     }
 
@@ -39094,92 +39094,92 @@ if (this['Meteor']) {
         , direction = type == 'next' ? 'left' : 'right'
         , fallback  = type == 'next' ? 'first' : 'last'
         , that = this
-        , e
+        , e;
 
-      this.sliding = true
+      this.sliding = true;
 
-      isCycling && this.pause()
+      isCycling && this.pause();
 
-      $next = $next.length ? $next : this.$element.find('.item')[fallback]()
+      $next = $next.length ? $next : this.$element.find('.item')[fallback]();
 
       e = $.Event('slide', {
         relatedTarget: $next[0]
       , direction: direction
-      })
+      });
 
-      if ($next.hasClass('active')) return
+      if ($next.hasClass('active')) return;
 
       if (this.$indicators.length) {
-        this.$indicators.find('.active').removeClass('active')
+        this.$indicators.find('.active').removeClass('active');
         this.$element.one('slid', function () {
-          var $nextIndicator = $(that.$indicators.children()[that.getActiveIndex()])
+          var $nextIndicator = $(that.$indicators.children()[that.getActiveIndex()]);
           $nextIndicator && $nextIndicator.addClass('active')
         })
       }
 
       if ($.support.transition && this.$element.hasClass('slide')) {
-        this.$element.trigger(e)
-        if (e.isDefaultPrevented()) return
-        $next.addClass(type)
-        $next[0].offsetWidth // force reflow
-        $active.addClass(direction)
-        $next.addClass(direction)
+        this.$element.trigger(e);
+        if (e.isDefaultPrevented()) return;
+        $next.addClass(type);
+        $next[0].offsetWidth; // force reflow
+        $active.addClass(direction);
+        $next.addClass(direction);
         this.$element.one($.support.transition.end, function () {
-          $next.removeClass([type, direction].join(' ')).addClass('active')
-          $active.removeClass(['active', direction].join(' '))
-          that.sliding = false
+          $next.removeClass([type, direction].join(' ')).addClass('active');
+          $active.removeClass(['active', direction].join(' '));
+          that.sliding = false;
           setTimeout(function () { that.$element.trigger('slid') }, 0)
         })
       } else {
-        this.$element.trigger(e)
-        if (e.isDefaultPrevented()) return
-        $active.removeClass('active')
-        $next.addClass('active')
-        this.sliding = false
+        this.$element.trigger(e);
+        if (e.isDefaultPrevented()) return;
+        $active.removeClass('active');
+        $next.addClass('active');
+        this.sliding = false;
         this.$element.trigger('slid')
       }
 
-      isCycling && this.cycle()
+      isCycling && this.cycle();
 
       return this
     }
 
-  }
+  };
 
 
  /* CAROUSEL PLUGIN DEFINITION
   * ========================== */
 
-  var old = $.fn.carousel
+  var old = $.fn.carousel;
 
   $.fn.carousel = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('carousel')
         , options = $.extend({}, $.fn.carousel.defaults, typeof option == 'object' && option)
-        , action = typeof option == 'string' ? option : options.slide
-      if (!data) $this.data('carousel', (data = new Carousel(this, options)))
-      if (typeof option == 'number') data.to(option)
-      else if (action) data[action]()
+        , action = typeof option == 'string' ? option : options.slide;
+      if (!data) $this.data('carousel', (data = new Carousel(this, options)));
+      if (typeof option == 'number') data.to(option);
+      else if (action) data[action]();
       else if (options.interval) data.pause().cycle()
     })
-  }
+  };
 
   $.fn.carousel.defaults = {
     interval: 5000
   , pause: 'hover'
-  }
+  };
 
-  $.fn.carousel.Constructor = Carousel
+  $.fn.carousel.Constructor = Carousel;
 
 
  /* CAROUSEL NO CONFLICT
   * ==================== */
 
   $.fn.carousel.noConflict = function () {
-    $.fn.carousel = old
+    $.fn.carousel = old;
     return this
-  }
+  };
 
  /* CAROUSEL DATA-API
   * ================= */
@@ -39188,9 +39188,9 @@ if (this['Meteor']) {
     var $this = $(this), href
       , $target = $($this.attr('data-target') || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '')) //strip for ie7
       , options = $.extend({}, $target.data(), $this.data())
-      , slideIndex
+      , slideIndex;
 
-    $target.carousel(options)
+    $target.carousel(options);
 
     if (slideIndex = $this.attr('data-slide-to')) {
       $target.data('carousel').pause().to(slideIndex).cycle()
@@ -39228,22 +39228,22 @@ if (this['Meteor']) {
   * ================================ */
 
   var Collapse = function (element, options) {
-    this.$element = $(element)
-    this.options = $.extend({}, $.fn.collapse.defaults, options)
+    this.$element = $(element);
+    this.options = $.extend({}, $.fn.collapse.defaults, options);
 
     if (this.options.parent) {
       this.$parent = $(this.options.parent)
     }
 
     this.options.toggle && this.toggle()
-  }
+  };
 
   Collapse.prototype = {
 
     constructor: Collapse
 
   , dimension: function () {
-      var hasWidth = this.$element.hasClass('width')
+      var hasWidth = this.$element.hasClass('width');
       return hasWidth ? 'width' : 'height'
     }
 
@@ -39251,44 +39251,44 @@ if (this['Meteor']) {
       var dimension
         , scroll
         , actives
-        , hasData
+        , hasData;
 
-      if (this.transitioning || this.$element.hasClass('in')) return
+      if (this.transitioning || this.$element.hasClass('in')) return;
 
-      dimension = this.dimension()
-      scroll = $.camelCase(['scroll', dimension].join('-'))
-      actives = this.$parent && this.$parent.find('> .accordion-group > .in')
+      dimension = this.dimension();
+      scroll = $.camelCase(['scroll', dimension].join('-'));
+      actives = this.$parent && this.$parent.find('> .accordion-group > .in');
 
       if (actives && actives.length) {
-        hasData = actives.data('collapse')
-        if (hasData && hasData.transitioning) return
-        actives.collapse('hide')
+        hasData = actives.data('collapse');
+        if (hasData && hasData.transitioning) return;
+        actives.collapse('hide');
         hasData || actives.data('collapse', null)
       }
 
-      this.$element[dimension](0)
-      this.transition('addClass', $.Event('show'), 'shown')
+      this.$element[dimension](0);
+      this.transition('addClass', $.Event('show'), 'shown');
       $.support.transition && this.$element[dimension](this.$element[0][scroll])
     }
 
   , hide: function () {
-      var dimension
-      if (this.transitioning || !this.$element.hasClass('in')) return
-      dimension = this.dimension()
-      this.reset(this.$element[dimension]())
-      this.transition('removeClass', $.Event('hide'), 'hidden')
+      var dimension;
+      if (this.transitioning || !this.$element.hasClass('in')) return;
+      dimension = this.dimension();
+      this.reset(this.$element[dimension]());
+      this.transition('removeClass', $.Event('hide'), 'hidden');
       this.$element[dimension](0)
     }
 
   , reset: function (size) {
-      var dimension = this.dimension()
+      var dimension = this.dimension();
 
       this.$element
         .removeClass('collapse')
         [dimension](size || 'auto')
-        [0].offsetWidth
+        [0].offsetWidth;
 
-      this.$element[size !== null ? 'addClass' : 'removeClass']('collapse')
+      this.$element[size !== null ? 'addClass' : 'removeClass']('collapse');
 
       return this
     }
@@ -39296,18 +39296,18 @@ if (this['Meteor']) {
   , transition: function (method, startEvent, completeEvent) {
       var that = this
         , complete = function () {
-            if (startEvent.type == 'show') that.reset()
-            that.transitioning = 0
+            if (startEvent.type == 'show') that.reset();
+            that.transitioning = 0;
             that.$element.trigger(completeEvent)
-          }
+          };
 
-      this.$element.trigger(startEvent)
+      this.$element.trigger(startEvent);
 
-      if (startEvent.isDefaultPrevented()) return
+      if (startEvent.isDefaultPrevented()) return;
 
-      this.transitioning = 1
+      this.transitioning = 1;
 
-      this.$element[method]('in')
+      this.$element[method]('in');
 
       $.support.transition && this.$element.hasClass('collapse') ?
         this.$element.one($.support.transition.end, complete) :
@@ -39318,38 +39318,38 @@ if (this['Meteor']) {
       this[this.$element.hasClass('in') ? 'hide' : 'show']()
     }
 
-  }
+  };
 
 
  /* COLLAPSE PLUGIN DEFINITION
   * ========================== */
 
-  var old = $.fn.collapse
+  var old = $.fn.collapse;
 
   $.fn.collapse = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('collapse')
-        , options = $.extend({}, $.fn.collapse.defaults, $this.data(), typeof option == 'object' && option)
-      if (!data) $this.data('collapse', (data = new Collapse(this, options)))
+        , options = $.extend({}, $.fn.collapse.defaults, $this.data(), typeof option == 'object' && option);
+      if (!data) $this.data('collapse', (data = new Collapse(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
   $.fn.collapse.defaults = {
     toggle: true
-  }
+  };
 
-  $.fn.collapse.Constructor = Collapse
+  $.fn.collapse.Constructor = Collapse;
 
 
  /* COLLAPSE NO CONFLICT
   * ==================== */
 
   $.fn.collapse.noConflict = function () {
-    $.fn.collapse = old
+    $.fn.collapse = old;
     return this
-  }
+  };
 
 
  /* COLLAPSE DATA-API
@@ -39360,8 +39360,8 @@ if (this['Meteor']) {
       , target = $this.attr('data-target')
         || e.preventDefault()
         || (href = $this.attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '') //strip for ie7
-      , option = $(target).data('collapse') ? 'toggle' : $this.data()
-    $this[$(target).hasClass('in') ? 'addClass' : 'removeClass']('collapsed')
+      , option = $(target).data('collapse') ? 'toggle' : $this.data();
+    $this[$(target).hasClass('in') ? 'addClass' : 'removeClass']('collapsed');
     $(target).collapse(option)
   })
 
@@ -39395,11 +39395,11 @@ if (this['Meteor']) {
 
   var toggle = '[data-toggle=dropdown]'
     , Dropdown = function (element) {
-        var $el = $(element).on('click.dropdown.data-api', this.toggle)
+        var $el = $(element).on('click.dropdown.data-api', this.toggle);
         $('html').on('click.dropdown.data-api', function () {
           $el.parent().removeClass('open')
         })
-      }
+      };
 
   Dropdown.prototype = {
 
@@ -39408,15 +39408,15 @@ if (this['Meteor']) {
   , toggle: function (e) {
       var $this = $(this)
         , $parent
-        , isActive
+        , isActive;
 
-      if ($this.is('.disabled, :disabled')) return
+      if ($this.is('.disabled, :disabled')) return;
 
-      $parent = getParent($this)
+      $parent = getParent($this);
 
-      isActive = $parent.hasClass('open')
+      isActive = $parent.hasClass('open');
 
-      clearMenus()
+      clearMenus();
 
       if (!isActive) {
         if ('ontouchstart' in document.documentElement) {
@@ -39426,7 +39426,7 @@ if (this['Meteor']) {
         $parent.toggleClass('open')
       }
 
-      $this.focus()
+      $this.focus();
 
       return false
     }
@@ -39437,45 +39437,45 @@ if (this['Meteor']) {
         , $active
         , $parent
         , isActive
-        , index
+        , index;
 
-      if (!/(38|40|27)/.test(e.keyCode)) return
+      if (!/(38|40|27)/.test(e.keyCode)) return;
 
-      $this = $(this)
+      $this = $(this);
 
-      e.preventDefault()
-      e.stopPropagation()
+      e.preventDefault();
+      e.stopPropagation();
 
-      if ($this.is('.disabled, :disabled')) return
+      if ($this.is('.disabled, :disabled')) return;
 
-      $parent = getParent($this)
+      $parent = getParent($this);
 
-      isActive = $parent.hasClass('open')
+      isActive = $parent.hasClass('open');
 
       if (!isActive || (isActive && e.keyCode == 27)) {
-        if (e.which == 27) $parent.find(toggle).focus()
+        if (e.which == 27) $parent.find(toggle).focus();
         return $this.click()
       }
 
-      $items = $('[role=menu] li:not(.divider):visible a', $parent)
+      $items = $('[role=menu] li:not(.divider):visible a', $parent);
 
-      if (!$items.length) return
+      if (!$items.length) return;
 
-      index = $items.index($items.filter(':focus'))
+      index = $items.index($items.filter(':focus'));
 
-      if (e.keyCode == 38 && index > 0) index--                                        // up
-      if (e.keyCode == 40 && index < $items.length - 1) index++                        // down
-      if (!~index) index = 0
+      if (e.keyCode == 38 && index > 0) index--;                                        // up
+      if (e.keyCode == 40 && index < $items.length - 1) index++;                        // down
+      if (!~index) index = 0;
 
       $items
         .eq(index)
         .focus()
     }
 
-  }
+  };
 
   function clearMenus() {
-    $('.dropdown-backdrop').remove()
+    $('.dropdown-backdrop').remove();
     $(toggle).each(function () {
       getParent($(this)).removeClass('open')
     })
@@ -39483,16 +39483,16 @@ if (this['Meteor']) {
 
   function getParent($this) {
     var selector = $this.attr('data-target')
-      , $parent
+      , $parent;
 
     if (!selector) {
-      selector = $this.attr('href')
-      selector = selector && /#/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+      selector = $this.attr('href');
+      selector = selector && /#/.test(selector) && selector.replace(/.*(?=#[^\s]*$)/, ''); //strip for ie7
     }
 
-    $parent = selector && $(selector)
+    $parent = selector && $(selector);
 
-    if (!$parent || !$parent.length) $parent = $this.parent()
+    if (!$parent || !$parent.length) $parent = $this.parent();
 
     return $parent
   }
@@ -39501,27 +39501,27 @@ if (this['Meteor']) {
   /* DROPDOWN PLUGIN DEFINITION
    * ========================== */
 
-  var old = $.fn.dropdown
+  var old = $.fn.dropdown;
 
   $.fn.dropdown = function (option) {
     return this.each(function () {
       var $this = $(this)
-        , data = $this.data('dropdown')
-      if (!data) $this.data('dropdown', (data = new Dropdown(this)))
+        , data = $this.data('dropdown');
+      if (!data) $this.data('dropdown', (data = new Dropdown(this)));
       if (typeof option == 'string') data[option].call($this)
     })
-  }
+  };
 
-  $.fn.dropdown.Constructor = Dropdown
+  $.fn.dropdown.Constructor = Dropdown;
 
 
  /* DROPDOWN NO CONFLICT
   * ==================== */
 
   $.fn.dropdown.noConflict = function () {
-    $.fn.dropdown = old
+    $.fn.dropdown = old;
     return this
-  }
+  };
 
 
   /* APPLY TO STANDARD DROPDOWN ELEMENTS
@@ -39563,11 +39563,11 @@ if (this['Meteor']) {
   * ====================== */
 
   var Modal = function (element, options) {
-    this.options = options
+    this.options = options;
     this.$element = $(element)
-      .delegate('[data-dismiss="modal"]', 'click.dismiss.modal', $.proxy(this.hide, this))
+      .delegate('[data-dismiss="modal"]', 'click.dismiss.modal', $.proxy(this.hide, this));
     this.options.remote && this.$element.find('.modal-body').load(this.options.remote)
-  }
+  };
 
   Modal.prototype = {
 
@@ -39579,34 +39579,34 @@ if (this['Meteor']) {
 
     , show: function () {
         var that = this
-          , e = $.Event('show')
+          , e = $.Event('show');
 
-        this.$element.trigger(e)
+        this.$element.trigger(e);
 
-        if (this.isShown || e.isDefaultPrevented()) return
+        if (this.isShown || e.isDefaultPrevented()) return;
 
-        this.isShown = true
+        this.isShown = true;
 
-        this.escape()
+        this.escape();
 
         this.backdrop(function () {
-          var transition = $.support.transition && that.$element.hasClass('fade')
+          var transition = $.support.transition && that.$element.hasClass('fade');
 
           if (!that.$element.parent().length) {
-            that.$element.appendTo(document.body) //don't move modals dom position
+            that.$element.appendTo(document.body); //don't move modals dom position
           }
 
-          that.$element.show()
+          that.$element.show();
 
           if (transition) {
-            that.$element[0].offsetWidth // force reflow
+            that.$element[0].offsetWidth; // force reflow
           }
 
           that.$element
             .addClass('in')
-            .attr('aria-hidden', false)
+            .attr('aria-hidden', false);
 
-          that.enforceFocus()
+          that.enforceFocus();
 
           transition ?
             that.$element.one($.support.transition.end, function () { that.$element.focus().trigger('shown') }) :
@@ -39616,25 +39616,25 @@ if (this['Meteor']) {
       }
 
     , hide: function (e) {
-        e && e.preventDefault()
+        e && e.preventDefault();
 
-        var that = this
+        var that = this;
 
-        e = $.Event('hide')
+        e = $.Event('hide');
 
-        this.$element.trigger(e)
+        this.$element.trigger(e);
 
-        if (!this.isShown || e.isDefaultPrevented()) return
+        if (!this.isShown || e.isDefaultPrevented()) return;
 
-        this.isShown = false
+        this.isShown = false;
 
-        this.escape()
+        this.escape();
 
-        $(document).off('focusin.modal')
+        $(document).off('focusin.modal');
 
         this.$element
           .removeClass('in')
-          .attr('aria-hidden', true)
+          .attr('aria-hidden', true);
 
         $.support.transition && this.$element.hasClass('fade') ?
           this.hideWithTransition() :
@@ -39642,7 +39642,7 @@ if (this['Meteor']) {
       }
 
     , enforceFocus: function () {
-        var that = this
+        var that = this;
         $(document).on('focusin.modal', function (e) {
           if (that.$element[0] !== e.target && !that.$element.has(e.target).length) {
             that.$element.focus()
@@ -39651,7 +39651,7 @@ if (this['Meteor']) {
       }
 
     , escape: function () {
-        var that = this
+        var that = this;
         if (this.isShown && this.options.keyboard) {
           this.$element.on('keyup.dismiss.modal', function ( e ) {
             e.which == 27 && that.hide()
@@ -39664,58 +39664,58 @@ if (this['Meteor']) {
     , hideWithTransition: function () {
         var that = this
           , timeout = setTimeout(function () {
-              that.$element.off($.support.transition.end)
+              that.$element.off($.support.transition.end);
               that.hideModal()
-            }, 500)
+            }, 500);
 
         this.$element.one($.support.transition.end, function () {
-          clearTimeout(timeout)
+          clearTimeout(timeout);
           that.hideModal()
         })
       }
 
     , hideModal: function () {
-        var that = this
-        this.$element.hide()
+        var that = this;
+        this.$element.hide();
         this.backdrop(function () {
-          that.removeBackdrop()
+          that.removeBackdrop();
           that.$element.trigger('hidden')
         })
       }
 
     , removeBackdrop: function () {
-        this.$backdrop && this.$backdrop.remove()
+        this.$backdrop && this.$backdrop.remove();
         this.$backdrop = null
       }
 
     , backdrop: function (callback) {
         var that = this
-          , animate = this.$element.hasClass('fade') ? 'fade' : ''
+          , animate = this.$element.hasClass('fade') ? 'fade' : '';
 
         if (this.isShown && this.options.backdrop) {
-          var doAnimate = $.support.transition && animate
+          var doAnimate = $.support.transition && animate;
 
           this.$backdrop = $('<div class="modal-backdrop ' + animate + '" />')
-            .appendTo(document.body)
+            .appendTo(document.body);
 
           this.$backdrop.click(
             this.options.backdrop == 'static' ?
               $.proxy(this.$element[0].focus, this.$element[0])
             : $.proxy(this.hide, this)
-          )
+          );
 
-          if (doAnimate) this.$backdrop[0].offsetWidth // force reflow
+          if (doAnimate) this.$backdrop[0].offsetWidth; // force reflow
 
-          this.$backdrop.addClass('in')
+          this.$backdrop.addClass('in');
 
-          if (!callback) return
+          if (!callback) return;
 
           doAnimate ?
             this.$backdrop.one($.support.transition.end, callback) :
             callback()
 
         } else if (!this.isShown && this.$backdrop) {
-          this.$backdrop.removeClass('in')
+          this.$backdrop.removeClass('in');
 
           $.support.transition && this.$element.hasClass('fade')?
             this.$backdrop.one($.support.transition.end, callback) :
@@ -39725,41 +39725,41 @@ if (this['Meteor']) {
           callback()
         }
       }
-  }
+  };
 
 
  /* MODAL PLUGIN DEFINITION
   * ======================= */
 
-  var old = $.fn.modal
+  var old = $.fn.modal;
 
   $.fn.modal = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('modal')
-        , options = $.extend({}, $.fn.modal.defaults, $this.data(), typeof option == 'object' && option)
-      if (!data) $this.data('modal', (data = new Modal(this, options)))
-      if (typeof option == 'string') data[option]()
+        , options = $.extend({}, $.fn.modal.defaults, $this.data(), typeof option == 'object' && option);
+      if (!data) $this.data('modal', (data = new Modal(this, options)));
+      if (typeof option == 'string') data[option]();
       else if (options.show) data.show()
     })
-  }
+  };
 
   $.fn.modal.defaults = {
       backdrop: true
     , keyboard: true
     , show: true
-  }
+  };
 
-  $.fn.modal.Constructor = Modal
+  $.fn.modal.Constructor = Modal;
 
 
  /* MODAL NO CONFLICT
   * ================= */
 
   $.fn.modal.noConflict = function () {
-    $.fn.modal = old
+    $.fn.modal = old;
     return this
-  }
+  };
 
 
  /* MODAL DATA-API
@@ -39769,9 +39769,9 @@ if (this['Meteor']) {
     var $this = $(this)
       , href = $this.attr('href')
       , $target = $($this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, ''))) //strip for ie7
-      , option = $target.data('modal') ? 'toggle' : $.extend({ remote:!/#/.test(href) && href }, $target.data(), $this.data())
+      , option = $target.data('modal') ? 'toggle' : $.extend({ remote:!/#/.test(href) && href }, $target.data(), $this.data());
 
-    e.preventDefault()
+    e.preventDefault();
 
     $target
       .modal(option)
@@ -39812,7 +39812,7 @@ if (this['Meteor']) {
 
   var Tooltip = function (element, options) {
     this.init('tooltip', element, options)
-  }
+  };
 
   Tooltip.prototype = {
 
@@ -39823,23 +39823,23 @@ if (this['Meteor']) {
         , eventOut
         , triggers
         , trigger
-        , i
+        , i;
 
-      this.type = type
-      this.$element = $(element)
-      this.options = this.getOptions(options)
-      this.enabled = true
+      this.type = type;
+      this.$element = $(element);
+      this.options = this.getOptions(options);
+      this.enabled = true;
 
-      triggers = this.options.trigger.split(' ')
+      triggers = this.options.trigger.split(' ');
 
       for (i = triggers.length; i--;) {
-        trigger = triggers[i]
+        trigger = triggers[i];
         if (trigger == 'click') {
           this.$element.on('click.' + this.type, this.options.selector, $.proxy(this.toggle, this))
         } else if (trigger != 'manual') {
-          eventIn = trigger == 'hover' ? 'mouseenter' : 'focus'
-          eventOut = trigger == 'hover' ? 'mouseleave' : 'blur'
-          this.$element.on(eventIn + '.' + this.type, this.options.selector, $.proxy(this.enter, this))
+          eventIn = trigger == 'hover' ? 'mouseenter' : 'focus';
+          eventOut = trigger == 'hover' ? 'mouseleave' : 'blur';
+          this.$element.on(eventIn + '.' + this.type, this.options.selector, $.proxy(this.enter, this));
           this.$element.on(eventOut + '.' + this.type, this.options.selector, $.proxy(this.leave, this))
         }
       }
@@ -39850,7 +39850,7 @@ if (this['Meteor']) {
     }
 
   , getOptions: function (options) {
-      options = $.extend({}, $.fn[this.type].defaults, this.$element.data(), options)
+      options = $.extend({}, $.fn[this.type].defaults, this.$element.data(), options);
 
       if (options.delay && typeof options.delay == 'number') {
         options.delay = {
@@ -39865,30 +39865,30 @@ if (this['Meteor']) {
   , enter: function (e) {
       var defaults = $.fn[this.type].defaults
         , options = {}
-        , self
+        , self;
 
       this._options && $.each(this._options, function (key, value) {
         if (defaults[key] != value) options[key] = value
-      }, this)
+      }, this);
 
-      self = $(e.currentTarget)[this.type](options).data(this.type)
+      self = $(e.currentTarget)[this.type](options).data(this.type);
 
-      if (!self.options.delay || !self.options.delay.show) return self.show()
+      if (!self.options.delay || !self.options.delay.show) return self.show();
 
-      clearTimeout(this.timeout)
-      self.hoverState = 'in'
+      clearTimeout(this.timeout);
+      self.hoverState = 'in';
       this.timeout = setTimeout(function() {
         if (self.hoverState == 'in') self.show()
       }, self.options.delay.show)
     }
 
   , leave: function (e) {
-      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
+      var self = $(e.currentTarget)[this.type](this._options).data(this.type);
 
-      if (this.timeout) clearTimeout(this.timeout)
-      if (!self.options.delay || !self.options.delay.hide) return self.hide()
+      if (this.timeout) clearTimeout(this.timeout);
+      if (!self.options.delay || !self.options.delay.hide) return self.hide();
 
-      self.hoverState = 'out'
+      self.hoverState = 'out';
       this.timeout = setTimeout(function() {
         if (self.hoverState == 'out') self.hide()
       }, self.options.delay.hide)
@@ -39901,13 +39901,13 @@ if (this['Meteor']) {
         , actualHeight
         , placement
         , tp
-        , e = $.Event('show')
+        , e = $.Event('show');
 
       if (this.hasContent() && this.enabled) {
-        this.$element.trigger(e)
-        if (e.isDefaultPrevented()) return
-        $tip = this.tip()
-        this.setContent()
+        this.$element.trigger(e);
+        if (e.isDefaultPrevented()) return;
+        $tip = this.tip();
+        this.setContent();
 
         if (this.options.animation) {
           $tip.addClass('fade')
@@ -39915,35 +39915,35 @@ if (this['Meteor']) {
 
         placement = typeof this.options.placement == 'function' ?
           this.options.placement.call(this, $tip[0], this.$element[0]) :
-          this.options.placement
+          this.options.placement;
 
         $tip
           .detach()
-          .css({ top: 0, left: 0, display: 'block' })
+          .css({ top: 0, left: 0, display: 'block' });
 
-        this.options.container ? $tip.appendTo(this.options.container) : $tip.insertAfter(this.$element)
+        this.options.container ? $tip.appendTo(this.options.container) : $tip.insertAfter(this.$element);
 
-        pos = this.getPosition()
+        pos = this.getPosition();
 
-        actualWidth = $tip[0].offsetWidth
-        actualHeight = $tip[0].offsetHeight
+        actualWidth = $tip[0].offsetWidth;
+        actualHeight = $tip[0].offsetHeight;
 
         switch (placement) {
           case 'bottom':
-            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2}
-            break
+            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2};
+            break;
           case 'top':
-            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2}
-            break
+            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2};
+            break;
           case 'left':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
-            break
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth};
+            break;
           case 'right':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width};
             break
         }
 
-        this.applyPlacement(tp, placement)
+        this.applyPlacement(tp, placement);
         this.$element.trigger('shown')
       }
     }
@@ -39955,29 +39955,29 @@ if (this['Meteor']) {
         , actualWidth
         , actualHeight
         , delta
-        , replace
+        , replace;
 
       $tip
         .offset(offset)
         .addClass(placement)
-        .addClass('in')
+        .addClass('in');
 
-      actualWidth = $tip[0].offsetWidth
-      actualHeight = $tip[0].offsetHeight
+      actualWidth = $tip[0].offsetWidth;
+      actualHeight = $tip[0].offsetHeight;
 
       if (placement == 'top' && actualHeight != height) {
-        offset.top = offset.top + height - actualHeight
+        offset.top = offset.top + height - actualHeight;
         replace = true
       }
 
       if (placement == 'bottom' || placement == 'top') {
-        delta = 0
+        delta = 0;
 
         if (offset.left < 0){
-          delta = offset.left * -2
-          offset.left = 0
-          $tip.offset(offset)
-          actualWidth = $tip[0].offsetWidth
+          delta = offset.left * -2;
+          offset.left = 0;
+          $tip.offset(offset);
+          actualWidth = $tip[0].offsetWidth;
           actualHeight = $tip[0].offsetHeight
         }
 
@@ -39997,44 +39997,44 @@ if (this['Meteor']) {
 
   , setContent: function () {
       var $tip = this.tip()
-        , title = this.getTitle()
+        , title = this.getTitle();
 
-      $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title)
+      $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title);
       $tip.removeClass('fade in top bottom left right')
     }
 
   , hide: function () {
       var that = this
         , $tip = this.tip()
-        , e = $.Event('hide')
+        , e = $.Event('hide');
 
-      this.$element.trigger(e)
-      if (e.isDefaultPrevented()) return
+      this.$element.trigger(e);
+      if (e.isDefaultPrevented()) return;
 
-      $tip.removeClass('in')
+      $tip.removeClass('in');
 
       function removeWithAnimation() {
         var timeout = setTimeout(function () {
           $tip.off($.support.transition.end).detach()
-        }, 500)
+        }, 500);
 
         $tip.one($.support.transition.end, function () {
-          clearTimeout(timeout)
+          clearTimeout(timeout);
           $tip.detach()
         })
       }
 
       $.support.transition && this.$tip.hasClass('fade') ?
         removeWithAnimation() :
-        $tip.detach()
+        $tip.detach();
 
-      this.$element.trigger('hidden')
+      this.$element.trigger('hidden');
 
       return this
     }
 
   , fixTitle: function () {
-      var $e = this.$element
+      var $e = this.$element;
       if ($e.attr('title') || typeof($e.attr('data-original-title')) != 'string') {
         $e.attr('data-original-title', $e.attr('title') || '').attr('title', '')
       }
@@ -40045,7 +40045,7 @@ if (this['Meteor']) {
     }
 
   , getPosition: function () {
-      var el = this.$element[0]
+      var el = this.$element[0];
       return $.extend({}, (typeof el.getBoundingClientRect == 'function') ? el.getBoundingClientRect() : {
         width: el.offsetWidth
       , height: el.offsetHeight
@@ -40055,10 +40055,10 @@ if (this['Meteor']) {
   , getTitle: function () {
       var title
         , $e = this.$element
-        , o = this.options
+        , o = this.options;
 
       title = $e.attr('data-original-title')
-        || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title)
+        || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title);
 
       return title
     }
@@ -40073,8 +40073,8 @@ if (this['Meteor']) {
 
   , validate: function () {
       if (!this.$element[0].parentNode) {
-        this.hide()
-        this.$element = null
+        this.hide();
+        this.$element = null;
         this.options = null
       }
     }
@@ -40092,7 +40092,7 @@ if (this['Meteor']) {
     }
 
   , toggle: function (e) {
-      var self = e ? $(e.currentTarget)[this.type](this._options).data(this.type) : this
+      var self = e ? $(e.currentTarget)[this.type](this._options).data(this.type) : this;
       self.tip().hasClass('in') ? self.hide() : self.show()
     }
 
@@ -40100,25 +40100,25 @@ if (this['Meteor']) {
       this.hide().$element.off('.' + this.type).removeData(this.type)
     }
 
-  }
+  };
 
 
  /* TOOLTIP PLUGIN DEFINITION
   * ========================= */
 
-  var old = $.fn.tooltip
+  var old = $.fn.tooltip;
 
   $.fn.tooltip = function ( option ) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('tooltip')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)))
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
-  $.fn.tooltip.Constructor = Tooltip
+  $.fn.tooltip.Constructor = Tooltip;
 
   $.fn.tooltip.defaults = {
     animation: true
@@ -40130,14 +40130,14 @@ if (this['Meteor']) {
   , delay: 0
   , html: false
   , container: false
-  }
+  };
 
 
  /* TOOLTIP NO CONFLICT
   * =================== */
 
   $.fn.tooltip.noConflict = function () {
-    $.fn.tooltip = old
+    $.fn.tooltip = old;
     return this
   }
 
@@ -40172,7 +40172,7 @@ if (this['Meteor']) {
 
   var Popover = function (element, options) {
     this.init('popover', element, options)
-  }
+  };
 
 
   /* NOTE: POPOVER EXTENDS BOOTSTRAP-TOOLTIP.js
@@ -40185,10 +40185,10 @@ if (this['Meteor']) {
   , setContent: function () {
       var $tip = this.tip()
         , title = this.getTitle()
-        , content = this.getContent()
+        , content = this.getContent();
 
-      $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
-      $tip.find('.popover-content')[this.options.html ? 'html' : 'text'](content)
+      $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title);
+      $tip.find('.popover-content')[this.options.html ? 'html' : 'text'](content);
 
       $tip.removeClass('fade top bottom left right in')
     }
@@ -40200,10 +40200,10 @@ if (this['Meteor']) {
   , getContent: function () {
       var content
         , $e = this.$element
-        , o = this.options
+        , o = this.options;
 
       content = (typeof o.content == 'function' ? o.content.call($e[0]) :  o.content)
-        || $e.attr('data-content')
+        || $e.attr('data-content');
 
       return content
     }
@@ -40219,39 +40219,39 @@ if (this['Meteor']) {
       this.hide().$element.off('.' + this.type).removeData(this.type)
     }
 
-  })
+  });
 
 
  /* POPOVER PLUGIN DEFINITION
   * ======================= */
 
-  var old = $.fn.popover
+  var old = $.fn.popover;
 
   $.fn.popover = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('popover')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('popover', (data = new Popover(this, options)))
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('popover', (data = new Popover(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
-  $.fn.popover.Constructor = Popover
+  $.fn.popover.Constructor = Popover;
 
   $.fn.popover.defaults = $.extend({} , $.fn.tooltip.defaults, {
     placement: 'right'
   , trigger: 'click'
   , content: ''
   , template: '<div class="popover"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
-  })
+  });
 
 
  /* POPOVER NO CONFLICT
   * =================== */
 
   $.fn.popover.noConflict = function () {
-    $.fn.popover = old
+    $.fn.popover = old;
     return this
   }
 
@@ -40287,14 +40287,14 @@ if (this['Meteor']) {
   function ScrollSpy(element, options) {
     var process = $.proxy(this.process, this)
       , $element = $(element).is('body') ? $(window) : $(element)
-      , href
-    this.options = $.extend({}, $.fn.scrollspy.defaults, options)
-    this.$scrollElement = $element.on('scroll.scroll-spy.data-api', process)
+      , href;
+    this.options = $.extend({}, $.fn.scrollspy.defaults, options);
+    this.$scrollElement = $element.on('scroll.scroll-spy.data-api', process);
     this.selector = (this.options.target
       || ((href = $(element).attr('href')) && href.replace(/.*(?=#[^\s]+$)/, '')) //strip for ie7
-      || '') + ' .nav li > a'
-    this.$body = $('body')
-    this.refresh()
+      || '') + ' .nav li > a';
+    this.$body = $('body');
+    this.refresh();
     this.process()
   }
 
@@ -40304,24 +40304,24 @@ if (this['Meteor']) {
 
     , refresh: function () {
         var self = this
-          , $targets
+          , $targets;
 
-        this.offsets = $([])
-        this.targets = $([])
+        this.offsets = $([]);
+        this.targets = $([]);
 
         $targets = this.$body
           .find(this.selector)
           .map(function () {
             var $el = $(this)
               , href = $el.data('target') || $el.attr('href')
-              , $href = /^#\w/.test(href) && $(href)
+              , $href = /^#\w/.test(href) && $(href);
             return ( $href
               && $href.length
               && [[ $href.position().top + (!$.isWindow(self.$scrollElement.get(0)) && self.$scrollElement.scrollTop()), href ]] ) || null
           })
           .sort(function (a, b) { return a[0] - b[0] })
           .each(function () {
-            self.offsets.push(this[0])
+            self.offsets.push(this[0]);
             self.targets.push(this[1])
           })
       }
@@ -40333,7 +40333,7 @@ if (this['Meteor']) {
           , offsets = this.offsets
           , targets = this.targets
           , activeTarget = this.activeTarget
-          , i
+          , i;
 
         if (scrollTop >= maxScroll) {
           return activeTarget != (i = targets.last()[0])
@@ -40350,21 +40350,21 @@ if (this['Meteor']) {
 
     , activate: function (target) {
         var active
-          , selector
+          , selector;
 
-        this.activeTarget = target
+        this.activeTarget = target;
 
         $(this.selector)
           .parent('.active')
-          .removeClass('active')
+          .removeClass('active');
 
         selector = this.selector
           + '[data-target="' + target + '"],'
-          + this.selector + '[href="' + target + '"]'
+          + this.selector + '[href="' + target + '"]';
 
         active = $(selector)
           .parent('li')
-          .addClass('active')
+          .addClass('active');
 
         if (active.parent('.dropdown-menu').length)  {
           active = active.closest('li.dropdown').addClass('active')
@@ -40373,38 +40373,38 @@ if (this['Meteor']) {
         active.trigger('activate')
       }
 
-  }
+  };
 
 
  /* SCROLLSPY PLUGIN DEFINITION
   * =========================== */
 
-  var old = $.fn.scrollspy
+  var old = $.fn.scrollspy;
 
   $.fn.scrollspy = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('scrollspy')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('scrollspy', (data = new ScrollSpy(this, options)))
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('scrollspy', (data = new ScrollSpy(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
-  $.fn.scrollspy.Constructor = ScrollSpy
+  $.fn.scrollspy.Constructor = ScrollSpy;
 
   $.fn.scrollspy.defaults = {
     offset: 10
-  }
+  };
 
 
  /* SCROLLSPY NO CONFLICT
   * ===================== */
 
   $.fn.scrollspy.noConflict = function () {
-    $.fn.scrollspy = old
+    $.fn.scrollspy = old;
     return this
-  }
+  };
 
 
  /* SCROLLSPY DATA-API
@@ -40412,7 +40412,7 @@ if (this['Meteor']) {
 
   $(window).on('load', function () {
     $('[data-spy="scroll"]').each(function () {
-      var $spy = $(this)
+      var $spy = $(this);
       $spy.scrollspy($spy.data())
     })
   })
@@ -40447,7 +40447,7 @@ if (this['Meteor']) {
 
   var Tab = function (element) {
     this.element = $(element)
-  }
+  };
 
   Tab.prototype = {
 
@@ -40459,28 +40459,28 @@ if (this['Meteor']) {
         , selector = $this.attr('data-target')
         , previous
         , $target
-        , e
+        , e;
 
       if (!selector) {
-        selector = $this.attr('href')
-        selector = selector && selector.replace(/.*(?=#[^\s]*$)/, '') //strip for ie7
+        selector = $this.attr('href');
+        selector = selector && selector.replace(/.*(?=#[^\s]*$)/, ''); //strip for ie7
       }
 
-      if ( $this.parent('li').hasClass('active') ) return
+      if ( $this.parent('li').hasClass('active') ) return;
 
-      previous = $ul.find('.active:last a')[0]
+      previous = $ul.find('.active:last a')[0];
 
       e = $.Event('show', {
         relatedTarget: previous
-      })
+      });
 
-      $this.trigger(e)
+      $this.trigger(e);
 
-      if (e.isDefaultPrevented()) return
+      if (e.isDefaultPrevented()) return;
 
-      $target = $(selector)
+      $target = $(selector);
 
-      this.activate($this.parent('li'), $ul)
+      this.activate($this.parent('li'), $ul);
       this.activate($target, $target.parent(), function () {
         $this.trigger({
           type: 'shown'
@@ -40493,18 +40493,18 @@ if (this['Meteor']) {
       var $active = container.find('> .active')
         , transition = callback
             && $.support.transition
-            && $active.hasClass('fade')
+            && $active.hasClass('fade');
 
       function next() {
         $active
           .removeClass('active')
           .find('> .dropdown-menu > .active')
-          .removeClass('active')
+          .removeClass('active');
 
-        element.addClass('active')
+        element.addClass('active');
 
         if (transition) {
-          element[0].offsetWidth // reflow for transition
+          element[0].offsetWidth; // reflow for transition
           element.addClass('in')
         } else {
           element.removeClass('fade')
@@ -40519,44 +40519,44 @@ if (this['Meteor']) {
 
       transition ?
         $active.one($.support.transition.end, next) :
-        next()
+        next();
 
       $active.removeClass('in')
     }
-  }
+  };
 
 
  /* TAB PLUGIN DEFINITION
   * ===================== */
 
-  var old = $.fn.tab
+  var old = $.fn.tab;
 
   $.fn.tab = function ( option ) {
     return this.each(function () {
       var $this = $(this)
-        , data = $this.data('tab')
-      if (!data) $this.data('tab', (data = new Tab(this)))
+        , data = $this.data('tab');
+      if (!data) $this.data('tab', (data = new Tab(this)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
-  $.fn.tab.Constructor = Tab
+  $.fn.tab.Constructor = Tab;
 
 
  /* TAB NO CONFLICT
   * =============== */
 
   $.fn.tab.noConflict = function () {
-    $.fn.tab = old
+    $.fn.tab = old;
     return this
-  }
+  };
 
 
  /* TAB DATA-API
   * ============ */
 
   $(document).on('click.tab.data-api', '[data-toggle="tab"], [data-toggle="pill"]', function (e) {
-    e.preventDefault()
+    e.preventDefault();
     $(this).tab('show')
   })
 
@@ -40589,27 +40589,27 @@ if (this['Meteor']) {
   * ================================= */
 
   var Typeahead = function (element, options) {
-    this.$element = $(element)
-    this.options = $.extend({}, $.fn.typeahead.defaults, options)
-    this.matcher = this.options.matcher || this.matcher
-    this.sorter = this.options.sorter || this.sorter
-    this.highlighter = this.options.highlighter || this.highlighter
-    this.updater = this.options.updater || this.updater
-    this.source = this.options.source
-    this.$menu = $(this.options.menu)
-    this.shown = false
+    this.$element = $(element);
+    this.options = $.extend({}, $.fn.typeahead.defaults, options);
+    this.matcher = this.options.matcher || this.matcher;
+    this.sorter = this.options.sorter || this.sorter;
+    this.highlighter = this.options.highlighter || this.highlighter;
+    this.updater = this.options.updater || this.updater;
+    this.source = this.options.source;
+    this.$menu = $(this.options.menu);
+    this.shown = false;
     this.listen()
-  }
+  };
 
   Typeahead.prototype = {
 
     constructor: Typeahead
 
   , select: function () {
-      var val = this.$menu.find('.active').attr('data-value')
+      var val = this.$menu.find('.active').attr('data-value');
       this.$element
         .val(this.updater(val))
-        .change()
+        .change();
       return this.hide()
     }
 
@@ -40620,7 +40620,7 @@ if (this['Meteor']) {
   , show: function () {
       var pos = $.extend({}, this.$element.position(), {
         height: this.$element[0].offsetHeight
-      })
+      });
 
       this.$menu
         .insertAfter(this.$element)
@@ -40628,40 +40628,40 @@ if (this['Meteor']) {
           top: pos.top + pos.height
         , left: pos.left
         })
-        .show()
+        .show();
 
-      this.shown = true
+      this.shown = true;
       return this
     }
 
   , hide: function () {
-      this.$menu.hide()
-      this.shown = false
+      this.$menu.hide();
+      this.shown = false;
       return this
     }
 
   , lookup: function (event) {
-      var items
+      var items;
 
-      this.query = this.$element.val()
+      this.query = this.$element.val();
 
       if (!this.query || this.query.length < this.options.minLength) {
         return this.shown ? this.hide() : this
       }
 
-      items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source
+      items = $.isFunction(this.source) ? this.source(this.query, $.proxy(this.process, this)) : this.source;
 
       return items ? this.process(items) : this
     }
 
   , process: function (items) {
-      var that = this
+      var that = this;
 
       items = $.grep(items, function (item) {
         return that.matcher(item)
-      })
+      });
 
-      items = this.sorter(items)
+      items = this.sorter(items);
 
       if (!items.length) {
         return this.shown ? this.hide() : this
@@ -40678,11 +40678,11 @@ if (this['Meteor']) {
       var beginswith = []
         , caseSensitive = []
         , caseInsensitive = []
-        , item
+        , item;
 
       while (item = items.shift()) {
-        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item)
-        else if (~item.indexOf(this.query)) caseSensitive.push(item)
+        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item);
+        else if (~item.indexOf(this.query)) caseSensitive.push(item);
         else caseInsensitive.push(item)
       }
 
@@ -40690,29 +40690,29 @@ if (this['Meteor']) {
     }
 
   , highlighter: function (item) {
-      var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&')
+      var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
       return item.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
         return '<strong>' + match + '</strong>'
       })
     }
 
   , render: function (items) {
-      var that = this
+      var that = this;
 
       items = $(items).map(function (i, item) {
-        i = $(that.options.item).attr('data-value', item)
-        i.find('a').html(that.highlighter(item))
+        i = $(that.options.item).attr('data-value', item);
+        i.find('a').html(that.highlighter(item));
         return i[0]
-      })
+      });
 
-      items.first().addClass('active')
-      this.$menu.html(items)
+      items.first().addClass('active');
+      this.$menu.html(items);
       return this
     }
 
   , next: function (event) {
       var active = this.$menu.find('.active').removeClass('active')
-        , next = active.next()
+        , next = active.next();
 
       if (!next.length) {
         next = $(this.$menu.find('li')[0])
@@ -40723,7 +40723,7 @@ if (this['Meteor']) {
 
   , prev: function (event) {
       var active = this.$menu.find('.active').removeClass('active')
-        , prev = active.prev()
+        , prev = active.prev();
 
       if (!prev.length) {
         prev = this.$menu.find('li').last()
@@ -40737,7 +40737,7 @@ if (this['Meteor']) {
         .on('focus',    $.proxy(this.focus, this))
         .on('blur',     $.proxy(this.blur, this))
         .on('keypress', $.proxy(this.keypress, this))
-        .on('keyup',    $.proxy(this.keyup, this))
+        .on('keyup',    $.proxy(this.keyup, this));
 
       if (this.eventSupported('keydown')) {
         this.$element.on('keydown', $.proxy(this.keydown, this))
@@ -40750,32 +40750,32 @@ if (this['Meteor']) {
     }
 
   , eventSupported: function(eventName) {
-      var isSupported = eventName in this.$element
+      var isSupported = eventName in this.$element;
       if (!isSupported) {
-        this.$element.setAttribute(eventName, 'return;')
+        this.$element.setAttribute(eventName, 'return;');
         isSupported = typeof this.$element[eventName] === 'function'
       }
       return isSupported
     }
 
   , move: function (e) {
-      if (!this.shown) return
+      if (!this.shown) return;
 
       switch(e.keyCode) {
         case 9: // tab
         case 13: // enter
         case 27: // escape
-          e.preventDefault()
-          break
+          e.preventDefault();
+          break;
 
         case 38: // up arrow
-          e.preventDefault()
-          this.prev()
-          break
+          e.preventDefault();
+          this.prev();
+          break;
 
         case 40: // down arrow
-          e.preventDefault()
-          this.next()
+          e.preventDefault();
+          this.next();
           break
       }
 
@@ -40783,12 +40783,12 @@ if (this['Meteor']) {
     }
 
   , keydown: function (e) {
-      this.suppressKeyPressRepeat = ~$.inArray(e.keyCode, [40,38,9,13,27])
+      this.suppressKeyPressRepeat = ~$.inArray(e.keyCode, [40,38,9,13,27]);
       this.move(e)
     }
 
   , keypress: function (e) {
-      if (this.suppressKeyPressRepeat) return
+      if (this.suppressKeyPressRepeat) return;
       this.move(e)
     }
 
@@ -40799,24 +40799,24 @@ if (this['Meteor']) {
         case 16: // shift
         case 17: // ctrl
         case 18: // alt
-          break
+          break;
 
         case 9: // tab
         case 13: // enter
-          if (!this.shown) return
-          this.select()
-          break
+          if (!this.shown) return;
+          this.select();
+          break;
 
         case 27: // escape
-          if (!this.shown) return
-          this.hide()
-          break
+          if (!this.shown) return;
+          this.hide();
+          break;
 
         default:
           this.lookup()
       }
 
-      e.stopPropagation()
+      e.stopPropagation();
       e.preventDefault()
   }
 
@@ -40825,45 +40825,45 @@ if (this['Meteor']) {
     }
 
   , blur: function (e) {
-      this.focused = false
+      this.focused = false;
       if (!this.mousedover && this.shown) this.hide()
     }
 
   , click: function (e) {
-      e.stopPropagation()
-      e.preventDefault()
-      this.select()
+      e.stopPropagation();
+      e.preventDefault();
+      this.select();
       this.$element.focus()
     }
 
   , mouseenter: function (e) {
-      this.mousedover = true
-      this.$menu.find('.active').removeClass('active')
+      this.mousedover = true;
+      this.$menu.find('.active').removeClass('active');
       $(e.currentTarget).addClass('active')
     }
 
   , mouseleave: function (e) {
-      this.mousedover = false
+      this.mousedover = false;
       if (!this.focused && this.shown) this.hide()
     }
 
-  }
+  };
 
 
   /* TYPEAHEAD PLUGIN DEFINITION
    * =========================== */
 
-  var old = $.fn.typeahead
+  var old = $.fn.typeahead;
 
   $.fn.typeahead = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('typeahead')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('typeahead', (data = new Typeahead(this, options)))
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('typeahead', (data = new Typeahead(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
   $.fn.typeahead.defaults = {
     source: []
@@ -40871,26 +40871,26 @@ if (this['Meteor']) {
   , menu: '<ul class="typeahead dropdown-menu"></ul>'
   , item: '<li><a href="#"></a></li>'
   , minLength: 1
-  }
+  };
 
-  $.fn.typeahead.Constructor = Typeahead
+  $.fn.typeahead.Constructor = Typeahead;
 
 
  /* TYPEAHEAD NO CONFLICT
   * =================== */
 
   $.fn.typeahead.noConflict = function () {
-    $.fn.typeahead = old
+    $.fn.typeahead = old;
     return this
-  }
+  };
 
 
  /* TYPEAHEAD DATA-API
   * ================== */
 
   $(document).on('focus.typeahead.data-api', '[data-provide="typeahead"]', function (e) {
-    var $this = $(this)
-    if ($this.data('typeahead')) return
+    var $this = $(this);
+    if ($this.data('typeahead')) return;
     $this.typeahead($this.data())
   })
 
@@ -40924,16 +40924,16 @@ if (this['Meteor']) {
   * ====================== */
 
   var Affix = function (element, options) {
-    this.options = $.extend({}, $.fn.affix.defaults, options)
+    this.options = $.extend({}, $.fn.affix.defaults, options);
     this.$window = $(window)
       .on('scroll.affix.data-api', $.proxy(this.checkPosition, this))
-      .on('click.affix.data-api',  $.proxy(function () { setTimeout($.proxy(this.checkPosition, this), 1) }, this))
-    this.$element = $(element)
+      .on('click.affix.data-api',  $.proxy(function () { setTimeout($.proxy(this.checkPosition, this), 1) }, this));
+    this.$element = $(element);
     this.checkPosition()
-  }
+  };
 
   Affix.prototype.checkPosition = function () {
-    if (!this.$element.is(':visible')) return
+    if (!this.$element.is(':visible')) return;
 
     var scrollHeight = $(document).height()
       , scrollTop = this.$window.scrollTop()
@@ -40942,55 +40942,55 @@ if (this['Meteor']) {
       , offsetBottom = offset.bottom
       , offsetTop = offset.top
       , reset = 'affix affix-top affix-bottom'
-      , affix
+      , affix;
 
-    if (typeof offset != 'object') offsetBottom = offsetTop = offset
-    if (typeof offsetTop == 'function') offsetTop = offset.top()
-    if (typeof offsetBottom == 'function') offsetBottom = offset.bottom()
+    if (typeof offset != 'object') offsetBottom = offsetTop = offset;
+    if (typeof offsetTop == 'function') offsetTop = offset.top();
+    if (typeof offsetBottom == 'function') offsetBottom = offset.bottom();
 
     affix = this.unpin != null && (scrollTop + this.unpin <= position.top) ?
       false    : offsetBottom != null && (position.top + this.$element.height() >= scrollHeight - offsetBottom) ?
       'bottom' : offsetTop != null && scrollTop <= offsetTop ?
-      'top'    : false
+      'top'    : false;
 
-    if (this.affixed === affix) return
+    if (this.affixed === affix) return;
 
-    this.affixed = affix
-    this.unpin = affix == 'bottom' ? position.top - scrollTop : null
+    this.affixed = affix;
+    this.unpin = affix == 'bottom' ? position.top - scrollTop : null;
 
     this.$element.removeClass(reset).addClass('affix' + (affix ? '-' + affix : ''))
-  }
+  };
 
 
  /* AFFIX PLUGIN DEFINITION
   * ======================= */
 
-  var old = $.fn.affix
+  var old = $.fn.affix;
 
   $.fn.affix = function (option) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('affix')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('affix', (data = new Affix(this, options)))
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('affix', (data = new Affix(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
-  $.fn.affix.Constructor = Affix
+  $.fn.affix.Constructor = Affix;
 
   $.fn.affix.defaults = {
     offset: 0
-  }
+  };
 
 
  /* AFFIX NO CONFLICT
   * ================= */
 
   $.fn.affix.noConflict = function () {
-    $.fn.affix = old
+    $.fn.affix = old;
     return this
-  }
+  };
 
 
  /* AFFIX DATA-API
@@ -40999,12 +40999,12 @@ if (this['Meteor']) {
   $(window).on('load', function () {
     $('[data-spy="affix"]').each(function () {
       var $spy = $(this)
-        , data = $spy.data()
+        , data = $spy.data();
 
-      data.offset = data.offset || {}
+      data.offset = data.offset || {};
 
-      data.offsetBottom && (data.offset.bottom = data.offsetBottom)
-      data.offsetTop && (data.offset.top = data.offsetTop)
+      data.offsetBottom && (data.offset.bottom = data.offsetBottom);
+      data.offsetTop && (data.offset.top = data.offsetTop);
 
       $spy.affix(data)
     })
@@ -41043,7 +41043,7 @@ if (this['Meteor']) {
 
   var Tooltip = function (element, options) {
     this.init('tooltip', element, options)
-  }
+  };
 
   Tooltip.prototype = {
 
@@ -41054,23 +41054,23 @@ if (this['Meteor']) {
         , eventOut
         , triggers
         , trigger
-        , i
+        , i;
 
-      this.type = type
-      this.$element = $(element)
-      this.options = this.getOptions(options)
-      this.enabled = true
+      this.type = type;
+      this.$element = $(element);
+      this.options = this.getOptions(options);
+      this.enabled = true;
 
-      triggers = this.options.trigger.split(' ')
+      triggers = this.options.trigger.split(' ');
 
       for (i = triggers.length; i--;) {
-        trigger = triggers[i]
+        trigger = triggers[i];
         if (trigger == 'click') {
           this.$element.on('click.' + this.type, this.options.selector, $.proxy(this.toggle, this))
         } else if (trigger != 'manual') {
-          eventIn = trigger == 'hover' ? 'mouseenter' : 'focus'
-          eventOut = trigger == 'hover' ? 'mouseleave' : 'blur'
-          this.$element.on(eventIn + '.' + this.type, this.options.selector, $.proxy(this.enter, this))
+          eventIn = trigger == 'hover' ? 'mouseenter' : 'focus';
+          eventOut = trigger == 'hover' ? 'mouseleave' : 'blur';
+          this.$element.on(eventIn + '.' + this.type, this.options.selector, $.proxy(this.enter, this));
           this.$element.on(eventOut + '.' + this.type, this.options.selector, $.proxy(this.leave, this))
         }
       }
@@ -41081,7 +41081,7 @@ if (this['Meteor']) {
     }
 
   , getOptions: function (options) {
-      options = $.extend({}, $.fn[this.type].defaults, this.$element.data(), options)
+      options = $.extend({}, $.fn[this.type].defaults, this.$element.data(), options);
 
       if (options.delay && typeof options.delay == 'number') {
         options.delay = {
@@ -41096,30 +41096,30 @@ if (this['Meteor']) {
   , enter: function (e) {
       var defaults = $.fn[this.type].defaults
         , options = {}
-        , self
+        , self;
 
       this._options && $.each(this._options, function (key, value) {
         if (defaults[key] != value) options[key] = value
-      }, this)
+      }, this);
 
-      self = $(e.currentTarget)[this.type](options).data(this.type)
+      self = $(e.currentTarget)[this.type](options).data(this.type);
 
-      if (!self.options.delay || !self.options.delay.show) return self.show()
+      if (!self.options.delay || !self.options.delay.show) return self.show();
 
-      clearTimeout(this.timeout)
-      self.hoverState = 'in'
+      clearTimeout(this.timeout);
+      self.hoverState = 'in';
       this.timeout = setTimeout(function() {
         if (self.hoverState == 'in') self.show()
       }, self.options.delay.show)
     }
 
   , leave: function (e) {
-      var self = $(e.currentTarget)[this.type](this._options).data(this.type)
+      var self = $(e.currentTarget)[this.type](this._options).data(this.type);
 
-      if (this.timeout) clearTimeout(this.timeout)
-      if (!self.options.delay || !self.options.delay.hide) return self.hide()
+      if (this.timeout) clearTimeout(this.timeout);
+      if (!self.options.delay || !self.options.delay.hide) return self.hide();
 
-      self.hoverState = 'out'
+      self.hoverState = 'out';
       this.timeout = setTimeout(function() {
         if (self.hoverState == 'out') self.hide()
       }, self.options.delay.hide)
@@ -41132,13 +41132,13 @@ if (this['Meteor']) {
         , actualHeight
         , placement
         , tp
-        , e = $.Event('show')
+        , e = $.Event('show');
 
       if (this.hasContent() && this.enabled) {
-        this.$element.trigger(e)
-        if (e.isDefaultPrevented()) return
-        $tip = this.tip()
-        this.setContent()
+        this.$element.trigger(e);
+        if (e.isDefaultPrevented()) return;
+        $tip = this.tip();
+        this.setContent();
 
         if (this.options.animation) {
           $tip.addClass('fade')
@@ -41146,35 +41146,35 @@ if (this['Meteor']) {
 
         placement = typeof this.options.placement == 'function' ?
           this.options.placement.call(this, $tip[0], this.$element[0]) :
-          this.options.placement
+          this.options.placement;
 
         $tip
           .detach()
-          .css({ top: 0, left: 0, display: 'block' })
+          .css({ top: 0, left: 0, display: 'block' });
 
-        this.options.container ? $tip.appendTo(this.options.container) : $tip.insertAfter(this.$element)
+        this.options.container ? $tip.appendTo(this.options.container) : $tip.insertAfter(this.$element);
 
-        pos = this.getPosition()
+        pos = this.getPosition();
 
-        actualWidth = $tip[0].offsetWidth
-        actualHeight = $tip[0].offsetHeight
+        actualWidth = $tip[0].offsetWidth;
+        actualHeight = $tip[0].offsetHeight;
 
         switch (placement) {
           case 'bottom':
-            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2}
-            break
+            tp = {top: pos.top + pos.height, left: pos.left + pos.width / 2 - actualWidth / 2};
+            break;
           case 'top':
-            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2}
-            break
+            tp = {top: pos.top - actualHeight, left: pos.left + pos.width / 2 - actualWidth / 2};
+            break;
           case 'left':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth}
-            break
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left - actualWidth};
+            break;
           case 'right':
-            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width}
+            tp = {top: pos.top + pos.height / 2 - actualHeight / 2, left: pos.left + pos.width};
             break
         }
 
-        this.applyPlacement(tp, placement)
+        this.applyPlacement(tp, placement);
         this.$element.trigger('shown')
       }
     }
@@ -41186,29 +41186,29 @@ if (this['Meteor']) {
         , actualWidth
         , actualHeight
         , delta
-        , replace
+        , replace;
 
       $tip
         .offset(offset)
         .addClass(placement)
-        .addClass('in')
+        .addClass('in');
 
-      actualWidth = $tip[0].offsetWidth
-      actualHeight = $tip[0].offsetHeight
+      actualWidth = $tip[0].offsetWidth;
+      actualHeight = $tip[0].offsetHeight;
 
       if (placement == 'top' && actualHeight != height) {
-        offset.top = offset.top + height - actualHeight
+        offset.top = offset.top + height - actualHeight;
         replace = true
       }
 
       if (placement == 'bottom' || placement == 'top') {
-        delta = 0
+        delta = 0;
 
         if (offset.left < 0){
-          delta = offset.left * -2
-          offset.left = 0
-          $tip.offset(offset)
-          actualWidth = $tip[0].offsetWidth
+          delta = offset.left * -2;
+          offset.left = 0;
+          $tip.offset(offset);
+          actualWidth = $tip[0].offsetWidth;
           actualHeight = $tip[0].offsetHeight
         }
 
@@ -41228,44 +41228,44 @@ if (this['Meteor']) {
 
   , setContent: function () {
       var $tip = this.tip()
-        , title = this.getTitle()
+        , title = this.getTitle();
 
-      $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title)
+      $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title);
       $tip.removeClass('fade in top bottom left right')
     }
 
   , hide: function () {
       var that = this
         , $tip = this.tip()
-        , e = $.Event('hide')
+        , e = $.Event('hide');
 
-      this.$element.trigger(e)
-      if (e.isDefaultPrevented()) return
+      this.$element.trigger(e);
+      if (e.isDefaultPrevented()) return;
 
-      $tip.removeClass('in')
+      $tip.removeClass('in');
 
       function removeWithAnimation() {
         var timeout = setTimeout(function () {
           $tip.off($.support.transition.end).detach()
-        }, 500)
+        }, 500);
 
         $tip.one($.support.transition.end, function () {
-          clearTimeout(timeout)
+          clearTimeout(timeout);
           $tip.detach()
         })
       }
 
       $.support.transition && this.$tip.hasClass('fade') ?
         removeWithAnimation() :
-        $tip.detach()
+        $tip.detach();
 
-      this.$element.trigger('hidden')
+      this.$element.trigger('hidden');
 
       return this
     }
 
   , fixTitle: function () {
-      var $e = this.$element
+      var $e = this.$element;
       if ($e.attr('title') || typeof($e.attr('data-original-title')) != 'string') {
         $e.attr('data-original-title', $e.attr('title') || '').attr('title', '')
       }
@@ -41276,7 +41276,7 @@ if (this['Meteor']) {
     }
 
   , getPosition: function () {
-      var el = this.$element[0]
+      var el = this.$element[0];
       return $.extend({}, (typeof el.getBoundingClientRect == 'function') ? el.getBoundingClientRect() : {
         width: el.offsetWidth
       , height: el.offsetHeight
@@ -41286,10 +41286,10 @@ if (this['Meteor']) {
   , getTitle: function () {
       var title
         , $e = this.$element
-        , o = this.options
+        , o = this.options;
 
       title = $e.attr('data-original-title')
-        || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title)
+        || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title);
 
       return title
     }
@@ -41304,8 +41304,8 @@ if (this['Meteor']) {
 
   , validate: function () {
       if (!this.$element[0].parentNode) {
-        this.hide()
-        this.$element = null
+        this.hide();
+        this.$element = null;
         this.options = null
       }
     }
@@ -41323,7 +41323,7 @@ if (this['Meteor']) {
     }
 
   , toggle: function (e) {
-      var self = e ? $(e.currentTarget)[this.type](this._options).data(this.type) : this
+      var self = e ? $(e.currentTarget)[this.type](this._options).data(this.type) : this;
       self.tip().hasClass('in') ? self.hide() : self.show()
     }
 
@@ -41331,25 +41331,25 @@ if (this['Meteor']) {
       this.hide().$element.off('.' + this.type).removeData(this.type)
     }
 
-  }
+  };
 
 
  /* TOOLTIP PLUGIN DEFINITION
   * ========================= */
 
-  var old = $.fn.tooltip
+  var old = $.fn.tooltip;
 
   $.fn.tooltip = function ( option ) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('tooltip')
-        , options = typeof option == 'object' && option
-      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)))
+        , options = typeof option == 'object' && option;
+      if (!data) $this.data('tooltip', (data = new Tooltip(this, options)));
       if (typeof option == 'string') data[option]()
     })
-  }
+  };
 
-  $.fn.tooltip.Constructor = Tooltip
+  $.fn.tooltip.Constructor = Tooltip;
 
   $.fn.tooltip.defaults = {
     animation: true
@@ -41361,14 +41361,14 @@ if (this['Meteor']) {
   , delay: 0
   , html: false
   , container: false
-  }
+  };
 
 
  /* TOOLTIP NO CONFLICT
   * =================== */
 
   $.fn.tooltip.noConflict = function () {
-    $.fn.tooltip = old
+    $.fn.tooltip = old;
     return this
   }
 
@@ -43518,7 +43518,7 @@ the specific language governing permissions and limitations under the Apache Lic
                     this.attachEvent("onpropertychange", sync);
                 });
             }
-            
+
             // safari, chrome, firefox, IE11
             observer = window.MutationObserver || window.WebKitMutationObserver|| window.MozMutationObserver;
             if (observer !== undefined) {
@@ -44304,8 +44304,7 @@ the specific language governing permissions and limitations under the Apache Lic
                 } else {
                     return this.opts.width;
                }
-            };
-
+            }
             var width = resolveContainerWidth.call(this);
             if (width !== null) {
                 this.container.css("width", width);
@@ -44557,7 +44556,7 @@ the specific language governing permissions and limitations under the Apache Lic
                         this.clear();
                     }
                     killEvent(e);
-                    return;
+
                 }
             }));
 
@@ -46021,7 +46020,7 @@ angular.module('ui.select2', []).value('uiSelect2Config', {}).directive('uiSelec
             // Set the view and model value and update the angular template manually for the ajax/multiple select2.
             elm.bind("change", function (e) {
               e.stopImmediatePropagation();
-              
+
               if (scope.$$phase || scope.$root.$$phase) {
                 return;
               }
@@ -46178,10 +46177,10 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 
     count: function(ss) {
       var count = 0
-        , pos = this.s.indexOf(ss)
+        , pos = this.s.indexOf(ss);
 
       while (pos >= 0) {
-        count += 1
+        count += 1;
         pos = this.s.indexOf(ss, pos + 1)
       }
 
@@ -46205,7 +46204,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
       .replace(/&([^;\W]+;?)/g, function (m, e) {
         var ee = e.replace(/;$/, '');
         var target = ENTITIES[e] || (e.match(/;$/) && ENTITIES[ee]);
-            
+
         if (typeof target === 'number') {
           return String.fromCharCode(target);
         }
@@ -46215,7 +46214,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
         else {
           return m;
         }
-      })
+      });
 
       return new S(s);
     },
@@ -46249,8 +46248,8 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 
     humanize: function() { //modified from underscore.string
       if (this.s === null || this.s === undefined)
-        return new S('')
-      var s = this.underscore().replace(/_id$/,'').replace(/_/g, ' ').trim().capitalize()
+        return new S('');
+      var s = this.underscore().replace(/_id$/,'').replace(/_/g, ' ').trim().capitalize();
       return new S(s)
     },
 
@@ -46286,7 +46285,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
         return this.right(-N);
       }
     },
-    
+
     lines: function() { //convert windows newlines to unix newlines then convert to an Array of lines
       return this.replaceAll('\r\n', '\n').s.split('\n');
     },
@@ -46314,7 +46313,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 
     parseCSV: function(delimiter, qualifier, escape, lineDelimiter) { //try to parse no matter what
       delimiter = delimiter || ',';
-      escape = escape || '\\'
+      escape = escape || '\\';
       if (typeof qualifier == 'undefined')
         qualifier = '"';
 
@@ -46343,7 +46342,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
             if (inField && qualifier)
               fieldBuffer.push(current);
             else {
-              fields.push(fieldBuffer.join(''))
+              fields.push(fieldBuffer.join(''));
               fieldBuffer.length = 0;
             }
             break;
@@ -46352,7 +46351,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
                 fieldBuffer.push(current);
             } else {
                 if (rows) {
-                    fields.push(fieldBuffer.join(''))
+                    fields.push(fieldBuffer.join(''));
                     rows.push(fields);
                     fields = [];
                     fieldBuffer.length = 0;
@@ -46377,7 +46376,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 
     replaceAll: function(ss, r) {
       //var s = this.s.replace(new RegExp(ss, 'g'), r);
-      var s = this.s.split(ss).join(r)
+      var s = this.s.split(ss).join(r);
       return new S(s);
     },
 
@@ -46415,10 +46414,10 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
     },
 
     template: function(values, opening, closing) {
-      var s = this.s
-      var opening = opening || Export.TMPL_OPEN
-      var closing = closing || Export.TMPL_CLOSE
-      var r = new RegExp(opening + '(.+?)' + closing, 'g')
+      var s = this.s;
+      var opening = opening || Export.TMPL_OPEN;
+      var closing = closing || Export.TMPL_CLOSE;
+      var r = new RegExp(opening + '(.+?)' + closing, 'g');
         //, r = /\{\{(.+?)\}\}/g
       var matches = s.match(r) || [];
 
@@ -46443,9 +46442,9 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
     },
 
     toFloat: function(precision) {
-      var num = parseFloat(this.s)
+      var num = parseFloat(this.s);
       if (precision)
-        return parseFloat(num.toFixed(precision))
+        return parseFloat(num.toFixed(precision));
       else
         return num
     },
@@ -46457,10 +46456,10 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 
     trim: function() {
       var s;
-      if (typeof __nsp.trim === 'undefined') 
-        s = this.s.replace(/(^\s*|\s*$)/g, '')
-      else 
-        s = this.s.trim()
+      if (typeof __nsp.trim === 'undefined')
+        s = this.s.replace(/(^\s*|\s*$)/g, '');
+      else
+        s = this.s.trim();
       return new S(s);
     },
 
@@ -46540,22 +46539,22 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
       var rep = escape + qualifier;
       var buildString = [];
       for (var i = 0; i < dataArray.length; ++i) {
-        var shouldQualify = hasVal(qualifier)
+        var shouldQualify = hasVal(qualifier);
         if (typeof dataArray[i] == 'number')
           shouldQualify &= encloseNumbers;
-        
-        if (shouldQualify)
-          buildString.push(qualifier);
-        
-        if (dataArray[i] !== null && dataArray[i] !== undefined) {
-          var d = new S(dataArray[i]).replaceAll(qualifier, rep).s;
-          buildString.push(d);
-        } else 
-          buildString.push('')
 
         if (shouldQualify)
           buildString.push(qualifier);
-        
+
+        if (dataArray[i] !== null && dataArray[i] !== undefined) {
+          var d = new S(dataArray[i]).replaceAll(qualifier, rep).s;
+          buildString.push(d);
+        } else
+          buildString.push('');
+
+        if (shouldQualify)
+          buildString.push(qualifier);
+
         if (delim)
           buildString.push(delim);
       }
@@ -46599,7 +46598,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
       return this.s.valueOf();
     }
 
-  }
+  };
 
   var methodsAdded = [];
   function extendPrototype() {
@@ -46657,7 +46656,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
   __sp.include = __sp.contains;
   __sp.toInteger = __sp.toInt;
   __sp.toBool = __sp.toBoolean;
-  __sp.decodeHTMLEntities = __sp.decodeHtmlEntities //ensure consistent casing scheme of 'HTML'
+  __sp.decodeHTMLEntities = __sp.decodeHtmlEntities; //ensure consistent casing scheme of 'HTML'
 
 
 /*************************************
@@ -46705,9 +46704,8 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 
   function Export(str) {
     return new S(str);
-  };
-
-  //attach exports to StringJSWrapper
+  }
+    //attach exports to StringJSWrapper
   Export.extendPrototype = extendPrototype;
   Export.restorePrototype = restorePrototype;
   Export.VERSION = VERSION;
@@ -47028,7 +47026,7 @@ string.js - Copyright (C) 2012-2013, JP Richardson <jprichardson@gmail.com>
 var angularLocalStorage = angular.module('LocalStorageModule', []);
 
 angularLocalStorage.provider('localStorageService', function() {
-  
+
   // You should set a prefix to avoid overwriting any local storage variables from the rest of your app
   // e.g. localStorageServiceProvider.setPrefix('youAppName');
   // With provider you can use config as this:
@@ -47107,7 +47105,7 @@ angularLocalStorage.provider('localStorageService', function() {
     }
     var deriveQualifiedKey = function(key) {
       return prefix + key;
-    }
+    };
     // Checks the browser to see if local storage is supported
     var browserSupportsLocalStorage = (function () {
       try {
@@ -47132,7 +47130,7 @@ angularLocalStorage.provider('localStorageService', function() {
         return false;
       }
     }());
-    
+
 
 
     // Directly adds a value to local storage
@@ -47158,8 +47156,10 @@ angularLocalStorage.provider('localStorageService', function() {
         if (angular.isObject(value) || angular.isArray(value)) {
           value = angular.toJson(value);
         }
-        if (webStorage) {webStorage.setItem(deriveQualifiedKey(key), value)};
-        if (notify.setItem) {
+          if (webStorage) {
+              webStorage.setItem(deriveQualifiedKey(key), value)
+          }
+          if (notify.setItem) {
           $rootScope.$broadcast('LocalStorageModule.notification.setitem', {key: key, newvalue: value, storageType: this.storageType});
         }
       } catch (e) {
@@ -47357,7 +47357,7 @@ angularLocalStorage.provider('localStorageService', function() {
       var cookies = $document.cookie.split(';');
       for(var i = 0; i < cookies.length; i++) {
         thisCookie = cookies[i];
-        
+
         while (thisCookie.charAt(0) === ' ') {
           thisCookie = thisCookie.substring(1, thisCookie.length);
         }
@@ -52768,8 +52768,12 @@ window.CodeMirror = (function() {
       delayedCallbacks = [];
       setTimeout(fireDelayed, 0);
     }
-    function bnd(f) {return function(){f.apply(null, args);};};
-    for (var i = 0; i < arr.length; ++i)
+      function bnd(f) {
+          return function () {
+              f.apply(null, args);
+          };
+      }
+      for (var i = 0; i < arr.length; ++i)
       delayedCallbacks.push(bnd(arr[i]));
   }
 
@@ -54030,9 +54034,8 @@ CodeMirror.defineMode("sql", function(config, parserConfig) {
       return "variable-2";
     }
     return null;
-  };
-
-  // short client keyword token
+  }
+    // short client keyword token
   function hookClient(stream) {
     // \N means NULL
     // ref: http://dev.mysql.com/doc/refman/5.5/en/null-values.html
@@ -54454,7 +54457,7 @@ CodeMirror.defineMode("sql", function(config, parserConfig) {
     "use strict";
     CodeMirror.commands.autocomplete = function (cm) {
         CodeMirror.showHint(cm, CodeMirror.hint.sql);
-    }
+    };
     var Pos = CodeMirror.Pos;
 
     function forEach(arr, f, render) {
@@ -54490,7 +54493,7 @@ CodeMirror.defineMode("sql", function(config, parserConfig) {
                 return e.getTokenAt(cur);
             },
             options);
-    };
+    }
     CodeMirror.registerHelper("hint", "sql", sqlHint);
 
 
@@ -54518,8 +54521,8 @@ CodeMirror.defineMode("sql", function(config, parserConfig) {
         // (reading into JS mode internals to get at the local and global variables)
         var classes = editor.getOption('metadata').listNameOfClasses();
         var props = editor.getOption('metadata').listNameOfProperties();
-        var classesDef = new Array;
-        var propsDef = new Array;
+        var classesDef = [];
+        var propsDef = [];
         classes.forEach(function (elem, idx, arr) {
             if (classesDef.indexOf(elem) == -1) {
                 classesDef.push(elem);
@@ -54877,7 +54880,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       });
     }
   };
-  
+
   // This is called from the accordion-group directive to add itself to the accordion
   this.addGroup = function(groupScope) {
     var that = this;
@@ -54930,7 +54933,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       accordionCtrl.addGroup(scope);
 
       scope.isOpen = false;
-      
+
       if ( attrs.isOpen ) {
         getIsOpen = $parse(attrs.isOpen);
         setIsOpen = getIsOpen.assign;
@@ -55075,7 +55078,7 @@ angular.module('ui.bootstrap.buttons', [])
       function getFalseValue() {
         return getCheckboxValue(attrs.btnCheckboxFalse, false);
       }
-      
+
       function getCheckboxValue(attributeValue, defaultValue) {
         var val = scope.$eval(attributeValue);
         return angular.isDefined(val) ? val : defaultValue;
@@ -56276,7 +56279,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
           backdropDomEl = $compile('<div modal-backdrop></div>')(backdropScope);
           body.append(backdropDomEl);
         }
-          
+
         var angularDomEl = angular.element('<div modal-window></div>');
         angularDomEl.attr('window-class', modal.windowClass);
         angularDomEl.attr('index', openedWindows.length() - 1);
@@ -56698,7 +56701,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
 
   // The options specified to the provider globally.
   var globalOptions = {};
-  
+
   /**
    * `options({})` allows global configuration of all tooltips in the
    * application.
@@ -56767,7 +56770,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
 
       var startSym = $interpolate.startSymbol();
       var endSym = $interpolate.endSymbol();
-      var template = 
+      var template =
         '<div '+ directiveName +'-popup '+
           'title="'+startSym+'tt_title'+endSym+'" '+
           'content="'+startSym+'tt_content'+endSym+'" '+
@@ -56892,7 +56895,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               // Set the initial positioning.
               tooltip.css({ top: 0, left: 0, display: 'block' });
 
-              // Now we add it to the DOM because need some info about it. But it's not 
+              // Now we add it to the DOM because need some info about it. But it's not
               // visible yet anyway.
               if ( appendToBody ) {
                   $document.find( 'body' ).append( tooltip );
@@ -56919,7 +56922,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               //if tooltip is going to be shown after delay, we must cancel this
               $timeout.cancel( popupTimeout );
 
-              // And now we remove it from the DOM. However, if we have animation, we 
+              // And now we remove it from the DOM. However, if we have animation, we
               // need to wait for it to expire beforehand.
               // FIXME: this is a placeholder for a port of the transitions library.
               if ( scope.tt_animation ) {
@@ -57909,7 +57912,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //we need to propagate user's query so we can higlight matches
       scope.query = undefined;
 
-      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
+      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
       var timeoutPromise;
 
       //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
@@ -58305,7 +58308,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       });
     }
   };
-  
+
   // This is called from the accordion-group directive to add itself to the accordion
   this.addGroup = function(groupScope) {
     var that = this;
@@ -58358,7 +58361,7 @@ angular.module('ui.bootstrap.accordion', ['ui.bootstrap.collapse'])
       accordionCtrl.addGroup(scope);
 
       scope.isOpen = false;
-      
+
       if ( attrs.isOpen ) {
         getIsOpen = $parse(attrs.isOpen);
         setIsOpen = getIsOpen.assign;
@@ -58503,7 +58506,7 @@ angular.module('ui.bootstrap.buttons', [])
       function getFalseValue() {
         return getCheckboxValue(attrs.btnCheckboxFalse, false);
       }
-      
+
       function getCheckboxValue(attributeValue, defaultValue) {
         var val = scope.$eval(attributeValue);
         return angular.isDefined(val) ? val : defaultValue;
@@ -59704,7 +59707,7 @@ angular.module('ui.bootstrap.modal', ['ui.bootstrap.transition'])
           backdropDomEl = $compile('<div modal-backdrop></div>')(backdropScope);
           body.append(backdropDomEl);
         }
-          
+
         var angularDomEl = angular.element('<div modal-window></div>');
         angularDomEl.attr('window-class', modal.windowClass);
         angularDomEl.attr('index', openedWindows.length() - 1);
@@ -60126,7 +60129,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
 
   // The options specified to the provider globally.
   var globalOptions = {};
-  
+
   /**
    * `options({})` allows global configuration of all tooltips in the
    * application.
@@ -60195,7 +60198,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
 
       var startSym = $interpolate.startSymbol();
       var endSym = $interpolate.endSymbol();
-      var template = 
+      var template =
         '<div '+ directiveName +'-popup '+
           'title="'+startSym+'tt_title'+endSym+'" '+
           'content="'+startSym+'tt_content'+endSym+'" '+
@@ -60320,7 +60323,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               // Set the initial positioning.
               tooltip.css({ top: 0, left: 0, display: 'block' });
 
-              // Now we add it to the DOM because need some info about it. But it's not 
+              // Now we add it to the DOM because need some info about it. But it's not
               // visible yet anyway.
               if ( appendToBody ) {
                   $document.find( 'body' ).append( tooltip );
@@ -60347,7 +60350,7 @@ angular.module( 'ui.bootstrap.tooltip', [ 'ui.bootstrap.position', 'ui.bootstrap
               //if tooltip is going to be shown after delay, we must cancel this
               $timeout.cancel( popupTimeout );
 
-              // And now we remove it from the DOM. However, if we have animation, we 
+              // And now we remove it from the DOM. However, if we have animation, we
               // need to wait for it to expire beforehand.
               // FIXME: this is a placeholder for a port of the transitions library.
               if ( scope.tt_animation ) {
@@ -61337,7 +61340,7 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
       //we need to propagate user's query so we can higlight matches
       scope.query = undefined;
 
-      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later 
+      //Declare the timeout promise var outside the function scope so that stacked calls can be cancelled later
       var timeoutPromise;
 
       //plug into $parsers pipeline to open a typeahead on view changes initiated from DOM
@@ -62000,14 +62003,14 @@ angular.module('header.controller', ['database.services']).controller("HeaderCon
                 if (!$scope.$$phase && !$scope.$root.$$phase) {
                     $scope.$apply();
                 }
-                return;
+
             }
 
         });
-    }
+    };
     $scope.getClass = function (menu) {
         return menu == $scope.selectedMenu ? 'active' : '';
-    }
+    };
     $scope.$on('$routeChangeSuccess', function (scope, next, current) {
         //$scope.refreshMetadata();
         $scope.setSelected();
@@ -62026,7 +62029,7 @@ angular.module('header.controller', ['database.services']).controller("HeaderCon
         $q.when(modalPromise).then(function (modalEl) {
             modalEl.modal('show');
         });
-    }
+    };
     $scope.logout = function () {
         Database.disconnect(function () {
             $scope.menus = [];
@@ -62056,14 +62059,14 @@ angular.module('server.controller',[]).controller("ServerController",['$scope','
 
     $scope.getTemplate=function(tab) {
         return 'views/server/' + tab +'.html';
-    }
+    };
 
     $scope.killConnection= function(n){
         ServerApi.killConnection(n.connectionId,function(){
              var index = $scope.connections.indexOf(n);
              $scope.connections.splice(index,1);
         });
-    }
+    };
     $scope.interruptConnection= function(n){
         ServerApi.interruptConnection(n.connectionId,function(){
             var index = $scope.connections.indexOf(n);
@@ -62115,16 +62118,16 @@ schemaModule.controller("SchemaController", ['$scope', '$routeParams', '$locatio
     $scope.refreshPage = function () {
         $scope.database.refreshMetadata($routeParams.database);
         $route.reload();
-    }
+    };
     $scope.setClass = function (clazz) {
         $scope.classClicked = clazz;
-    }
+    };
     $scope.openClass = function (clazz) {
         $location.path("/database/" + $scope.database.getName() + "/schema/editclass/" + clazz.name);
-    }
+    };
     $scope.refreshWindow = function () {
         $window.location.reload();
-    }
+    };
     Database.setWiki("https://github.com/orientechnologies/orientdb-studio/wiki/Schema");
 
     $scope.$watch("countPage", function (data) {
@@ -62146,7 +62149,7 @@ schemaModule.controller("SchemaController", ['$scope', '$routeParams', '$locatio
                 CommandApi.queryText({database: $routeParams.database, language: 'sql', text: sql, limit: $scope.limit}, function (data) {
 
                     var elem = $scope.listClassesTotal.indexOf(nameClass);
-                    $scope.listClassesTotal.splice(elem, 1)
+                    $scope.listClassesTotal.splice(elem, 1);
                     $scope.listClassesTotal.splice();
                 });
 
@@ -62154,7 +62157,7 @@ schemaModule.controller("SchemaController", ['$scope', '$routeParams', '$locatio
 
         });
 
-    }
+    };
     $scope.switchPage = function (index) {
         if (index != $scope.currentPage) {
             $scope.currentPage = index;
@@ -62163,16 +62166,16 @@ schemaModule.controller("SchemaController", ['$scope', '$routeParams', '$locatio
                 index * $scope.countPage
             );
         }
-    }
+    };
     $scope.queryAll = function (className) {
         $location.path("/database/" + $scope.database.getName() + "/browse/select * from " + className);
-    }
+    };
     $scope.createRecord = function (className) {
         $location.path("/database/" + $scope.database.getName() + "/browse/create/" + className);
-    }
+    };
     $scope.allIndexes = function () {
         $location.path("/database/" + $scope.database.getName() + "/indexes");
-    }
+    };
     $scope.createNewClass = function () {
         modalScope = $scope.$new(true);
         modalScope.db = database;
@@ -62182,7 +62185,7 @@ schemaModule.controller("SchemaController", ['$scope', '$routeParams', '$locatio
         $q.when(modalPromise).then(function (modalEl) {
             modalEl.modal('show');
         });
-    }
+    };
     $scope.rebuildAllIndexes = function () {
         var sql = 'REBUILD INDEX *';
         Spinner.start();
@@ -62191,7 +62194,7 @@ schemaModule.controller("SchemaController", ['$scope', '$routeParams', '$locatio
         }, function (err) {
             Spinner.stopSpinner();
         });
-    }
+    };
     $scope.setClusterStrategy = function (clazz) {
         ClassAlterApi.changeProperty($routeParams.database, { clazz: clazz.name, name: "clusterSelection", value: clazz.clusterSelection}).then(function (data) {
             var noti = S("Cluster selection strategy for the class {{name}} has been changed to {{clusterSelection}}").template(clazz).s;
@@ -62207,23 +62210,23 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
     $scope.class2show = clazz;
     $scope.database = Database;
     $scope.database.refreshMetadata($routeParams.database);
-    $scope.modificati = new Array;
+    $scope.modificati = [];
     $scope.limit = 20;
-    $scope.queries = new Array;
+    $scope.queries = [];
     $scope.classClickedHeaders = ['Name', 'Type', 'Linked_Type', 'Linked_Class', 'Mandatory', 'Read_Only', 'Not_Null', 'Min', 'Max', 'Collate', 'Actions'];
     $scope.property = null;
     $scope.property = Database.listPropertiesForClass(clazz);
-    $scope.propertyNames = new Array;
+    $scope.propertyNames = [];
 
     for (inn in $scope.property) {
         $scope.propertyNames.push($scope.property[inn]['name'])
     }
     $scope.createNewRecord = function (className) {
         $location.path("/database/" + $scope.database.getName() + "/browse/create/" + className);
-    }
+    };
     $scope.queryAll = function (className) {
         $location.path("/database/" + $scope.database.getName() + "/browse/select * from " + className);
-    }
+    };
 
     $scope.dropClass = function (nameClass) {
 
@@ -62244,10 +62247,10 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
 
         });
 
-    }
+    };
     $scope.refreshPage = function () {
         $scope.database.refreshMetadata($routeParams.database);
-    }
+    };
 
     $scope.listClasses = $scope.database.listNameOfClasses();
 
@@ -62255,8 +62258,8 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
     $scope.indexes = null;
     $scope.indexes = Database.listIndexesForClass(clazz);
 
-    $scope.queryText = ""
-    $scope.modificati = new Array;
+    $scope.queryText = "";
+    $scope.modificati = [];
     $scope.listTypes = ['BINARY', 'BOOLEAN', 'EMBEDDED', 'EMBEDDEDLIST', 'EMBEDDEDMAP', 'EMBEDDEDSET', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'DOUBLE', 'INTEGER', 'LINK', 'LINKLIST', 'LINKMAP', 'LINKSET', 'LONG', 'SHORT', 'STRING'];
     $scope.collateTypes = ['Case Insensitive', 'default'];
     $scope.modificato = function (result, prop) {
@@ -62265,7 +62268,7 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
             $scope.modificati[result['name']] = new Array(prop);
         }
         else {
-            var elem = $scope.modificati[result['name']]
+            var elem = $scope.modificati[result['name']];
             var already = false;
             for (i in elem) {
                 if (prop == elem[i]) {
@@ -62276,10 +62279,10 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
                 elem.push(prop);
             }
         }
-    }
+    };
     $scope.addIndexFromExt = function (newIndex) {
         $scope.indexes.push(newIndex);
-    }
+    };
     $scope.newIndex = function () {
         modalScope = $scope.$new(true);
         modalScope.db = $scope.database;
@@ -62293,7 +62296,7 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
     };
     $scope.refreshWindow = function () {
         $window.location.reload();
-    }
+    };
     $scope.newProperty = function () {
         modalScope = $scope.$new(true);
         modalScope.db = database;
@@ -62306,7 +62309,7 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
     };
     $scope.addProperties = function (prop) {
         $scope.property.push(prop);
-    }
+    };
     $scope.saveProperty = function (properties) {
 
         for (result in properties) {
@@ -62319,9 +62322,9 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
                 return;
             }
         }
-        $scope.modificati = new Array;
+        $scope.modificati = [];
         $scope.database.refreshMetadata($routeParams.database);
-    }
+    };
     $scope.recursiveSaveProperty = function (arrayToUpdate, clazz, properties, result, keyName) {
 
         if (arrayToUpdate != undefined && arrayToUpdate.length > 0) {
@@ -62346,7 +62349,7 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
 
         }
         return true;
-    }
+    };
     $scope.dropIndex = function (nameIndex) {
 
         Utilities.confirm($scope, $modal, $q, {
@@ -62357,13 +62360,13 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
                 var sql = 'DROP INDEX ' + nameIndex.name;
 
                 CommandApi.queryText({database: $routeParams.database, language: 'sql', text: sql, limit: $scope.limit}, function (data) {
-                    var index = $scope.indexes.indexOf(nameIndex)
+                    var index = $scope.indexes.indexOf(nameIndex);
                     $scope.indexes.splice(index, 1);
                     $scope.indexes.splice();
                 });
             }
         });
-    }
+    };
     $scope.dropProperty = function (result, elementName) {
         Utilities.confirm($scope, $modal, $q, {
             title: 'Warning!',
@@ -62376,20 +62379,20 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
                     for (entry in $scope.property) {
                         if ($scope.property[entry]['name'] == elementName) {
                             // ($scope.property[entry])
-                            var index = $scope.property.indexOf($scope.property[entry])
+                            var index = $scope.property.indexOf($scope.property[entry]);
                             $scope.property.splice(index, 1)
                         }
                     }
                 });
             }
         });
-    }
+    };
     $scope.checkDisable = function (res, entry) {
         if (res[entry] == null || res[entry] == undefined || res[entry] == "") {
             return false;
         }
         return true;
-    }
+    };
     $scope.checkTypeEdit = function (res) {
 
         var occupato = $scope.checkDisable(res, 'linkedClass');
@@ -62402,7 +62405,7 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
         }
         res['linkedType'] = null;
         return true;
-    }
+    };
     $scope.checkClassEdit = function (res) {
 
         var occupatoType = $scope.checkDisable(res, 'linkedType');
@@ -62415,11 +62418,11 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
         }
         res['linkedClass'] = null;
         return true;
-    }
+    };
     $scope.refreshPage = function () {
         $scope.database.refreshMetadata($routeParams.database);
         $route.reload();
-    }
+    };
     $scope.rebuildIndex = function (indexName) {
         var sql = 'REBUILD INDEX ' + indexName;
         Spinner.start();
@@ -62433,14 +62436,14 @@ schemaModule.controller("ClassEditController", ['$scope', '$routeParams', '$loca
 schemaModule.controller("IndexController", ['$scope', '$routeParams', '$location', 'Database', 'CommandApi', '$modal', '$q', 'Spinner', function ($scope, $routeParams, $location, Database, CommandApi, $modal, $q, Spinner) {
 
     $scope.listTypeIndex = [ 'DICTIONARY', 'FULLTEXT', 'UNIQUE', 'NOTUNIQUE', 'DICTIONARY_HASH_INDEX', 'FULLTEXT_HASH_INDEX', 'UNIQUE_HASH_INDEX', 'NOTUNIQUE_HASH_INDEX' ];
-    $scope.newIndex = {"name": "", "type": "", "fields": "" }
+    $scope.newIndex = {"name": "", "type": "", "fields": "" };
 
-    $scope.prop2add = new Array;
+    $scope.prop2add = [];
     $scope.nameIndexToShow = $scope.classInject + '.';
     $scope.db.refreshMetadata($routeParams.database);
     $scope.property = Database.listPropertiesForClass($scope.classInject);
 
-    $scope.propertyNames = new Array;
+    $scope.propertyNames = [];
 
     for (inn in $scope.property) {
         $scope.propertyNames.push($scope.property[inn]['name'])
@@ -62467,7 +62470,7 @@ schemaModule.controller("IndexController", ['$scope', '$routeParams', '$location
                 $scope.nameIndexToShow = $scope.nameIndexToShow + '_' + $scope.prop2add[entry];
             }
         }
-    }
+    };
     $scope.saveNewIndex = function () {
 
         if ($scope.nameIndexToShow == undefined || $scope.nameIndexToShow == "" || $scope.nameIndexToShow == null)
@@ -62477,7 +62480,7 @@ schemaModule.controller("IndexController", ['$scope', '$routeParams', '$location
         if ($scope.prop2add.length == 0)
             return;
         var proppps = '';
-        var first = true
+        var first = true;
         for (entry in $scope.prop2add) {
             if (first) {
                 proppps = proppps + $scope.prop2add[entry];
@@ -62509,7 +62512,7 @@ schemaModule.controller("IndexController", ['$scope', '$routeParams', '$location
 schemaModule.controller("PropertyController", ['$scope', '$routeParams', '$location', 'Database', 'CommandApi', '$modal', '$q', 'Spinner', 'Notification', function ($scope, $routeParams, $location, Database, CommandApi, $modal, $q, Spinner, Notification) {
 
 
-    $scope.property = {"name": "", "type": "", "linkedType": "", "linkedClass": "", "mandatory": "false", "readonly": "false", "notNull": "false", "min": null, "max": null}
+    $scope.property = {"name": "", "type": "", "linkedType": "", "linkedClass": "", "mandatory": "false", "readonly": "false", "notNull": "false", "min": null, "max": null};
     $scope.listTypes = ['BINARY', 'BOOLEAN', 'EMBEDDED', 'EMBEDDEDLIST', 'EMBEDDEDMAP', 'EMBEDDEDSET', 'DECIMAL', 'FLOAT', 'DATE', 'DATETIME', 'DOUBLE', 'INTEGER', 'LINK', 'LINKLIST', 'LINKMAp', 'LINKSET', 'LONG', 'SHORT', 'STRING'];
     $scope.database = Database;
     $scope.listClasses = $scope.database.listNameOfClasses();
@@ -62535,7 +62538,7 @@ schemaModule.controller("PropertyController", ['$scope', '$routeParams', '$locat
             allCommand = allCommand.then(function () {
                 return executeCommand(sql, i, len);
             });
-        }
+        };
         var executeCommand = function (sql, i, len) {
             var deferred = $q.defer();
             CommandApi.queryText({database: $routeParams.database, language: 'sql', text: sql, limit: $scope.limit, verbose: false}, function (data) {
@@ -62553,7 +62556,7 @@ schemaModule.controller("PropertyController", ['$scope', '$routeParams', '$locat
 
             });
             return deferred.promise;
-        }
+        };
         CommandApi.queryText({database: $routeParams.database, language: 'sql', text: sql, limit: $scope.limit, verbose: false}, function (data) {
 
             var len = Object.keys(prop).length;
@@ -62574,14 +62577,14 @@ schemaModule.controller("PropertyController", ['$scope', '$routeParams', '$locat
         });
 
 
-    }
+    };
 
     $scope.checkDisable = function (entry) {
         if ($scope.property[entry] == null || $scope.property[entry] == undefined || $scope.property[entry] == "") {
             return false;
         }
         return true;
-    }
+    };
     $scope.checkDisableLinkedType = function (entry) {
 
         var occupato = $scope.checkDisable('linkedClass');
@@ -62594,7 +62597,7 @@ schemaModule.controller("PropertyController", ['$scope', '$routeParams', '$locat
         }
         $scope.property['linkedType'] = null;
         return true;
-    }
+    };
     $scope.checkDisableLinkedClass = function (entry) {
 
         var occupatoType = $scope.checkDisable('linkedType');
@@ -62613,7 +62616,7 @@ schemaModule.controller("PropertyController", ['$scope', '$routeParams', '$locat
 }]);
 schemaModule.controller("NewClassController", ['$scope', '$routeParams', '$location', 'Database', 'CommandApi', '$modal', '$q', '$route', function ($scope, $routeParams, $location, Database, CommandApi, $modal, $q, $route) {
 
-    $scope.property = {"name": "", "alias": null, "superclass": null, "abstract": false}
+    $scope.property = {"name": "", "alias": null, "superclass": null, "abstract": false};
     $scope.database = Database;
     $scope.listClasses = $scope.database.listNameOfClasses();
 
@@ -62641,7 +62644,7 @@ schemaModule.controller("NewClassController", ['$scope', '$routeParams', '$locat
                 $scope.hide();
             }
         }, function (error) {
-            $scope.testMsgClass = 'alert alert-error'
+            $scope.testMsgClass = 'alert alert-error';
             $scope.testMsg = error;
         });
     }
@@ -62658,7 +62661,7 @@ schemaModule.controller("IndexesController", ['$scope', '$routeParams', '$locati
         }, function (err) {
             Spinner.stopSpinner();
         });
-    }
+    };
 
     $scope.dropIndex = function (nameIndex) {
 
@@ -62670,20 +62673,20 @@ schemaModule.controller("IndexesController", ['$scope', '$routeParams', '$locati
                 var sql = 'DROP INDEX ' + nameIndex.name;
 
                 CommandApi.queryText({database: $routeParams.database, language: 'sql', text: sql, limit: $scope.limit}, function (data) {
-                    var index = $scope.indexes.indexOf(nameIndex)
+                    var index = $scope.indexes.indexOf(nameIndex);
                     $scope.indexes.splice(index, 1);
                     $scope.indexes.splice();
                 });
             }
         });
-    }
+    };
     $scope.getFields = function (definition) {
         var fields = "";
         if (definition) {
             if (definition.indexDefinitions) {
                 fields += " [";
                 definition.indexDefinitions.forEach(function (elem, idx, array) {
-                    if (idx > 0)fields += ","
+                    if (idx > 0)fields += ",";
                     fields += elem.field;
                 });
                 fields += "]";
@@ -62697,7 +62700,7 @@ schemaModule.controller("IndexesController", ['$scope', '$routeParams', '$locati
 
 angular.module('login.controller', ['database.services']).controller("LoginController", ['$scope', '$routeParams', '$location', '$modal', '$q', 'Database', 'DatabaseApi', 'Notification', function ($scope, $routeParams, $location, $modal, $q, Database, DatabaseApi, Notification) {
 
-    $scope.server = "http://localhost:2480"
+    $scope.server = "http://localhost:2480";
 
     if (Database.isConnected()) {
         //$location.path("/database/" + Database.getName() + "/browse");
@@ -62717,15 +62720,15 @@ angular.module('login.controller', ['database.services']).controller("LoginContr
             var noti = "Invalid username or password";
             Notification.push({content: noti});
         });
-    }
+    };
     $scope.createNew = function () {
         modalScope = $scope.$new(true);
         modalScope.creating = false;
         modalScope.stype = "plocal";
         modalScope.type = "graph";
         modalScope.username = "root";
-        modalScope.types = ['document', 'graph']
-        modalScope.stypes = ['local', 'plocal', 'memory']
+        modalScope.types = ['document', 'graph'];
+        modalScope.stypes = ['local', 'plocal', 'memory'];
         modalScope.createNew = function () {
             modalScope.creating = true;
             DatabaseApi.createDatabase(modalScope.name, modalScope.type, modalScope.stype, modalScope.username, modalScope.password, function (data) {
@@ -62738,7 +62741,7 @@ angular.module('login.controller', ['database.services']).controller("LoginContr
                 modalScope.creating = false;
                 modalScope.error = data;
             });
-        }
+        };
         var modalPromise = $modal({template: 'views/database/newDatabase.html', scope: modalScope});
         $q.when(modalPromise).then(function (modalEl) {
             modalEl.modal('show');
@@ -62770,7 +62773,7 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
         $scope.context = $scope.items[newIdx];
         var nextIdx = (newIdx < $scope.items.length - 1) ? newIdx + 1 : 0;
         $scope.nContext = $scope.items[nextIdx];
-    }
+    };
     $scope.countPage = 5;
 
     $scope.setBookClass = function () {
@@ -62779,7 +62782,7 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
         } else {
             $scope.bookmarksClass = "";
         }
-    }
+    };
 
     if (Database.hasClass(Bookmarks.CLAZZ)) {
         Bookmarks.getAll(Database.getName());
@@ -62813,13 +62816,13 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
     $scope.countPageOptions = [5, 10, 20, 50, 100, 500, 1000, 2000, 5000];
     var dbTime = localStorageService.get("Timeline");
     if (!dbTime || dbTime instanceof  Array) {
-        dbTime = new Object;
+        dbTime = {};
         localStorageService.add("Timeline", dbTime);
     }
 
     $scope.timeline = dbTime[Database.getName()];
     if (!$scope.timeline) {
-        $scope.timeline = new Array;
+        $scope.timeline = [];
         var localTime = localStorageService.get("Timeline");
         localTime[Database.getName()] = $scope.timeline;
         localStorageService.add("Timeline", localTime);
@@ -62904,7 +62907,7 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
 
             if (data.result) {
 
-                var item = new Object;
+                var item = {};
                 item.query = $scope.queryText;
                 if (selection && selection != "") {
                     item.query = selection;
@@ -62913,7 +62916,7 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
                 item.language = $scope.language;
                 $scope.headers = Database.getPropertyTableFromResults(data.result);
                 if ($scope.headers.length == 00) {
-                    $scope.alerts = new Array;
+                    $scope.alerts = [];
                     $scope.alerts.push({content: "No records found."});
                 }
                 $scope.rawData = JSON.stringify(data);
@@ -62953,7 +62956,7 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
             $scope.results = undefined;
         });
 
-    }
+    };
 
     $scope.clear = function () {
 
@@ -62961,20 +62964,20 @@ dbModule.controller("BrowseController", ['$scope', '$routeParams', '$location', 
             title: 'Warning!',
             body: 'You are clearing history. Are you sure?',
             success: function () {
-                $scope.timeline = new Array;
+                $scope.timeline = [];
                 var dbTime = localStorageService.get("Timeline");
                 dbTime[Database.getName()] = $scope.timeline;
                 localStorageService.add("Timeline", dbTime);
             }
         });
 
-    }
+    };
 
     $scope.removeItem = function (item) {
         var idx = $scope.timeline.indexOf(item);
         $scope.timeline.splice(idx, 1);
         localStorageService.add("Timeline", $scope.timeline);
-    }
+    };
 
 
     $scope.$watch("limit", function (data) {
@@ -63024,7 +63027,7 @@ dbModule.controller("QueryController", ['$scope', '$routeParams', '$filter', '$l
     };
     $scope.changeIcon = function () {
         $scope.bookIcon = 'icon-star';
-    }
+    };
     $scope.tableParams = new ngTableParams({
         page: 1,            // show first page
         count: 10          // count per page
@@ -63049,18 +63052,18 @@ dbModule.controller("QueryController", ['$scope', '$routeParams', '$filter', '$l
                 index * $scope.item.countPage
             );
         }
-    }
+    };
     $scope.previous = function () {
         if ($scope.item.currentPage > 1) {
             $scope.switchPage($scope.item.currentPage - 1);
         }
-    }
+    };
     $scope.next = function () {
 
         if ($scope.item.currentPage < $scope.item.numberOfPage.length) {
             $scope.switchPage($scope.item.currentPage + 1);
         }
-    }
+    };
     $scope.$watch("item.countPage", function (data) {
         if ($scope.item.resultTotal) {
             $scope.item.results = $scope.item.resultTotal.slice(0, $scope.item.countPage);
@@ -63070,7 +63073,7 @@ dbModule.controller("QueryController", ['$scope', '$routeParams', '$filter', '$l
     });
     $scope.openRecord = function (doc) {
         $location.path("/database/" + $scope.database.getName() + "/browse/edit/" + doc["@rid"].replace('#', ''));
-    }
+    };
     $scope.changeQuery = function () {
         $scope.queryText = $scope.item.query;
         scroller.scrollTo(0, 0, 2000);
@@ -63196,7 +63199,7 @@ dbModule.controller("BookmarkController", ['$scope', 'Bookmarks', 'DocumentApi',
         if (e.keyCode == '27') {
             $scope.click();
         }
-    }
+    };
     $scope.$on("bookmarks:changed", function (event) {
         Bookmarks.getAll(Database.getName()).then(function (data) {
             $scope.bks = data.result;
@@ -63215,13 +63218,13 @@ dbModule.controller("BookmarkController", ['$scope', 'Bookmarks', 'DocumentApi',
         }
         $scope.$parent.setBookClass();
 
-    }
+    };
     $scope.isSelected = function (bk) {
         return $scope.selected == bk ? '' : 'hide';
-    }
+    };
     $scope.hover = function (bk) {
         $scope.selected = bk;
-    }
+    };
     $scope.run = function (r) {
         $scope.queryText = r.query;
         scroller.scrollTo(0, 0, 2000);
@@ -63230,13 +63233,13 @@ dbModule.controller("BookmarkController", ['$scope', 'Bookmarks', 'DocumentApi',
         $scope.cm.setValue($scope.queryText);
         $scope.cm.setCursor($scope.cm.lineCount());
         $scope.$parent.setBookClass();
-    }
+    };
 
     $scope.stopProps = function ($event) {
         if ($event) {
             $event.stopPropagation();
         }
-    }
+    };
     $scope.remove = function (r, $event) {
         if ($event) {
             $event.stopPropagation();
@@ -63246,7 +63249,7 @@ dbModule.controller("BookmarkController", ['$scope', 'Bookmarks', 'DocumentApi',
             $scope.bks.splice(idx, 1);
         });
 
-    }
+    };
     $scope.update = function (r) {
         Bookmarks.update(Database.getName(), r).then(function (data) {
             var idx = $scope.bks.indexOf(r);
@@ -63293,7 +63296,7 @@ DocController.controller("DocumentEditController", ['$scope', '$injector', '$rou
         $scope.headers = Database.getPropertyFromDoc($scope.doc);
         $scope.isGraph = Database.isGraph($scope.doc['@class']);
         if ($scope.outgoings == undefined) {
-            $scope.outgoings = new Array;
+            $scope.outgoings = [];
         }
         $scope.outgoings = $scope.outgoings.concat((Database.getLink($scope.doc)));
     }
@@ -63302,16 +63305,16 @@ DocController.controller("DocumentEditController", ['$scope', '$injector', '$rou
         if (arr instanceof Array) {
             return arr;
         } else {
-            var newArr = new Array;
+            var newArr = [];
             newArr.push(arr);
             return newArr;
         }
 
-    }
+    };
     $scope.deleteLink = function (group, rid) {
         var index = $scope.doc[group].indexOf(rid);
         $scope.doc[group].splice(index, 1);
-    }
+    };
 
     $scope.showModalConnection = function (label) {
         var modalScope = $scope.$new(true);
@@ -63319,7 +63322,7 @@ DocController.controller("DocumentEditController", ['$scope', '$injector', '$rou
         modalScope.db = database;
         modalScope.originRid = $scope.rid;
         modalScope.container = $scope;
-        modalScope.label = label
+        modalScope.label = label;
         var modalPromise = $modal({template: 'views/document/modalConnection.html', persist: true, show: false, backdrop: 'static', scope: modalScope, modalClass: 'createEdge'});
         $q.when(modalPromise).then(function (modalEl) {
             modalEl.modal('show');
@@ -63330,7 +63333,7 @@ DocController.controller("DocumentCreateController", ['$scope', '$routeParams', 
 
 
     var database = $routeParams.database;
-    var clazz = $routeParams.clazz
+    var clazz = $routeParams.clazz;
     $scope.fixed = Database.header;
     $scope.doc = DocumentApi.createNewDoc(clazz);
     $scope.headers = Database.getPropertyFromDoc($scope.doc);
@@ -63352,13 +63355,13 @@ DocController.controller("DocumentModalController", ['$scope', '$routeParams', '
             Notification.push({content: JSON.stringify(error)});
             $location.path('/404');
         });
-    }
+    };
     $scope.save = function () {
         DocumentApi.updateDocument($scope.db, $scope.rid, $scope.doc, function (data) {
             Notification.push({content: data});
         });
 
-    }
+    };
     $scope.addField = function (name, type) {
         if (name) {
             $scope.doc[name] = null;
@@ -63372,12 +63375,12 @@ DocController.controller("DocumentModalController", ['$scope', '$routeParams', '
             $scope.$broadcast('fieldAdded', name);
             $scope.headers.push(name);
         }
-    }
+    };
     $scope.deleteField = function (name) {
         delete $scope.doc[name];
         var idx = $scope.headers.indexOf(name);
         $scope.headers.splice(idx, 1);
-    }
+    };
     $scope.reload();
 }]);
 DocController.controller("EditController", ['$scope', '$routeParams', '$location', 'DocumentApi', 'Database', 'Notification', function ($scope, $routeParams, $location, DocumentApi, Database, Notification) {
@@ -63397,7 +63400,7 @@ DocController.controller("EditController", ['$scope', '$routeParams', '$location
 DocController.controller("CreateController", ['$scope', '$routeParams', '$location', 'DocumentApi', 'Database', 'Notification', function ($scope, $routeParams, $location, DocumentApi, Database, Notification) {
 
     var database = $routeParams.database;
-    var clazz = $routeParams.clazz
+    var clazz = $routeParams.clazz;
     $scope.fixed = Database.header;
     $scope.doc = DocumentApi.createNewDoc(clazz);
     $scope.headers = Database.getPropertyFromDoc($scope.doc);
@@ -63409,8 +63412,8 @@ DocController.controller("DocumentModalBrowseController", ['$scope', '$routePara
 
     $scope.database = Database;
     $scope.limit = 20;
-    $scope.queries = new Array;
-    $scope.added = new Array;
+    $scope.queries = [];
+    $scope.added = [];
     $scope.queryText = $scope.type ? "select * from " + $scope.type.linkedClass : "";
     $scope.editorOptions = {
         lineWrapping: true,
@@ -63437,7 +63440,7 @@ DocController.controller("DocumentModalBrowseController", ['$scope', '$routePara
             if ($scope.queries.indexOf($scope.queryText) == -1)
                 $scope.queries.push($scope.queryText);
         });
-    }
+    };
     $scope.select = function (result) {
         var index = $scope.added.indexOf(result['@rid']);
         if (index == -1) {
@@ -63445,10 +63448,10 @@ DocController.controller("DocumentModalBrowseController", ['$scope', '$routePara
         } else {
             $scope.added.splice(index, 1);
         }
-    }
+    };
     $scope.createLink = function () {
         if (!$scope.container.doc[$scope.label]) {
-            $scope.container.doc[$scope.label] = new Array;
+            $scope.container.doc[$scope.label] = [];
         }
         $scope.container.doc[$scope.label] = $scope.container.doc[$scope.label].concat($scope.added);
         $scope.container.save();
@@ -63463,7 +63466,7 @@ DocController.controller("DocumentPopoverLinkController", ['$scope', '$routePara
         if ($scope['outgoings'].indexOf($scope.popover.name) == -1) {
 
             $scope['outgoings'].push($scope.popover.name);
-            var types = $scope.doc['@fieldTypes']
+            var types = $scope.doc['@fieldTypes'];
             if (types) {
                 types = types + ',' + $scope.popover.name + '=e'
             } else {
@@ -63493,7 +63496,7 @@ function BaseEditController($scope, $routeParams, $route, $location, $modal, $q,
                 $location.path('database/' + $scope.database + '/browse/edit/' + data['@rid'].replace('#', ''));
             });
         }
-    }
+    };
 
 
     $scope.reload = function () {
@@ -63508,13 +63511,13 @@ function BaseEditController($scope, $routeParams, $route, $location, $modal, $q,
             Notification.push({content: JSON.stringify(error)});
             $location.path('404');
         });
-    }
+    };
 
     $scope.getLabelFor = function (label) {
         var props = Database.listPropertyForClass($scope.doc['@class'], label);
         var propsLabel = props != null ? (props.linkedClass != undefined ? " (" + (props.linkedClass) + ")" : "" ) : "";
         return label + propsLabel;
-    }
+    };
     $scope.delete = function () {
 
         var recordID = $scope.doc['@rid'];
@@ -63530,7 +63533,7 @@ function BaseEditController($scope, $routeParams, $route, $location, $modal, $q,
                 });
             }
         });
-    }
+    };
 
     $scope.deleteField = function (name) {
         Utilities.confirm($scope, $modal, $q, {
@@ -63542,7 +63545,7 @@ function BaseEditController($scope, $routeParams, $route, $location, $modal, $q,
                 $scope.headers.splice(idx, 1);
             }
         });
-    }
+    };
 
     $scope.addField = function (name, type) {
         if (name) {
@@ -63575,13 +63578,13 @@ function BaseEditController($scope, $routeParams, $route, $location, $modal, $q,
             });
         }
 
-    }
+    };
     $scope.follow = function (rid) {
         $scope.navigate(rid);
-    }
+    };
     $scope.navigate = function (rid) {
         $location.path('database/' + $scope.database + '/browse/edit/' + rid.replace('#', ''));
-    }
+    };
     $scope.create = function () {
         $location.path('database/' + $scope.database + '/browse/create/' + $scope.doc['@class']);
     }
@@ -63605,7 +63608,7 @@ GrapgController.controller("VertexCreateController", ['$scope', '$routeParams', 
 
 
     var database = $routeParams.database;
-    var clazz = $routeParams.clazz
+    var clazz = $routeParams.clazz;
     $scope.fixed = Database.header;
     $scope.doc = DocumentApi.createNewDoc(clazz);
     $scope.headers = Database.getPropertyFromDoc($scope.doc);
@@ -63627,13 +63630,13 @@ GrapgController.controller("VertexModalController", ['$scope', '$routeParams', '
             Notification.push({content: JSON.stringify(error)});
             $location.path('#/404');
         });
-    }
+    };
     $scope.save = function () {
         DocumentApi.updateDocument($scope.db, $scope.rid, $scope.doc, function (data) {
             Notification.push({content: data});
         });
 
-    }
+    };
     $scope.reload();
 }]);
 GrapgController.controller("VertexEditController", ['$scope', '$injector', '$routeParams', '$location', '$modal', '$q', 'DocumentApi', 'Database', 'CommandApi', 'Notification', function ($scope, $injector, $routeParams, $location, $modal, $q, DocumentApi, Database, CommandApi, Notification) {
@@ -63647,7 +63650,7 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
     $scope.canAdd = true;
     $scope.popover = {
         title: 'Add edge'
-    }
+    };
 
     // Toggle modal
     $scope.showModal = function (rid) {
@@ -63664,12 +63667,12 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
         modalScope.db = $scope.database;
         modalScope.originRid = $scope.rid;
         modalScope.container = $scope;
-        modalScope.label = label
+        modalScope.label = label;
         var modalPromise = $modal({template: 'views/vertex/modalConnection.html', persist: true, show: false, backdrop: 'static', scope: modalScope, modalClass: 'createEdge'});
         $q.when(modalPromise).then(function (modalEl) {
             modalEl.modal('show');
         });
-    }
+    };
     if (!$scope.doc) {
         $scope.reload();
     } else {
@@ -63685,7 +63688,7 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
     }
 
     $scope.delete = function () {
-        var recordID = $scope.doc['@rid']
+        var recordID = $scope.doc['@rid'];
         Utilities.confirm($scope, $modal, $q, {
             title: 'Warning!',
             body: 'You are removing Vertex ' + recordID + '. Are you sure?',
@@ -63697,18 +63700,18 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
                 });
             }
         });
-    }
+    };
 
     $scope.filterArray = function (arr) {
         if (arr instanceof Array) {
             return arr;
         } else {
-            var newArr = new Array;
+            var newArr = [];
             newArr.push(arr);
             return newArr;
         }
 
-    }
+    };
     $scope.follow = function (rid) {
         var edgeDoc = DocumentApi.get({ database: $scope.database, document: rid}, function () {
             if (Database.isEdge(edgeDoc['@class'])) {
@@ -63723,7 +63726,7 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
             $location.path('/404');
         });
 
-    }
+    };
     $scope.followEdge = function (rid, direction) {
         var edgeDoc = DocumentApi.get({ database: $scope.database, document: rid}, function () {
             var ridNavigate = rid;
@@ -63736,7 +63739,7 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
             $location.path('/404');
         });
 
-    }
+    };
     $scope.deleteLink = function (group, edge) {
 
         Utilities.confirm($scope, $modal, $q, {
@@ -63744,7 +63747,7 @@ GrapgController.controller("VertexEditController", ['$scope', '$injector', '$rou
             body: 'You are removing edge ' + edge + '. Are you sure?',
             success: function () {
                 var edgeDoc = DocumentApi.get({ database: $scope.database, document: edge}, function () {
-                    var command = ""
+                    var command = "";
                     if (Database.isEdge(edgeDoc['@class'])) {
                         command = "DELETE EDGE " + edge;
                     }
@@ -63772,7 +63775,7 @@ GrapgController.controller("VertexPopoverLabelController", ['$scope', '$routePar
     $scope.init = function (where) {
         $scope.where = where;
         $scope.labels = Database.getClazzEdge();
-    }
+    };
     $scope.addEdgeLabel = function () {
         var name = "";
         if ($scope.where == "outgoings") {
@@ -63792,8 +63795,8 @@ GrapgController.controller("VertexModalBrowseController", ['$scope', '$routePara
 
     $scope.database = Database;
     $scope.limit = 20;
-    $scope.queries = new Array;
-    $scope.added = new Array;
+    $scope.queries = [];
+    $scope.added = [];
     $scope.editorOptions = {
         lineWrapping: true,
         lineNumbers: true,
@@ -63819,7 +63822,7 @@ GrapgController.controller("VertexModalBrowseController", ['$scope', '$routePara
             if ($scope.queries.indexOf($scope.queryText) == -1)
                 $scope.queries.push($scope.queryText);
         });
-    }
+    };
     $scope.select = function (result) {
         var index = $scope.added.indexOf(result['@rid']);
         if (index == -1) {
@@ -63827,7 +63830,7 @@ GrapgController.controller("VertexModalBrowseController", ['$scope', '$routePara
         } else {
             $scope.added.splice(index, 1);
         }
-    }
+    };
     $scope.createEdges = function () {
 
         var command;
@@ -63837,7 +63840,7 @@ GrapgController.controller("VertexModalBrowseController", ['$scope', '$routePara
             command = "CREATE EDGE " + $scope.label.replace("out_", "") + " FROM " + $scope.originRid + " TO [" + $scope.added + "]";
         }
         CommandApi.queryText({database: $routeParams.database, language: 'sql', text: command}, function (data) {
-            $scope.added = new Array;
+            $scope.added = [];
             $scope.container.reload();
         });
 
@@ -63858,7 +63861,7 @@ configModule.controller("ConfigurationController", ['$scope', '$routeParams', '$
     $scope.db = $routeParams.database;
     $scope.tabs = ['structure', 'allocation', 'configuration', 'import-export', 'uml'];
 
-    $scope.tabsI18n = new Array;
+    $scope.tabsI18n = [];
 
     if ($scope.active == "allocation") {
         Database.setWiki("https://github.com/orientechnologies/orientdb-studio/wiki/Defragmentation");
@@ -63875,10 +63878,10 @@ configModule.controller("ConfigurationController", ['$scope', '$routeParams', '$
 
     $scope.getTemplate = function (tab) {
         return 'views/database/config/' + tab + '.html';
-    }
+    };
     $scope.exportDatabase = function () {
         DatabaseApi.exportDatabase($scope.db);
-    }
+    };
 
     $scope.handleFile = function (files) {
 
@@ -63890,7 +63893,7 @@ configModule.controller("ConfigurationController", ['$scope', '$routeParams', '$
             var blobInput = [event.target.result];
             var blob = new Blob(blobInput);
             DatabaseApi.importDatabase($scope.db, blob, files[0]);
-        }
+        };
         reader.readAsDataURL(files[0]);
     }
 
@@ -64002,7 +64005,7 @@ configModule.controller("UMLController", ['$scope', '$routeParams', '$location',
 
         return  "http://yuml.me/diagram/scruffy/class/" + umlURL;
 
-    }
+    };
     $scope.refreshUML = function () {
         $scope.uml = $scope.displayUML();
     }
@@ -64023,22 +64026,22 @@ configModule.controller("DbConfigController", ['$scope', '$routeParams', '$locat
     $scope.values = Database.getMetadata()['config']['values'];
 
     $scope.canChange = ["clusterSelection", "minimumClusters"];
-    $scope.changeTemplate = { clusterSelection: "views/database/config/clusterSelection.html"}
+    $scope.changeTemplate = { clusterSelection: "views/database/config/clusterSelection.html"};
     $scope.dirty = [];
     $scope.clusterStrategies = ['round-robin', "default", "balanced"];
 
     $scope.isDisabledVal = function (val) {
         return $scope.canChange.indexOf(val.name) == -1
-    }
+    };
 
     $scope.setDirty = function (val) {
         if ($scope.dirty.indexOf(val) == -1)
             $scope.dirty.push(val);
-    }
+    };
     $scope.getRender = function (val) {
         var tpl = $scope.changeTemplate[val.name];
         return tpl ? tpl : "views/database/config/default.html";
-    }
+    };
     $scope.save = function () {
         $scope.dirty.forEach(function (val) {
             DatabaseAlterApi.changeProperty(Database.getName(), val).then(function (data) {
@@ -64115,14 +64118,14 @@ var DatabaseResolve = {
         $timeout(delay.resolve, 0);
         return delay.promise;
     }
-}
+};
 database.factory('Database', function (DatabaseApi, localStorageService) {
     var current = {
         name: null,
         username: null,
         metadata: null,
         wiki: "https://github.com/orientechnologies/orientdb-studio/wiki"
-    }
+    };
     return {
 
         header: ["@rid", "@version", "@class"],
@@ -64223,7 +64226,6 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
                             return props[f].type;
                         }
                     }
-                    ;
                 }
             }
             var type = "STRING";
@@ -64261,7 +64263,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         listField: function (clazz) {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var fields = new Array
+            var fields = [];
             for (var entry in classes) {
                 var defaultCluster = classes[entry]['defaultCluster'];
                 if (clazz.toUpperCase() == classes[entry].name.toUpperCase()) {
@@ -64269,7 +64271,6 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
                     for (var f in props) {
                         fields.push(props[f].name);
                     }
-                    ;
                     break;
                 }
             }
@@ -64278,7 +64279,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         listPropertiesForClass: function (clazz) {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var fields = new Array
+            var fields = [];
             for (var entry in classes) {
                 var defaultCluster = classes[entry]['properties'];
                 if (clazz.toUpperCase() == classes[entry].name.toUpperCase()) {
@@ -64286,7 +64287,6 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
                     for (var f in props) {
                         fields.push(props[f]);
                     }
-                    ;
                     break;
                 }
             }
@@ -64312,7 +64312,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         listIndexesForClass: function (clazz) {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var fields = new Array
+            var fields = [];
             for (var entry in classes) {
                 var defaultCluster = classes[entry]['indexes'];
                 if (clazz.toUpperCase() == classes[entry].name.toUpperCase()) {
@@ -64322,7 +64322,6 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
 
                         fields.push(props[f]);
                     }
-                    ;
                     break;
                 }
             }
@@ -64331,9 +64330,9 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         listClasses: function () {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var fields = new Array
+            var fields = [];
             for (var entry in classes) {
-                var claq = classes[entry].name
+                var claq = classes[entry].name;
                 fields.push(classes[entry])
             }
             return fields;
@@ -64342,7 +64341,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
             for (var entry in classes) {
-                var claq = classes[entry].name
+                var claq = classes[entry].name;
                 if (claq == clazz) {
                     return true;
                 }
@@ -64352,9 +64351,9 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         listNameOfClasses: function () {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var fields = new Array
+            var fields = [];
             for (var entry in classes) {
-                var claq = classes[entry]['name']
+                var claq = classes[entry]['name'];
                 fields.push(claq)
             }
             return fields;
@@ -64362,7 +64361,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         listNameOfProperties: function () {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var fields = new Array
+            var fields = [];
 
             classes.forEach(function (element, index, array) {
                 if (element['properties']) {
@@ -64431,7 +64430,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
         getClazzEdge: function () {
             var metadata = this.getMetadata();
             var classes = metadata['classes'];
-            var clazzes = new Array;
+            var clazzes = [];
             for (var entry in classes) {
                 var name = classes[entry]['name'];
                 if (this.isEdge(name)) {
@@ -64460,7 +64459,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
                     return (fixedHeader.indexOf(element) == -1 && !self.isLink(type));
                 }
             });
-            var toAdd = new Array;
+            var toAdd = [];
             fields.forEach(function (elem, index, array) {
                 if (all.indexOf(elem) == -1) {
                     var type = self.getFieldType(c, elem);
@@ -64473,7 +64472,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
                     if (bool)
                         toAdd.push(elem);
                 }
-            })
+            });
             return all.concat(toAdd);
         },
         getEdge: function (doc, direction) {
@@ -64521,7 +64520,7 @@ database.factory('Database', function (DatabaseApi, localStorageService) {
          */
         getPropertyTableFromResults: function (results) {
             var self = this;
-            var headers = new Array;
+            var headers = [];
             results.forEach(function (element, index, array) {
                 var tmp = Object.keys(element);
                 if (headers.length == 0) {
@@ -64550,19 +64549,19 @@ database.factory('DatabaseApi', function ($http, $resource) {
     var resource = $resource(API + 'database/:database');
     resource.listDatabases = function (callback) {
         $http.get(API + 'listDatabases').success(callback);
-    }
+    };
 
     resource.setUrlWiki = function (urll) {
         urlWiki = urll;
-    }
+    };
     resource.getUrlWiki = function () {
         return urlWiki;
-    }
+    };
 
     resource.connect = function (database, username, password, callback, error) {
         $http.defaults.headers.common['Authorization'] = 'Basic ' + Base64.encode(username + ':' + password);
         $http.get(API + 'connect/' + database).success(callback).error(error);
-    }
+    };
     resource.createDatabase = function (name, type, stype, username, password, callback, error) {
         delete $http.defaults.headers.common['Authorization'];
         $http.defaults.headers.common['Authorization'] = 'Basic ' + Base64.encode(username + ':' + password);
@@ -64572,19 +64571,19 @@ database.factory('DatabaseApi', function ($http, $resource) {
         }).error(function (data) {
                 error(data);
             });
-    }
+    };
 
     resource.exportDatabase = function (database) {
         window.open(API + 'export/' + database);
-    }
+    };
     resource.importDatabase = function (database, blob, file) {
         var fd = new FormData();
         fd.append("databaseFile", blob, file.name);
         $http.post(API + 'import/' + database, fd, { headers: { 'Content-Type': undefined }, transformRequest: angular.identity });
-    }
+    };
     resource.getAllocation = function (database, callback) {
         $http.get(API + 'allocation/' + database).success(callback);
-    }
+    };
     resource.disconnect = function (callback) {
         $http.get(API + 'disconnect').success(function () {
 
@@ -64594,7 +64593,7 @@ database.factory('DatabaseApi', function ($http, $resource) {
                 delete $http.defaults.headers.common['Authorization'];
                 callback();
             });
-    }
+    };
 
     return resource;
 });
@@ -64640,8 +64639,6 @@ database.factory('CommandApi', function ($http, $resource, Notification, Spinner
                     Notification.push({content: data});
                     if (error) error(data);
                 });
-            ;
-
         }
 
         else {
@@ -64672,7 +64669,7 @@ database.factory('CommandApi', function ($http, $resource, Notification, Spinner
                     });
             }
         }
-    }
+    };
 
     resource.getAll = function (database, clazz, callback) {
         var text = API + 'command/' + database + '/sql/-/-1?format=rid,type,version,class,shallow,graph';
@@ -64681,7 +64678,7 @@ database.factory('CommandApi', function ($http, $resource, Notification, Spinner
             callback(data);
         });
 
-    }
+    };
     resource.interrupt = function (database, command) {
         var deferred = $q.defer();
         var text = API + 'dbconnection/' + database;
@@ -64689,7 +64686,7 @@ database.factory('CommandApi', function ($http, $resource, Notification, Spinner
             deferred.resolve(data);
         });
         return deferred.promise;
-    }
+    };
     return resource;
 })
 ;
@@ -64698,7 +64695,7 @@ database.factory('DocumentApi', function ($http, $resource, Database) {
     var resource = $resource(API + 'document/:database/:document');
     resource.updateDocument = function (database, rid, doc, callback) {
         $http.put(API + 'document/' + database + "/" + rid.replace('#', ''), doc).success(callback).error(callback);
-    }
+    };
     resource.uploadFileDocument = function (database, doc, blob, name, callback) {
 
         var fd = new FormData();
@@ -64707,15 +64704,15 @@ database.factory('DocumentApi', function ($http, $resource, Database) {
         //$.post(API + 'uploadSingleFile/'+database,fd);
         $http.post(API + 'uploadSingleFile/' + database, fd, { headers: { 'Content-Type': undefined }, transformRequest: angular.identity });
         //$http.put(API + 'document/' + database + "/" + rid.replace('#',''),doc,{headers: { 'Content-Type': undefined }}).success(callback).error(callback);
-    }
+    };
     resource.createDocument = function (database, rid, doc, callback) {
         $http.post(API + 'document/' + database + "/" + rid.replace('#', ''), doc).success(callback).error(callback);
-    }
+    };
     resource.deleteDocument = function (database, rid, callback) {
         $http.delete(API + 'document/' + database + "/" + rid.replace('#', '')).success(callback).error(callback);
-    }
+    };
     resource.createNewDoc = function (clazz) {
-        var r = new resource
+        var r = new resource;
         var fields = Database.listField(clazz);
         r['@class'] = clazz;
         r['@version'] = 0;
@@ -64723,9 +64720,8 @@ database.factory('DocumentApi', function ($http, $resource, Database) {
         for (var i = 0; i < fields.length; i++) {
             r[fields[i]] = null;
         }
-        ;
         return r;
-    }
+    };
     return resource;
 });
 database.factory('ServerApi', function ($http, $resource) {
@@ -64737,17 +64733,17 @@ database.factory('ServerApi', function ($http, $resource) {
         $http.get(API + 'server').success(function (data) {
             callback(data);
         });
-    }
+    };
     resource.killConnection = function (n, callback) {
         $http.post(API + 'connection/kill/' + n).success(function () {
             callback();
         });
-    }
+    };
     resource.interruptConnection = function (n, callback) {
         $http.post(API + 'connection/interrupt/' + n).success(function () {
             callback();
         });
-    }
+    };
     return resource;
 });
 database.factory('FunctionApi', function ($http, $resource) {
@@ -64784,7 +64780,7 @@ database.factory('FunctionApi', function ($http, $resource, Notification) {
                 Notification.push({content: data});
                 if (error) error(data);
             });
-    }
+    };
     return resource;
 });
 
@@ -64798,7 +64794,7 @@ database.factory('DatabaseAlterApi', function ($http, $resource, $q) {
 
         var deferred = $q.defer();
         var text = API + 'command/' + database + '/sql/-/-1?format=rid,type,version,class,graph';
-        var query = "alter database {{name}} {{value}}"
+        var query = "alter database {{name}} {{value}}";
         var queryText = S(query).template(props).s;
         $http.post(text, queryText).success(function (data) {
             deferred.resolve(data)
@@ -64806,7 +64802,7 @@ database.factory('DatabaseAlterApi', function ($http, $resource, $q) {
                 deferred.reject(data);
             });
         return deferred.promise;
-    }
+    };
     return resource
 });
 database.factory('ClassAlterApi', function ($http, $resource, $q) {
@@ -64819,7 +64815,7 @@ database.factory('ClassAlterApi', function ($http, $resource, $q) {
 
         var deferred = $q.defer();
         var text = API + 'command/' + database + '/sql/-/-1?format=rid,type,version,class,graph';
-        var query = "alter class {{clazz}} {{name}} {{value}}"
+        var query = "alter class {{clazz}} {{name}} {{value}}";
         var queryText = S(query).template(props).s;
         $http.post(text, queryText).success(function (data) {
             deferred.resolve(data)
@@ -64827,7 +64823,7 @@ database.factory('ClassAlterApi', function ($http, $resource, $q) {
                 deferred.reject(data);
             });
         return deferred.promise;
-    }
+    };
     return resource
 });
 
@@ -64836,8 +64832,8 @@ var notification = angular.module('notification.services', []);
 notification.factory('Notification', function () {
 
     return {
-        notifications: new Array,
-        errors: new Array,
+        notifications: [],
+        errors: [],
 
         push: function (notification) {
             this.notifications.splice(0, this.notifications.length);
@@ -64874,7 +64870,7 @@ breadcrumb.factory('Breadcrumb',function($rootScope,Database,$location){
 
         var path =  '/database/' + Database.getName() + "/";
         var arr =   $location.path().replace(path,"");
-        var array = new Array;
+        var array = [];
         arr = arr.split("/");
         bread.clear();
         arr.forEach(function(val,idx,arrs){
@@ -64915,7 +64911,7 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
         }
     };
     Database.setWiki("https://github.com/orientechnologies/orientdb-studio/wiki/Functions");
-    $scope.functions = new Array;
+    $scope.functions = [];
 
     $scope.consoleValue = '';                           //code of the function
     $scope.nameFunction = '';                           //name of the function
@@ -64925,7 +64921,7 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
 
     $scope.resultExecute = undefined;
     $scope.limit = -1;
-    $scope.parametersToExecute = new Array;
+    $scope.parametersToExecute = [];
 
     $scope.isNewFunction = false;
 
@@ -64933,8 +64929,8 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
 
 
     $scope.getListFunction = function () {
-        $scope.functions = new Array;
-        $scope.functionsrid = new Array;
+        $scope.functions = [];
+        $scope.functionsrid = [];
         CommandApi.queryText({database: $routeParams.database, language: 'sql', verbose: false, text: sqlText, limit: $scope.limit, shallow: false}, function (data) {
             if (data.result) {
                 for (i in data.result) {
@@ -64950,10 +64946,10 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
             }
         });
 
-    }
+    };
     $scope.clearConsole = function () {
         $scope.functionToExecute['code'] = '';
-    }
+    };
     $scope.getListFunction();
 
     $scope.removeParam = function (index) {
@@ -64966,25 +64962,25 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
 
         }
         return result;
-    }
+    };
     $scope.copyFunction = function () {
         if ($scope.functionToExecute != undefined) {
 
             var newFunc = JSON.parse(JSON.stringify($scope.functionToExecute));
             newFunc['name'] = $scope.functionToExecute['name'] + "_clone";
-            newFunc['code'] = newFunc['code'] + ' '
+            newFunc['code'] = newFunc['code'] + ' ';
             newFunc['$$hashKey'] = '';
 
             $scope.functions.push(newFunc);
             $scope.showInConsole(newFunc);
             $scope.isNewFunction = true;
         }
-    }
+    };
     $scope.addParam = function () {
 
 
         if ($scope.functionToExecute['parameters'] == undefined) {
-            $scope.functionToExecute['parameters'] = new Array;
+            $scope.functionToExecute['parameters'] = [];
         }
 
 
@@ -65008,7 +65004,7 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
 
 
         });
-    }
+    };
     $scope.
         executeFunction = function () {
         $scope.resultExecute = '';
@@ -65031,24 +65027,24 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
                 Spinner.stopSpinner();
             });
         }
-    }
+    };
     $scope.refreshPage = function () {
 
         $route.reload();
-    }
+    };
 
     $scope.calculateNumParameters = function () {
         if ($scope.functionToExecute != undefined) {
             var numPar = parseInt($scope.functionToExecute['parameters']);
             var i = 0;
-            var result = new Array;
+            var result = [];
             for (i = 0; i < numPar; i++) {
 
                 result.push(numPar[i]);
             }
         }
         return result;
-    }
+    };
 
     //when click on a function in list of functions
 
@@ -65060,12 +65056,12 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
         $scope.inParams = $scope.functionToExecute['parameters'];
         //$scope.vcm.setValue($scope.consoleValue != null ? $scope.consoleValue : "");
 
-    }
+    };
 
     $scope.showInConsole = function (selectedFunction) {
 
         $scope.showInConsoleAfterSave(selectedFunction);
-        $scope.parametersToExecute = new Array;
+        $scope.parametersToExecute = [];
 
         $scope.$watch('inParams.length', function (data) {
             if (data) {
@@ -65078,18 +65074,18 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
 
 
         $scope.isNewFunction = false;
-    }
+    };
 
     $scope.modifiedLanguage = function (lang) {
         $scope.functionToExecute['language'] = lang;
-    }
+    };
     $scope.createNewFunction = function () {
 
         var newDoc = DocumentApi.createNewDoc('ofunction');
         $scope.showInConsole(newDoc);
         $scope.isNewFunction = true;
 
-    }
+    };
     $scope.saveFunction = function () {
         $scope.resultExecute = '';
         if ($scope.functionToExecute['language'] != undefined && $scope.functionToExecute['name'] != undefined && $scope.functionToExecute['name'] != '') {
@@ -65123,7 +65119,7 @@ schemaModule.controller("FunctionController", ['$scope', '$routeParams', '$locat
             });
         }
 
-    }
+    };
 
     $scope.deleteFunction = function () {
 
@@ -65153,7 +65149,7 @@ schemaModule.controller("SecurityController", ['$scope', '$routeParams', '$locat
     $scope.db = $routeParams.database;
     $scope.active = $routeParams.tab || "users";
     $scope.tabs = ['users', 'roles'];
-    $scope.tabsI18n = new Array;
+    $scope.tabsI18n = [];
     $scope.tabsI18n['users'] = 'Users';
     $scope.tabsI18n['roles'] = 'Roles';
 
@@ -65164,12 +65160,12 @@ schemaModule.controller("SecurityController", ['$scope', '$routeParams', '$locat
 schemaModule.controller("UsersController", ['$scope', '$routeParams', '$location', 'Database', 'CommandApi', '$modal', '$q', '$route', function ($scope, $routeParams, $location, Database, CommandApi, $modal, $q, $route) {
 
     $scope.database = Database;
-    $scope.usersResult = new Array;
+    $scope.usersResult = [];
 
     var selectAllUsers = 'select * from oUser fetchPlan *:1 order by name  ';
 
     $scope.getListUsers = function () {
-        $scope.functions = new Array;
+        $scope.functions = [];
         CommandApi.queryText({database: $routeParams.database, language: 'sql', verbose: false, text: selectAllUsers, limit: $scope.limit, shallow: false}, function (data) {
             if (data.result) {
                 for (i in data.result) {
@@ -65177,7 +65173,7 @@ schemaModule.controller("UsersController", ['$scope', '$routeParams', '$location
                 }
             }
         });
-    }
+    };
 
 
     $scope.getListUsers();
@@ -65187,12 +65183,12 @@ schemaModule.controller("UsersController", ['$scope', '$routeParams', '$location
 schemaModule.controller("RolesController", ['$scope', '$routeParams', '$location', 'DatabaseApi', 'CommandApi', 'Database', function ($scope, $routeParams, $location, DatabaseApi, CommandApi, Database) {
 
     var selectAllUsers = 'select * from oRole fetchPlan *:1 order by name  ';
-    $scope.usersResult = new Array;
+    $scope.usersResult = [];
     $scope.selectedRole = null;
     $scope.roleMode = [ 'DENY_ALL_BUT', 'ALLOW_ALL_BUT'];
 
     $scope.getListUsers = function () {
-        $scope.functions = new Array;
+        $scope.functions = [];
         CommandApi.queryText({database: $routeParams.database, language: 'sql', verbose: false, text: selectAllUsers, limit: $scope.limit, shallow: false}, function (data) {
             if (data.result) {
                 for (i in data.result) {
@@ -65200,7 +65196,7 @@ schemaModule.controller("RolesController", ['$scope', '$routeParams', '$location
                 }
             }
         });
-    }
+    };
 
     $scope.getListUsers();
     $scope.selectRole = function (selectedRole) {
@@ -65208,12 +65204,12 @@ schemaModule.controller("RolesController", ['$scope', '$routeParams', '$location
         $scope.selectedRole = selectedRole;
         $scope.rules = Object.keys(selectedRole['rules']).sort();
 
-    }
+    };
 
     $scope.calcolaBitmask = function (item) {
 
         var DecToBin = '';
-        var Num1 = item
+        var Num1 = item;
 
         Num1 = item % 2;
 
@@ -65228,7 +65224,7 @@ schemaModule.controller("RolesController", ['$scope', '$routeParams', '$location
         for (i = 0; i < synch; i++) {
             DecToBin = '0'.concat(DecToBin);
         }
-        var matrix = new Array;
+        var matrix = [];
         for (z in DecToBin) {
             if (z != 'contains')
                 matrix.push(DecToBin[z] == '1')
@@ -65281,8 +65277,8 @@ spinner.factory('Spinner', function () {
         var target = document.getElementById('spinner');
 
         //spinner.spin(target);
-        $("#spinner-circle").removeClass("circle-stop")
-        $("#spinner-circle").addClass("circle-start")
+        $("#spinner-circle").removeClass("circle-stop");
+        $("#spinner-circle").addClass("circle-start");
 
 
         if (cb) {
@@ -65293,25 +65289,25 @@ spinner.factory('Spinner', function () {
             $("#interrupter").addClass("invisible");
         }
         //$("#spinner-container").addClass('spinner-start')
-    }
+    };
     spinner.stopSpinner = function () {
         //spinner.stop();
-        $("#spinner-circle").removeClass("circle-start")
-        $("#spinner-circle").addClass("circle-stop")
+        $("#spinner-circle").removeClass("circle-start");
+        $("#spinner-circle").addClass("circle-stop");
         $("#interrupter").unbind("click");
         $("#interrupter").removeClass("invisible");
         $("#interrupter-container").removeClass("circle-interrupt");
-        $("#interrupter-container").addClass("circle-interrupt-stop")
+        $("#interrupter-container").addClass("circle-interrupt-stop");
         //$("#spinner-container").removeClass('spinner-start');
 
-    }
+    };
     spinner.startSpinnerPopup = function () {
         var target = document.getElementById('spinner-popup');
         spinner.spin(target);
-    }
+    };
     spinner.stopSpinnerPopup = function () {
         spinner.stop();
-    }
+    };
     return spinner;
 });
 var breadcrumb = angular.module('bookmarks.services', []);
@@ -65320,7 +65316,7 @@ var breadcrumb = angular.module('bookmarks.services', []);
 breadcrumb.factory('Bookmarks', function ($resource, DocumentApi, $http, $q) {
 
     var resource = $resource(API + 'database/:database');
-    var CLAZZ = "_studio_bookmark"
+    var CLAZZ = "_studio_bookmark";
     resource.CLAZZ = CLAZZ;
     resource.changed = false;
     resource.getAll = function (database) {
@@ -65332,7 +65328,7 @@ breadcrumb.factory('Bookmarks', function ($resource, DocumentApi, $http, $q) {
             deferred.resolve(data);
         });
         return deferred.promise;
-    }
+    };
 
     resource.init = function (database) {
         var deferred = $q.defer();
@@ -65343,7 +65339,7 @@ breadcrumb.factory('Bookmarks', function ($resource, DocumentApi, $http, $q) {
             deferred.resolve(data);
         });
         return deferred.promise;
-    }
+    };
 
     resource.addBookmark = function (database, item) {
         var deferred = $q.defer();
@@ -65352,26 +65348,26 @@ breadcrumb.factory('Bookmarks', function ($resource, DocumentApi, $http, $q) {
         });
 
         return deferred.promise;
-    }
+    };
     resource.refresh = function () {
         resource.tags = null;
         resource.changed = true;
         resource.changed = false;
-    }
+    };
     resource.remove = function (database, bk) {
         var deferred = $q.defer();
         DocumentApi.deleteDocument(database, bk['@rid'], function (data) {
             deferred.resolve(data);
         });
         return deferred.promise;
-    }
+    };
     resource.update = function (database, bk) {
         var deferred = $q.defer();
         DocumentApi.updateDocument(database, bk['@rid'], bk, function (data) {
             deferred.resolve(data);
         });
         return deferred.promise;
-    }
+    };
     resource.getTags = function (database) {
         var deferred = $q.defer();
         var text = API + 'command/' + database + '/sql/-/-1?format=rid,type,version,class,graph';
@@ -65385,18 +65381,18 @@ breadcrumb.factory('Bookmarks', function ($resource, DocumentApi, $http, $q) {
             deferred.resolve(model);
         });
         return deferred.promise;
-    }
+    };
     return resource;
 });
 breadcrumb.factory('History', function ($resource, localStorageService, DocumentApi, $http, $q) {
 
     var resource = $resource(API + 'database/:database');
-    var CLAZZ = "_studio_history"
+    var CLAZZ = "_studio_history";
     resource.CLAZZ = CLAZZ;
 
     return resource;
 });
-var filterModule = angular.module('filters', [])
+var filterModule = angular.module('filters', []);
 filterModule.filter('capitalize', function () {
     return function (input, scope) {
         if (input != null)
@@ -65407,7 +65403,7 @@ filterModule.filter('checkmark', function () {
     return function (input) {
         return input ? '\u2713' : '\u2718';
     };
-})
+});
 filterModule.filter('sizeFormat', function () {
 
     return function (size) {
@@ -65447,9 +65443,9 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
         formScope.doc = scope.doc;
         formScope.database = scope.database;
         formScope.deleteField = scope.deleteField;
-        formScope.options = new Array;
+        formScope.options = [];
         formScope.types = Database.getSupportedTypes();
-        formScope.fieldTypes = new Array;
+        formScope.fieldTypes = [];
         formScope.editorOptions = {
             lineWrapping: true,
             lineNumbers: true,
@@ -65460,14 +65456,14 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
             }
         };
         formScope.onLoadEditor = function (_editor) {
-        }
+        };
         formScope.inSchema = function (header) {
             var property = Database.listPropertyForClass(scope.doc['@class'], header);
             return property;
-        }
+        };
         formScope.isSelected = function (name, type) {
             return type == formScope.getType(name);
-        }
+        };
         formScope.getTemplate = function (header) {
             if (formScope.doc['@class']) {
                 var type = findType(formScope, header);
@@ -65478,17 +65474,17 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
                     return 'views/widget/string.html';
                 }
             }
-        }
+        };
         formScope.getType = function (header) {
             if (formScope.doc['@class']) {
                 return findType(formScope, header);
             } else {
                 return "STRING";
             }
-        }
+        };
         formScope.requiredString = function (header) {
             return formScope.isRequired(header) ? "*" : "";
-        }
+        };
         formScope.isRequired = function (header) {
 
             var property = Database.listPropertyForClass(formScope.doc['@class'], header);
@@ -65497,7 +65493,7 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
             } else {
                 return false;
             }
-        }
+        };
         formScope.findAll = function (header) {
             var property = Database.listPropertyForClass(formScope.doc['@class'], header);
             if (!formScope.options[header]) {
@@ -65505,7 +65501,7 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
                     formScope.options[header] = data.result;
                 });
             }
-        }
+        };
         formScope.changeType = function (name, type) {
 
             var idx = formScope.headers.indexOf(name);
@@ -65523,7 +65519,7 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
             formScope.headers.push(name);
 
 
-        }
+        };
         formScope.$watch('formID.$valid', function (validity) {
             scope.docValid = validity;
         });
@@ -65538,9 +65534,9 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
                 var blob = new Blob(blobInput);
                 formScope.doc[header] = "$file";
                 DocumentApi.uploadFileDocument(formScope.database, formScope.doc, blob, files[0].name);
-            }
+            };
             reader.readAsDataURL(files[0]);
-        }
+        };
         scope.$on('fieldAdded', function (event, field) {
             formScope.fieldTypes[field] = formScope.getTemplate(field);
         });
@@ -65556,7 +65552,7 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
         var el = angular.element($compile(response.data)(formScope));
         element.empty();
         element.append(el);
-    }
+    };
     var findType = function (scope, name) {
         var type = null;
         var property = Database.listPropertyForClass(scope.doc['@class'], name);
@@ -65575,7 +65571,7 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
                 return "EMBEDDED";
             }
             return type;
-        }
+        };
         if (!property) {
             var fieldTypes = scope.doc['@fieldTypes'];
             var type = Database.findTypeFromFieldTipes(scope.doc, name);
@@ -65583,18 +65579,18 @@ Widget.directive('docwidget', function ($compile, $http, Database, CommandApi, D
                 type = guessType(scope.doc[name])
 
             }
-            property = new Object;
+            property = {};
             property.name = name;
         } else {
             type = property.type;
         }
         return type != null ? type : "STRING";
-    }
+    };
     var linker = function (scope, element, attrs) {
         $http.get('views/widget/form.html').then(function (response) {
             compileForm(response, scope, element, attrs);
         });
-    }
+    };
     return {
         // A = attribute, E = Element, C = Class and M = HTML Comment
         restrict: 'A',
@@ -65745,7 +65741,7 @@ Widget.directive('orientdate', function (Database) {
             }
 
             function out(data) {
-                var form = data
+                var form = data;
                 if (data) {
                     form = moment(data).format('DD/MM/YYYY');
                 }
@@ -65786,7 +65782,7 @@ Widget.directive('orientdatetime', function (Database) {
             }
 
             function out(data) {
-                var form = data
+                var form = data;
                 var values = Database.getMetadata()['config']['values'];
                 var formatter = undefined;
                 values.forEach(function (val, idx, array) {
@@ -65887,7 +65883,7 @@ Widget.provider("$ojson", function () {
 
             $ojson.repeat = function (s, count) {
                 return new Array(count + 1).join(s);
-            }
+            };
 
             $ojson.formatJson = function (json, indentChars) {
                 var i = 0,
@@ -65953,15 +65949,15 @@ Widget.provider("$ojson", function () {
                     }
                 }
                 return newJson;
-            }
+            };
             $ojson.format = function (text) {
                 return this.formatJson(text);
-            }
+            };
 
 
             return $ojson;
         }
-    }
+    };
 
 
     return $jsonProvider;
@@ -66032,7 +66028,7 @@ Utilities.confirm = function ($scope, $modal, $q, params) {
         modalScope.confirm = function () {
             params.success();
             modalScope.hide();
-        }
+        };
 
         var modalPromise = $modal({template: 'views/modal/yesno.html', persist: true, show: false, backdrop: 'static', scope: modalScope, modalClass: ''});
         $q.when(modalPromise).then(function (modalEl) {
@@ -66040,5 +66036,5 @@ Utilities.confirm = function ($scope, $modal, $q, params) {
         });
 
     }
-}
+};
 

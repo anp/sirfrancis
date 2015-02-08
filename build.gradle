@@ -22,19 +22,21 @@ repositories {
 
 dependencies {
     def dropwizardVersion = '0.7.1'
-    def orientDBVersion = '2.0'
+    def orientDBVersion = '2.0.1'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
             'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
-            'com.orientechnologies:orientdb-lucene:' + orientDBVersion,
+            'com.orientechnologies:orientdb-lucene:2.0',
             'org.apache.lucene:lucene-core:4.7.0',
             'org.apache.lucene:lucene-analyzers-common:4.7.0',
             'org.apache.lucene:lucene-queryparser:4.7.0',
             'org.apache.lucene:lucene-misc:4.7.0',
             //fix the jackson classpath issue
             'com.fasterxml.jackson.core:jackson-databind:2.3.3',
-            'com.sendgrid:sendgrid-java:2.0.0'
+            'com.sendgrid:sendgrid-java:2.0.0',
+            'net.sf.jung:jung-algorithms:2.0.1',
+            'net.sf.jung:jung-graph-impl:2.0.1',
     )
     testCompile (
             'junit:junit:4.11',
@@ -47,7 +49,6 @@ task wrapper(type: Wrapper) {
 
 task capsule(type: FatCapsule) {
     applicationClass mainClassName
-    reallyExecutable
 }
 
 def execJarPath = './build/libs/sirfrancis-' + version + '-capsule.jar'
@@ -58,7 +59,7 @@ task fullBuild(type: Exec, dependsOn: capsule) {
 
 task runServer(type: Exec, dependsOn: fullBuild) {
     //MAKE SURE CONFIG PATH IS CORRECT
-    commandLine(execJarPath, 'server', 'bacon-local.yml')
+    commandLine('java', '-Xms500m', '-Xmx6000m', '-jar', execJarPath, 'server', 'bacon-local.yml')
 }
 
 task clearDB(type: Exec, dependsOn: fullBuild) {
@@ -66,5 +67,5 @@ task clearDB(type: Exec, dependsOn: fullBuild) {
 }
 
 task dbInit(type: Exec, dependsOn: clearDB) {
-    commandLine(execJarPath, 'db', '-f', '-s', 'omdb.txt', '-t', 'tomatoes.txt', 'bacon-local.yml')
+    commandLine('java', '-Xms500m', '-Xmx800m', '-Dstorage.diskCache.bufferSize=7000', '-jar', execJarPath, 'db', '-f', '-s', 'omdb.txt', '-t', 'tomatoes.txt', 'bacon-local.yml')
 }

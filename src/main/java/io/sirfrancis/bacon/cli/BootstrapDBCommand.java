@@ -2,7 +2,6 @@ package io.sirfrancis.bacon.cli;
 
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
-import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -180,6 +179,7 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 					e.setProperty("source", "omdb");
 				}
 			}
+			graph.commit();
 		}
 	}
 
@@ -298,11 +298,16 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 		userType.createProperty("username", OType.STRING);
 		userType.createIndex("User.username", "UNIQUE", "username");
 
+		OrientVertexType quizStartType = graph.createVertexType("quizStart");
+		quizStartType.createProperty("identifier", OType.STRING);
+		quizStartType.createIndex("quizStart.identifier", "UNIQUE", "identifier");
+
 		graph.createEdgeType("Acted");
 		graph.createEdgeType("Directed");
 		graph.createEdgeType("Wrote");
 		graph.createEdgeType("rated");
 		graph.createEdgeType("recommended");
+		graph.createEdgeType("quizPath");
 
 		graph.shutdown();
 	}
@@ -396,7 +401,7 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 		currentInitTimestamp = getTimestamp();
 
 		config = configuration;
-		DB_PATH = config.getDBPath();
+		DB_PATH = config.getDBLocalPath();
 		BACKUP_PATH = config.getDbBackupPath();
 		OMDB_IMG_API_KEY = config.getOMDBAPIKey();
 		ADMIN_USER = namespace.getString("admin-user");
@@ -462,16 +467,16 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 			String line = reader.readLine();
 			LOGGER.info("OMDB file reader successfully initialized.");
 
-			graph.declareIntent(new OIntentMassiveInsert());
+			//graph.declareIntent(new OIntentMassiveInsert());
+			Vertex quizStart = graph.addVertex("class:quizStart");
+			quizStart.setProperty("identifier", "quiz starting point");
+
 
 			while ((line = reader.readLine()) != null) {
 				parseMovieToDB(line);
 				numMovies++;
-				if (numMovies % 10000 == 0) {
+				if (numMovies % 50000 == 0) {
 					System.out.println("Processed " + numMovies + " so far.");
-				}
-				if (numMovies % 50 == 0) {
-					graph.commit();
 				}
 			}
 			LOGGER.info("Parsed " + numMovies + " total lines.");
@@ -495,8 +500,8 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 					numOrphanedMovies++;
 					graph.removeVertex(v);
 				}
-				graph.commit();
 			}
+			graph.commit();
 			LOGGER.info("Deleted " + numOrphanedMovies + " orphaned movies.");
 
 			int numUnconnected = 0;
@@ -513,12 +518,13 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 					graph.removeVertex(v);
 					numUnconnected++;
 				}
-				graph.commit();
 			}
+			graph.commit();
 			LOGGER.info("Deleted " + numUnconnected + " unconnected vertices.");
 
 			LOGGER.info("Number of Movies:\t" + graph.countVertices("Movie"));
 			LOGGER.info("Number of People:\t" + graph.countVertices("Person"));
+			reader.close();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			LOGGER.error("Rolling back in progress changes.");
@@ -572,7 +578,7 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 
 				graph.commit();
 			}
-
+			reader.close();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 			LOGGER.error("Rolling back in progress changes.");

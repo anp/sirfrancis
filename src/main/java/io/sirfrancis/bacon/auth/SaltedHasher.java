@@ -10,15 +10,16 @@ import java.security.spec.KeySpec;
  * Created by Adam on 1/19/2015.
  */
 public class SaltedHasher {
+	private static SecretKeyFactory f = null;
 	private byte[] salt;
 	private byte[] hash;
-
-	SecretKeyFactory f;
 
 	public SaltedHasher(String password, byte[] salt) {
 		this.salt = salt;
 
-		setSecretKeyFactory();
+		if (f == null) {
+			setSecretKeyFactory();
+		}
 
 		KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
 
