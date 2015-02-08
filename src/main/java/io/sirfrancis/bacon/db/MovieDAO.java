@@ -4,6 +4,8 @@ import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 
 import java.util.LinkedList;
@@ -13,9 +15,9 @@ public class MovieDAO {
 	private OrientGraphFactory factory;
 	private String amazonPrefix;
 
-	public MovieDAO(OrientGraphFactory factory, String amazonPrefix) {
+	public MovieDAO(OrientGraphFactory factory) {
 		this.factory = factory;
-		this.amazonPrefix = amazonPrefix;
+		this.amazonPrefix = BaconConfiguration.getAmazonPrefix();
 	}
 
 	public List<Movie> searchMovies(String rawSearch, int maxNumberOfResults) {
@@ -40,7 +42,7 @@ public class MovieDAO {
 	}
 
 	public Movie buildMovie(Vertex movieVertex) {
-		OrientGraph graph = factory.getTx();
+		OrientGraphNoTx graph = factory.getNoTx();
 		Movie thisMovie;
 		try {
 			Vertex freshMovieVertex = graph.getVertex(movieVertex.getId());

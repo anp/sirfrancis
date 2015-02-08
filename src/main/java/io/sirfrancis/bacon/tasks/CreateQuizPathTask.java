@@ -8,17 +8,16 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import edu.uci.ics.jung.algorithms.importance.BetweennessCentrality;
+import edu.uci.ics.jung.graph.Graph;
+import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import io.dropwizard.servlets.tasks.Task;
 import io.sirfrancis.bacon.util.StringRandomizer;
-import org.graphstream.algorithm.BetweennessCentrality;
-import org.graphstream.graph.Graph;
-import org.graphstream.graph.Node;
-import org.graphstream.graph.implementations.MultiGraph;
 
 import java.io.PrintWriter;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by adam on 2/4/15.
@@ -60,54 +59,45 @@ public class CreateQuizPathTask extends Task{
 	}
 
 	private List<CentralityRating> calculateCentralityRatings() {
-		Graph gsGraph = new MultiGraph("Betweenness graph");
+		Graph<String, String> jGraph = new UndirectedSparseMultigraph<>();
 		OrientGraphNoTx graph = factory.getNoTx();
 
 		List<CentralityRating> quizOrderList = new LinkedList<>();
 
 		for (Vertex movieVertex : graph.getVerticesOfClass("Movie")) {
 			String imdbID = movieVertex.getProperty("imdbID");
-			Node movieNode = gsGraph.addNode(imdbID);
+
+			jGraph.addVertex(imdbID);
 
 			for (Vertex personVertex : movieVertex.getVertices(
 					Direction.BOTH, "Acted", "Directed", "Wrote")) {
 
 				String name = personVertex.getProperty("name");
 
-				Node personNode = gsGraph.getNode(name);
-				if (personNode == null) {
-					personNode = gsGraph.addNode(name);
-				}
-
-				gsGraph.addEdge(randomStrings.nextString(), movieNode, personNode);
+				jGraph.addVertex(name);
+				jGraph.addEdge(randomStrings.nextString(), imdbID, name);
 
 			}
 		}
 
 		System.out.println("GraphStream DB initialized, calculating centrality.");
 
-		BetweennessCentrality betweennessCentrality = new BetweennessCentrality();
-		betweennessCentrality.init(gsGraph);
-		betweennessCentrality.compute();
-
+		BetweennessCentrality<String, String> betweennessCentrality = new BetweennessCentrality<>(jGraph, true, false);
+		betweennessCentrality.step();
 		System.out.println("Centrality calculated. Adding imdb id's to hashmap.");
 
-		for (Node n : gsGraph.getEachNode()) {
-			if (n.getId().startsWith("tt")) {
-				double centrality = n.getNumber("Cb");
-				quizOrderList.add(new CentralityRating(n.getId(), centrality));
-			}
+		betweennessCentrality.printRankings(false, true);
 
+		Map<String, Number> rankings =
+				betweennessCentrality.getVertexRankScores(betweennessCentrality.getRankScoreKey());
+
+		for (Map.Entry<String, Number> ranking : rankings.entrySet()) {
+			String id = ranking.getKey();
+			if (id.startsWith("tt")) {
+				quizOrderList.add(new CentralityRating(id, ranking.getValue().doubleValue()));
+			}
 		}
 
-		System.out.println("Sorting quiz order.");
-
-		quizOrderList.sort(new Comparator<CentralityRating>() {
-			@Override
-			public int compare(CentralityRating first, CentralityRating second) {
-				return (second.centrality >= first.centrality) ? 1 : -1;
-			}
-		});
 		return quizOrderList;
 	}
 

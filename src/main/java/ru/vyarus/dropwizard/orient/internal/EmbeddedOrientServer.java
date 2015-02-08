@@ -36,6 +36,10 @@ public class EmbeddedOrientServer implements Managed {
         this.conf = conf;
     }
 
+	public static <T> T firstNonNull(@Nullable T first, @Nullable T second) {
+		return first != null ? first : checkNotNull(second);
+	}
+
     /**
      * {@inheritDoc}
      */
@@ -87,8 +91,4 @@ public class EmbeddedOrientServer implements Managed {
             }
         });
     }
-
-	public static <T> T firstNonNull(@Nullable T first, @Nullable T second) {
-		return first != null ? first : checkNotNull(second);
-	}
 }

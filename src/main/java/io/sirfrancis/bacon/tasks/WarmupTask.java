@@ -24,13 +24,12 @@ public class WarmupTask extends Task {
 	private RecommendationsDAO recommendationsDAO;
 	private StringRandomizer randomizer = new StringRandomizer(15);
 
-	public WarmupTask(OrientGraphFactory factory, String amazonPrefix) {
+	public WarmupTask(OrientGraphFactory factory) {
 		super("warmup");
 		this.factory = factory;
-		int maxRetries = BaconConfiguration.getMaxDbRetries();
-		userDAO = new UserDAO(factory, maxRetries);
-		ratingDAO = new RatingDAO(factory, maxRetries, amazonPrefix);
-		recommendationsDAO = new RecommendationsDAO(factory, maxRetries, amazonPrefix);
+		userDAO = new UserDAO(factory);
+		ratingDAO = new RatingDAO(factory);
+		recommendationsDAO = new RecommendationsDAO(factory);
 	}
 
 	@Override
