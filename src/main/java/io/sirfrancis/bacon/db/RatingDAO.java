@@ -47,6 +47,8 @@ public class RatingDAO {
 				Movie ratedMovie = movieDAO.buildMovie(movieVertex);
 				addedRating = new Rating(ratedMovie, rating);
 
+				userVertex.setProperty("ratingsUpdated", System.currentTimeMillis());
+
 				graph.commit();
 				break;
 			} catch (OTransactionException e) {
@@ -58,7 +60,7 @@ public class RatingDAO {
 	}
 
 	public List<Rating> getRatings(User user) {
-		OrientGraphNoTx graph = factory.getNoTx();
+		OrientGraph graph = factory.getTx();
 		List<Rating> ratings = new LinkedList<>();
 
 		try {
