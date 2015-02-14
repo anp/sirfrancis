@@ -2,8 +2,8 @@ package io.sirfrancis.bacon.db;
 
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import io.sirfrancis.bacon.core.Movie;
 
 import java.util.LinkedList;
@@ -20,7 +20,7 @@ public class QuizDAO {
 
 	public List<Movie> getQuizMovies(int perPage, int pageNumber) {
 		List<Movie> quizItems = new LinkedList<>();
-		OrientGraphNoTx graph = factory.getNoTx();
+		OrientGraph graph = factory.getTx();
 		try {
 			Vertex quizVertex = graph.getVertexByKey("quizStart.identifier", "quiz starting point");
 			for (int i = 0; i < perPage * pageNumber; i++) {

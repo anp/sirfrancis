@@ -4,7 +4,6 @@ import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 
@@ -42,7 +41,7 @@ public class MovieDAO {
 	}
 
 	public Movie buildMovie(Vertex movieVertex) {
-		OrientGraphNoTx graph = factory.getNoTx();
+		OrientGraph graph = factory.getTx();
 		Movie thisMovie;
 		try {
 			Vertex freshMovieVertex = graph.getVertex(movieVertex.getId());

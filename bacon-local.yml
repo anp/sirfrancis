@@ -4,8 +4,8 @@ db-path: plocal:/opt/bacon/databases/bacon
 backup-path: /opt/bacon/backups
 db-binary-conn-path: remote:localhost:2424
 
-db-pool-min: 10
-db-pool-max: 100
+db-pool-min: 100
+db-pool-max: 500
 
 max-db-write-retries: 10
 

@@ -43,7 +43,7 @@ public class RecommendationsDAO {
 	@Metered
 	public List<Recommendation> getRecommendations(User user) {
 		List<Recommendation> recommendations = new LinkedList<>();
-		OrientGraphNoTx graph = factory.getNoTx();
+		OrientGraph graph = factory.getTx();
 
 		try {
 			Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());
@@ -83,6 +83,11 @@ public class RecommendationsDAO {
 		try {
 			Vertex userVertexVanilla = graph.getVertexByKey("User.username", user.getUsername());
 			OrientVertex userVertex = graph.getVertex(userVertexVanilla.getId());
+
+			long ratingsUpdated = userVertexVanilla.getProperty("ratingsUpdated");
+			long recommendationsUpdated = userVertexVanilla.getProperty("recommendationsUpdated");
+
+			if (recommendationsUpdated > ratingsUpdated) return getRecommendations(user);
 
 			//clear previous recommendations
 			for (Edge e : userVertex.getEdges(Direction.IN, "recommended")) {
@@ -172,6 +177,9 @@ public class RecommendationsDAO {
 							}
 						}
 					});
+
+			recommendationsUpdated = System.currentTimeMillis();
+			userVertexVanilla.setProperty("recommendationsUpdated", recommendationsUpdated);
 
 		} catch (Exception e) {
 			graph.rollback();

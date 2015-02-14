@@ -476,7 +476,7 @@ public class BootstrapDBCommand extends ConfiguredCommand<BaconConfiguration> {
 				parseMovieToDB(line);
 				numMovies++;
 				if (numMovies % 50000 == 0) {
-					System.out.println("Processed " + numMovies + " so far.");
+					LOGGER.info("Processed " + numMovies + " so far.");
 				}
 			}
 			LOGGER.info("Parsed " + numMovies + " total lines.");
