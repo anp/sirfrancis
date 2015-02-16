@@ -11,11 +11,15 @@ import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.mailers.ChangePasswordMailer;
 import io.sirfrancis.bacon.mailers.NewUserMailer;
 import io.sirfrancis.bacon.util.StringRandomizer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 import java.util.HashMap;
 
 public class UserDAO {
+	private static final Logger LOGGER = LoggerFactory.getLogger(UserDAO.class);
+
 	private OrientGraphFactory factory;
 	private int maxRetries;
 	private SecureRandom random;
@@ -63,6 +67,10 @@ public class UserDAO {
 					userProps.put("emailConfirmed", false);
 					userProps.put("emailConfirmKey", confirmationKey);
 
+					long timestamp = System.currentTimeMillis();
+					userProps.put("ratingsUpdated", timestamp);
+					userProps.put("recommendationsUpdated", timestamp);
+
 					newUserMailer.sendAccountCreationConfirmationEmail(email, confirmationKey);
 
 					userVertex = graph.addVertex("class:User", userProps);
@@ -70,6 +78,9 @@ public class UserDAO {
 					User user = buildUser(userVertex);
 					returned = Optional.of(user);
 					graph.commit();
+
+					LOGGER.info("Successfully created unconfirmed account for " + email);
+
 					break;
 				} else {
 					break;
@@ -97,6 +108,8 @@ public class UserDAO {
 				}
 
 				graph.commit();
+				LOGGER.info("Successfully deleted account of " + user.getUsername());
+				break;
 			}
 		} catch (OTransactionException e) {
 			//let retry loop try this again
@@ -132,6 +145,8 @@ public class UserDAO {
 				if (storedConfirmKey.equals(confirmKey)) {
 					userVertex.setProperty("emailConfirmed", true);
 				}
+				graph.commit();
+				LOGGER.info("Successfully confirmed user account for " + email);
 			}
 		} finally {
 			graph.shutdown();

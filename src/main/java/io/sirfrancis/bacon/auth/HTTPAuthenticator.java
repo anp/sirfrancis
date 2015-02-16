@@ -7,23 +7,29 @@ import io.dropwizard.auth.basic.BasicCredentials;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.UserDAO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> {
-
+	private static final Logger LOGGER = LoggerFactory.getLogger(HTTPAuthenticator.class);
 
 	@Override
 	public Optional<User> authenticate(BasicCredentials creds) throws AuthenticationException {
 		UserDAO dao = new UserDAO(BaconConfiguration.getFactory());
 
-		User user = dao.getUser(creds.getUsername());
+		String username = creds.getUsername();
+		User user = dao.getUser(username);
 
 		if (user != null) {
 			SaltedHasher hasher = new SaltedHasher(creds.getPassword(), user.getSalt());
 
 			if (hashEquals(hasher.getHash(), (user.getHash()))) {
+				LOGGER.info("Successfully authenticated " + username);
 				return Optional.of(user);
 			}
 		}
+
+		LOGGER.info("Failed to authenticate " + username);
 		return Optional.absent();
 	}
 
