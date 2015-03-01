@@ -1,20 +1,20 @@
 package io.sirfrancis.bacon;
 
 import com.codahale.metrics.MetricRegistry;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.google.common.cache.CacheBuilder;
 import io.dropwizard.Application;
+import io.dropwizard.auth.AuthFactory;
 import io.dropwizard.auth.CachingAuthenticator;
-import io.dropwizard.auth.basic.BasicAuthProvider;
+import io.dropwizard.auth.basic.BasicAuthFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.sirfrancis.bacon.auth.HTTPAuthenticator;
-import io.sirfrancis.bacon.cli.BootstrapDBCommand;
+import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.*;
-import io.sirfrancis.bacon.health.OrientHealthCheck;
+import io.sirfrancis.bacon.health.DBHealthCheck;
 import io.sirfrancis.bacon.resources.*;
 import io.sirfrancis.bacon.tasks.CreateQuizPathTask;
-import io.sirfrancis.bacon.tasks.WarmupTask;
-import ru.vyarus.dropwizard.orient.OrientServerBundle;
+import io.sirfrancis.bacon.tasks.DBUpdateTask;
 
 public class BaconApplication extends Application<BaconConfiguration> {
 
@@ -29,21 +29,15 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 	@Override
 	public void initialize(final Bootstrap<BaconConfiguration> bootstrap) {
-		//OrientDB
-		bootstrap.addBundle(new OrientServerBundle<>(getConfigurationClass()));
-		//CLI command
-		bootstrap.addCommand(new BootstrapDBCommand());
+		//bootstrap.addBundle(new OrientServerBundle<>(getConfigurationClass()));
+
 	}
 
 	@Override
 	public void run(BaconConfiguration config, Environment environment) {
-		config.initFactory();
-
-		OrientGraphFactory factory = BaconConfiguration.getFactory();
-
+		environment.lifecycle().manage(new GraphConnection());
 		//user creation/deletion api resources
-		int maxDbRetries = BaconConfiguration.getMaxDbRetries();
-		UserDAO userDAO = new UserDAO(factory);
+		UserDAO userDAO = new UserDAO();
 
 		environment.jersey().register(new UserCreateResource(userDAO));
 
@@ -56,11 +50,11 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.jersey().register(new UserChangePasswordResource(userDAO));
 
 		//movie search api resource
-		MovieDAO movieDAO = new MovieDAO(factory);
+		MovieDAO movieDAO = new MovieDAO();
 		environment.jersey().register(new MovieSearchResource(movieDAO));
 
 		//rating add/list/ignore resources
-		RatingDAO ratingDAO = new RatingDAO(factory);
+		RatingDAO ratingDAO = new RatingDAO();
 
 		environment.jersey().register(new RatingAddResource(ratingDAO));
 
@@ -69,29 +63,34 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.jersey().register(new RatingIgnoreResource(ratingDAO));
 
 		//recommendations resource
-		RecommendationsDAO recommendationsDAO = new RecommendationsDAO(factory);
+		RecommendationsDAO recommendationsDAO = new RecommendationsDAO();
 
 		environment.jersey().register(new RecommendationsResource(recommendationsDAO));
 
 		//quiz resource
-		QuizDAO quizDAO = new QuizDAO(factory);
+		QuizDAO quizDAO = new QuizDAO();
 
 		environment.jersey().register(new QuizResource(quizDAO));
 
 
 		//authentication
-		environment.jersey().register(
-				new BasicAuthProvider<>(
-						new CachingAuthenticator<>(new MetricRegistry(), new HTTPAuthenticator(),
-								config.getAuthenticationCachePolicy()), "sirfrancis.io"));
+		MetricRegistry metricRegistry = new MetricRegistry();
+		HTTPAuthenticator httpAuthenticator = new HTTPAuthenticator();
+		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.from(config.getAuthenticationCachePolicy());
+
+		BasicAuthFactory<User> authFactory = new BasicAuthFactory<>(
+				new CachingAuthenticator<>(metricRegistry, httpAuthenticator, cacheBuilder),
+				"sirfrancis.io", User.class);
+
+		environment.jersey().register(AuthFactory.binder(authFactory));
 
 		//db healthcheck
-		environment.healthChecks().register("database", new OrientHealthCheck(factory));
-
-		//db warmup task
-		environment.admin().addTask(new WarmupTask(factory));
+		environment.healthChecks().register("database", new DBHealthCheck());
 
 		//db quiz path task
-		environment.admin().addTask(new CreateQuizPathTask(factory));
+		environment.admin().addTask(new CreateQuizPathTask());
+
+		//db update task
+		environment.admin().addTask(new DBUpdateTask(movieDAO, BaconConfiguration.getOMDBDownloadURL()));
 	}
 }
