@@ -4,7 +4,6 @@ import com.google.common.base.Optional;
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.basic.BasicCredentials;
-import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.UserDAO;
 import org.slf4j.Logger;
@@ -15,7 +14,7 @@ public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> 
 
 	@Override
 	public Optional<User> authenticate(BasicCredentials creds) throws AuthenticationException {
-		UserDAO dao = new UserDAO(BaconConfiguration.getFactory());
+		UserDAO dao = new UserDAO();
 
 		String username = creds.getUsername();
 		User user = dao.getUser(username);

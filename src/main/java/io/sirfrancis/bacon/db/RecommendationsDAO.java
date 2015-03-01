@@ -3,26 +3,26 @@ package io.sirfrancis.bacon.db;
 import com.codahale.metrics.annotation.Metered;
 import com.codahale.metrics.annotation.Timed;
 import com.orientechnologies.orient.core.exception.OTransactionException;
+import com.orientechnologies.orient.core.intent.OIntentMassiveRead;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.*;
-import io.sirfrancis.bacon.BaconConfiguration;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.Recommendation;
 import io.sirfrancis.bacon.core.User;
+import io.sirfrancis.bacon.db.enums.Edges;
+import io.sirfrancis.bacon.db.enums.Indexes;
+import io.sirfrancis.bacon.db.enums.MovieProps;
+import io.sirfrancis.bacon.db.enums.UserProps;
 
 import java.util.*;
 
 public class RecommendationsDAO {
-	private OrientGraphFactory factory;
 	private MovieDAO movieDAO;
-	private int maxRetries;
 
-	public RecommendationsDAO(OrientGraphFactory factory) {
-		this.factory = factory;
-		movieDAO = new MovieDAO(factory);
-		this.maxRetries = BaconConfiguration.getMaxDbRetries();
+	public RecommendationsDAO() {
+		this.movieDAO = new MovieDAO();
 	}
 
 	public static <K extends Comparable<? super K>, V extends Comparable<? super V>> Map<K, V> sortByValues(Map<K, V> map) {
@@ -42,20 +42,20 @@ public class RecommendationsDAO {
 	@Timed
 	@Metered
 	public List<Recommendation> getRecommendations(User user) {
+		OrientGraph graph = GraphConnection.getGraph();
 		List<Recommendation> recommendations = new LinkedList<>();
-		OrientGraph graph = factory.getTx();
 
 		try {
-			Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());
-			for (Edge e : userVertex.getEdges(Direction.IN, "recommended")) {
-				OrientEdge oe = graph.getEdge(e.getId());
+			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
+			for (Edge e : userVertex.getEdges(Direction.IN, Edges.RECOMMENDED)) {
 				int score = e.getProperty("score");
 
-				Vertex movieVertex = oe.getVertex(Direction.OUT);
+				Vertex movieVertex = e.getVertex(Direction.OUT);
 				Movie movie = movieDAO.buildMovie(movieVertex);
 
 				recommendations.add(new Recommendation(movie, score));
 			}
+
 		} finally {
 			graph.shutdown();
 		}
@@ -73,42 +73,41 @@ public class RecommendationsDAO {
 	@Timed
 	@Metered
 	public List<Recommendation> buildRecommendations(User user, int maxRecommendations) {
-		OrientGraph graph = factory.getTx();
-
+		OrientGraph graph = GraphConnection.getGraph();
 		Map<String, Integer> recMap = new HashMap<>();
 		Set<String> ignoredMovies = new HashSet<>();
 
 		int MIN_SCORE = 100;
 
 		try {
-			Vertex userVertexVanilla = graph.getVertexByKey("User.username", user.getUsername());
-			OrientVertex userVertex = graph.getVertex(userVertexVanilla.getId());
+			graph.declareIntent(new OIntentMassiveRead());
+			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
 
-			long ratingsUpdated = userVertexVanilla.getProperty("ratingsUpdated");
-			long recommendationsUpdated = userVertexVanilla.getProperty("recommendationsUpdated");
+			long ratingsUpdated = userVertex.getProperty(UserProps.RAT_UPDATED);
+			long recommendationsUpdated = userVertex.getProperty(UserProps.REC_UPDATED);
 
 			if (recommendationsUpdated > ratingsUpdated) return getRecommendations(user);
 
 			//clear previous recommendations
-			for (Edge e : userVertex.getEdges(Direction.IN, "recommended")) {
+			for (Edge e : userVertex.getEdges(Direction.IN, Edges.RECOMMENDED)) {
 				graph.removeEdge(e);
 			}
 
 			graph.commit();
 
 			//MANY LOOPS
-			for (Edge e : userVertex.getEdges(Direction.OUT, "rated")) {
+			for (Edge e : userVertex.getEdges(Direction.OUT, Edges.RATED)) {
 				//all recommendations are built from this rating
-				int topLevelScore = e.getProperty("rating");
+				int topLevelScore = e.getProperty(Edges.RATING);
 
 				//don't give score to unliked movies
-				if (topLevelScore < 5) continue;
+				topLevelScore -= 4;
 
 				//get all of the people associated with this rating
 				Vertex likedMovie = e.getVertex(Direction.IN);
 
 				//for each person that is rated implicitly by movie rating
-				String[] personRels = { "Acted", "Directed", "Wrote" };
+				String[] personRels = { Edges.ACTED, Edges.DIRECTED, Edges.WROTE };
 				for (String rel : personRels) {
 					Iterable<Vertex> peopleVertices = likedMovie.getVertices(Direction.IN, rel);
 
@@ -117,6 +116,7 @@ public class RecommendationsDAO {
 					for (Vertex person : peopleVertices) {
 						numPeopleOnMovieInRole++;
 					}
+
 					//skip this if there's no one in that role
 					if (numPeopleOnMovieInRole == 0) continue;
 
@@ -125,11 +125,9 @@ public class RecommendationsDAO {
 
 					for (Vertex likedPerson : peopleVertices) {
 
-						OrientVertex orientLikedPerson = graph.getVertex(likedPerson.getId());
-
 						//go through each movie they've worked on
-						for (Vertex toRecMovie : orientLikedPerson.getVertices(Direction.OUT, rel)) {
-							String imdbID = toRecMovie.getProperty("imdbID");
+						for (Vertex toRecMovie : likedPerson.getVertices(Direction.OUT, rel)) {
+							String imdbID = toRecMovie.getProperty(MovieProps.IMDBID);
 
 							//add the score to the map or increment the previous score
 							if (recMap.containsKey(imdbID)) {
@@ -141,12 +139,13 @@ public class RecommendationsDAO {
 					}
 				}
 
-				String likedIMDBID = likedMovie.getProperty("imdbID");
+				String likedIMDBID = likedMovie.getProperty(MovieProps.IMDBID);
 				if (!ignoredMovies.contains(likedIMDBID)) {
 					ignoredMovies.add(likedIMDBID);
 				}
 
 			}
+			graph.commit();
 
 			Map<String, Integer> sortedRecMap = sortByValues(recMap);
 
@@ -160,32 +159,27 @@ public class RecommendationsDAO {
 					.limit(maxRecommendations)  //only show the first n recommendations
 					.forEach(entry -> {
 						//handle problems with concurrent version exceptions
-						for (int retry = 0; retry < maxRetries; retry++) {
 							try {
 								//send the first n recommendations back to the database
 								String imdbID = entry.getKey();
 								int score = entry.getValue();
 
-								Vertex movieToRecommend = graph.getVertexByKey("Movie.imdbID", imdbID);
+								Vertex movieToRecommend = graph.getVertexByKey(Indexes.MOVIE_IMDBID, imdbID);
 
-								Edge e = graph.addEdge(null, movieToRecommend, userVertex, "recommended");
-								e.setProperty("score", score);
-								graph.commit();
-								break;
-							} catch (OTransactionException e) {
+								Edge e = graph.addEdge(null, movieToRecommend, userVertex, Edges.RECOMMENDED);
+								e.setProperty(Edges.SCORE, score);
+
+							} catch (OTransactionException ote) {
 								//no need to take action, next iteration will reload variables
 							}
-						}
 					});
 
 			recommendationsUpdated = System.currentTimeMillis();
-			userVertexVanilla.setProperty("recommendationsUpdated", recommendationsUpdated);
+			userVertex.setProperty(UserProps.REC_UPDATED, recommendationsUpdated);
 
+			graph.commit();
 		} catch (Exception e) {
-			graph.rollback();
 			throw e;
-		} finally {
-			graph.shutdown();
 		}
 
 		return getRecommendations(user);

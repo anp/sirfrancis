@@ -1,6 +1,9 @@
 package io.sirfrancis.bacon.core;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.Set;
 
 /**
  * Created by adam on 1/23/15.
@@ -9,6 +12,7 @@ public class Movie {
 	private long omdbID;
 	private String imdbID;
 	private String title;
+	private String indexTitle;
 	private String runtime;
 	private String released;
 	private String language;
@@ -21,27 +25,70 @@ public class Movie {
 	private double imdbRating;
 	private int imdbVotes;
 	private String posterURL;
-	private String amazonURL;
 	private double rtRating;
 	private int tomatoMeter;
 	private int rtNumReviews;
 	private int rtNumFreshReviews;
 	private int rtNumRottenReviews;
 	private String rtConsensus;
+	private Set<String> actors;
+	private Set<String> directors;
+	private Set<String> writers;
+	private String updated;
 	public Movie(String imdbID, long omdbID, String title) {
 		this.imdbID = imdbID;
 		this.omdbID = omdbID;
 		this.title = title;
 	}
 
-	@JsonProperty
-	public String getAmazonURL() {
-		return amazonURL;
+	@JsonIgnore
+	public String getIndexTitle() {
+		return indexTitle;
+	}
+
+	@JsonIgnore
+	public void setIndexTitle(String indexTitle) {
+		this.indexTitle = indexTitle;
+	}
+
+	@JsonIgnore
+	public String getUpdated() {
+		return updated;
+	}
+
+	@JsonIgnore
+	public void setUpdated(String updated) {
+		this.updated = updated;
 	}
 
 	@JsonProperty
-	public void setAmazonURL(String amazonURL) {
-		this.amazonURL = amazonURL;
+	public Set<String> getActors() {
+		return actors;
+	}
+
+	@JsonProperty
+	public void setActors(Set<String> actors) {
+		this.actors = actors;
+	}
+
+	@JsonProperty
+	public Set<String> getDirectors() {
+		return directors;
+	}
+
+	@JsonProperty
+	public void setDirectors(Set<String> directors) {
+		this.directors = directors;
+	}
+
+	@JsonProperty
+	public Set<String> getWriters() {
+		return writers;
+	}
+
+	@JsonProperty
+	public void setWriters(Set<String> writers) {
+		this.writers = writers;
 	}
 
 	@JsonProperty
@@ -114,14 +161,9 @@ public class Movie {
 		this.rtNumRottenReviews = rtNumRottenReviews;
 	}
 
-	@JsonProperty
+	@JsonIgnore
 	public long getOmdbID() {
 		return omdbID;
-	}
-
-	@JsonProperty
-	public void setOmdbID(long omdbID) {
-		this.omdbID = omdbID;
 	}
 
 	@JsonProperty
@@ -137,11 +179,6 @@ public class Movie {
 	@JsonProperty
 	public String getTitle() {
 		return title;
-	}
-
-	@JsonProperty
-	public void setTitle(String title) {
-		this.title = title;
 	}
 
 	@JsonProperty
@@ -260,5 +297,10 @@ public class Movie {
 			return ((Movie) other).getImdbID().equals(this.getImdbID());
 		}
 		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return imdbID.hashCode();
 	}
 }

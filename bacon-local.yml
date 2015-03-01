@@ -1,19 +1,15 @@
-restrict-create-user: true
+orient-conn-string: /opt/bacon/databases/bacon
+#orient-conn-string: remote:sirfrancis-db0.cloudapp.net:2490/bacon
+orient-username: admin #frank
+orient-password: admin #yZNMYE0bfXAWyfDLtT2E8IzlX
 
-db-path: plocal:/opt/bacon/databases/bacon
-backup-path: /opt/bacon/backups
-db-binary-conn-path: remote:localhost:2424
-
-db-pool-min: 100
-db-pool-max: 500
-
-max-db-write-retries: 10
-
-warmup-iterations: 1000
+db-pool-min: 20
+db-pool-max: 100
+max-db-retries: 10
 
 omdb-api-key: 2af3daf2
 omdb-download-url: http://beforethecode.com/projects/omdb/download.aspx?e=adam.n.perry%40gmail.com&tsv=movies
-amazon-url-prefix: http://www.amazon.com/s/ref=nb_sb_noss?tag=sirfr-20&url=search-alias%3Dmovies-tv&field-keywords=
+omdb-poster-url: http://img.omdbapi.com/?i=%i&apikey=%k
 
 #%e for email %k for confirmkey
 account-creation-confirm-url: http://localhost:8080/user/create/confirm/%e/%k/
@@ -24,12 +20,6 @@ authenticationCachePolicy: maximumSize=10000, expireAfterAccess=10m
 sendgrid-username: dikaiosune
 sendgrid-password: 8v8662Gebmt%
 
-server:
-  gzip:
-    enabled: true
-    minimumEntitySize: 256B
-    bufferSize: 8KB
-
 logging:
   level: DEBUG
 
@@ -38,102 +28,12 @@ logging:
       threshold: INFO
       target: stderr
 
-    - type: file
-      currentLogFilename: ./logs/main.log
-      archivedLogFilenamePattern: ./logs/main-%d.log.gz
-      archivedFileCount: 5
-      timeZone: UTC
-      threshold: INFO
+server:
+  applicationConnectors:
+    - type: http
+      port: 8000
+  adminConnectors:
+    - type: http
+      port: 8001
 
-orient-server:
-#must contain $DIR/databases/{a bunch of databases}
-  files-path: /opt/bacon
-  start: true
 
-  config:
-    users:
-      - name: admin
-        password: admin
-        resources: '*'
-      - name: root
-        password:
-        resources: '*'
-
-    handlers:
-      - clazz: 'com.orientechnologies.orient.server.handler.OJMXPlugin'
-        parameters:
-            - name: enabled
-              value: true
-            - name: profilerManaged
-              value: true
-      - clazz: 'com.orientechnologies.orient.server.handler.OAutomaticBackup'
-        parameters:
-            - name: enabled
-              value: false
-            - name: delay
-              value: 4h
-            - name: target.directory
-              value: backup
-            - name: target.fileName
-              value: '${DBNAME}-${DATE:yyyyMMddHHmmss}.json'
-            - name: compressionLevel
-              value: 9
-            - name: bufferSize
-              value: 1048576
-            - name: db.include
-              value:
-            - name: db.exclude
-              value:
-      - clazz: 'com.orientechnologies.orient.server.handler.OServerSideScriptInterpreter'
-        parameters:
-            - name: enabled
-              value: false
-
-    network:
-      protocols:
-        - name: binary
-          implementation: 'com.orientechnologies.orient.server.network.protocol.binary.ONetworkProtocolBinary'
-        - name: http
-          implementation: 'com.orientechnologies.orient.server.network.protocol.http.ONetworkProtocolHttpDb'
-      listeners:
-        - protocol: binary
-          ipAddress: 0.0.0.0
-          portRange: 2424-2430
-        - protocol: http
-          ipAddress: 0.0.0.0
-          portRange: 2480-2490
-          parameters:
-              - name: network.http.charset
-                value: utf-8
-          commands:
-              - pattern: 'GET|www GET|studio/ GET| GET|*.htm GET|*.html GET|*.xml GET|*.jpeg GET|*.jpg GET|*.png GET|*.gif GET|*.js GET|*.css GET|*.swf GET|*.ico GET|*.txt GET|*.otf GET|*.pjs GET|*.svg'
-                implementation: 'com.orientechnologies.orient.server.network.protocol.http.command.get.OServerCommandGetStaticContent'
-                parameters:
-                    - name: 'http.cache:*.htm *.html'
-                      value: 'Cache-Control: no-cache, no-store, max-age=0, must-revalidate\r\nPragma: no-cache'
-                    - name: 'http.cache:default'
-                      value: 'Cache-Control: max-age=120'
-  # enable below lines if graph version used
-              - pattern: 'GET|gephi/*'
-                implementation: 'com.orientechnologies.orient.graph.server.command.OServerCommandGetGephi'
-
-    properties:
-       - name: db.pool.min
-         value: 5
-       - name: db.pool.max
-         value: 100
-         # for multi-threaded environment level1 cache bound to thread - not much sense in it, but may be usefull in rare situations
-       - name: cache.level1.enabled
-         value: false
-         #important for embedded mode, because in other case "no ORIENT_HOME" warnings will be in logs
-       - name: plugin.dynamic
-         value: false
-       - name: profiler.enabled
-         value: true
-         #configures the profiler as <seconds-for-snapshot>,<archive-snapshot-size>,<summary-size>
-       - name: profiler.config
-         value: '30,10,10'
-       - name: log.console.level
-         value: fine
-       - name: log.file.level
-         value: info

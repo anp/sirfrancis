@@ -4,72 +4,73 @@ import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
-import com.tinkerpop.blueprints.impls.orient.*;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.Rating;
 import io.sirfrancis.bacon.core.User;
+import io.sirfrancis.bacon.db.enums.Edges;
+import io.sirfrancis.bacon.db.enums.Indexes;
+import io.sirfrancis.bacon.db.enums.UserProps;
 
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
 public class RatingDAO {
-	private OrientGraphFactory factory;
 	private MovieDAO movieDAO;
 	private int maxRetries;
 
-	public RatingDAO(OrientGraphFactory factory) {
-		this.factory = factory;
-		this.movieDAO = new MovieDAO(factory);
-		this.maxRetries = BaconConfiguration.getMaxDbRetries();
+	public RatingDAO() {
+		this.movieDAO = new MovieDAO();
+		this.maxRetries = BaconConfiguration.getMaxRetries();
 	}
 
 	public Rating addRating(User user, String imdbID, int rating) {
+		OrientGraph graph = GraphConnection.getGraph();
 		if (rating < 0 || rating > 10)
 			throw new IllegalArgumentException("Invalid number for rating.");
 
-		OrientGraph graph = factory.getTx();
 		Rating addedRating = null;
 
-		for (int retry = 0; retry < maxRetries; retry++) {
+		for (int i = 0; i < maxRetries; i++) {
 			try {
-				OrientVertex userVertex = graph.getVertex(graph.getVertexByKey("User.username", user.getUsername()).getId());
-				OrientVertex movieVertex = graph.getVertex(graph.getVertexByKey("Movie.imdbID", imdbID).getId());
+				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
+				Vertex movieVertex = graph.getVertexByKey(Indexes.MOVIE_IMDBID, imdbID);
 
-				for (Edge e : userVertex.getEdges(movieVertex, Direction.OUT, "rated")) {
+				for (Edge e : userVertex.getEdges(Direction.OUT, Edges.RATED)) {
 					graph.removeEdge(e);
 				}
 
-				Edge ratingEdge = graph.addEdge(null, userVertex, movieVertex, "rated");
-				ratingEdge.setProperty("rating", rating);
+				Edge ratingEdge = graph.addEdge(null, userVertex, movieVertex, Edges.RATED);
+				ratingEdge.setProperty(Edges.RATING, rating);
 
 				Movie ratedMovie = movieDAO.buildMovie(movieVertex);
 				addedRating = new Rating(ratedMovie, rating);
 
-				userVertex.setProperty("ratingsUpdated", System.currentTimeMillis());
+				userVertex.setProperty(UserProps.RAT_UPDATED, System.currentTimeMillis());
 
 				graph.commit();
 				break;
-			} catch (OTransactionException e) {
+			} catch (OTransactionException ote) {
 			}
 		}
+
 		graph.shutdown();
 
 		return addedRating;
 	}
 
 	public List<Rating> getRatings(User user) {
-		OrientGraph graph = factory.getTx();
+		OrientGraph graph = GraphConnection.getGraph();
 		List<Rating> ratings = new LinkedList<>();
 
 		try {
-			Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());
-			for (Edge e : userVertex.getEdges(Direction.OUT, "rated")) {
-				OrientEdge oe = graph.getEdge(e.getId());
-				int rating = e.getProperty("rating");
+			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
+			for (Edge e : userVertex.getEdges(Direction.OUT, Edges.RATED)) {
+				int rating = e.getProperty(Edges.RATING);
 
-				Vertex movieVertex = oe.getVertex(Direction.IN);
+				Vertex movieVertex = e.getVertex(Direction.IN);
 				Movie movie = movieDAO.buildMovie(movieVertex);
 
 				ratings.add(new Rating(movie, rating));

@@ -4,10 +4,12 @@ import com.google.common.base.Optional;
 import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.auth.SaltedHasher;
 import io.sirfrancis.bacon.core.User;
+import io.sirfrancis.bacon.db.enums.Indexes;
+import io.sirfrancis.bacon.db.enums.UserProps;
+import io.sirfrancis.bacon.db.enums.Vertices;
 import io.sirfrancis.bacon.mailers.ChangePasswordMailer;
 import io.sirfrancis.bacon.mailers.NewUserMailer;
 import io.sirfrancis.bacon.util.StringRandomizer;
@@ -15,24 +17,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
-import java.util.HashMap;
 
 public class UserDAO {
 	private static final Logger LOGGER = LoggerFactory.getLogger(UserDAO.class);
 
-	private OrientGraphFactory factory;
 	private int maxRetries;
 	private SecureRandom random;
 	private StringRandomizer randomizer;
 	private NewUserMailer newUserMailer;
 	private ChangePasswordMailer changePasswordMailer;
 
-	public UserDAO(OrientGraphFactory factory) {
+	public UserDAO() {
+		maxRetries = BaconConfiguration.getMaxRetries();
+
 		String sendgridUsername = BaconConfiguration.getSendgridUsername();
 		String sendgridPassword = BaconConfiguration.getSendgridPassword();
 
-		this.factory = factory;
-		this.maxRetries = BaconConfiguration.getMaxDbRetries();
 		random = new SecureRandom();
 		randomizer = new StringRandomizer(30);
 		newUserMailer = new NewUserMailer(sendgridUsername,
@@ -44,64 +44,59 @@ public class UserDAO {
 	}
 
 	public Optional<User> createUser(String email, String password) {
-		OrientGraph graph = factory.getTx();
+		OrientGraph graph = GraphConnection.getGraph();
 		Optional<User> returned = Optional.absent();
 
 		for (int i = 0; i < maxRetries; i++) {
 			try {
-				Vertex userVertex = graph.getVertexByKey("User.username", email);
-				if (userVertex == null) {
-					if (password.length() < 8) throw new IllegalArgumentException("Password too short.");
-					byte[] salt = new byte[16];
-					random.nextBytes(salt);
+				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
+				if (userVertex != null) break;
 
-					SaltedHasher hasher = new SaltedHasher(password, salt);
+				if (password.length() < 6) throw new IllegalArgumentException("Password too short.");
+				byte[] salt = new byte[16];
+				random.nextBytes(salt);
 
-					HashMap<String, Object> userProps = new HashMap<>();
-					userProps.put("username", email);
-					userProps.put("email", email);
-					userProps.put("salt", hasher.getSalt());
-					userProps.put("hash", hasher.getHash());
+				SaltedHasher hasher = new SaltedHasher(password, salt);
 
-					String confirmationKey = randomizer.nextString();
-					userProps.put("emailConfirmed", false);
-					userProps.put("emailConfirmKey", confirmationKey);
+				userVertex = graph.addVertex("class:" + Vertices.USER);
 
-					long timestamp = System.currentTimeMillis();
-					userProps.put("ratingsUpdated", timestamp);
-					userProps.put("recommendationsUpdated", timestamp);
+				userVertex.setProperty(UserProps.USERNAME, email);
+				userVertex.setProperty(UserProps.EMAIL, email);
+				userVertex.setProperty(UserProps.SALT, hasher.getSalt());
+				userVertex.setProperty(UserProps.HASH, hasher.getHash());
 
-					newUserMailer.sendAccountCreationConfirmationEmail(email, confirmationKey);
+				String confirmationKey = randomizer.nextString();
+				userVertex.setProperty(UserProps.EMAIL_CONFIRMED, false);
+				userVertex.setProperty(UserProps.EMAIL_CONF_KEY, confirmationKey);
 
-					userVertex = graph.addVertex("class:User", userProps);
+				long timestamp = System.currentTimeMillis();
+				userVertex.setProperty(UserProps.RAT_UPDATED, timestamp);
+				userVertex.setProperty(UserProps.REC_UPDATED, timestamp);
 
-					User user = buildUser(userVertex);
-					returned = Optional.of(user);
-					graph.commit();
 
-					LOGGER.info("Successfully created unconfirmed account for " + email);
+				newUserMailer.sendAccountCreationConfirmationEmail(email, confirmationKey);
 
-					break;
-				} else {
-					break;
-				}
-			} catch (OTransactionException e) {
-				//MVCC handling will be restarted if there's an issue
-			} catch (RuntimeException r) {
+				User user = buildUser(userVertex);
+				returned = Optional.of(user);
+				graph.commit();
+
+				LOGGER.info("Created unconfirmed account for " + email);
 				break;
+			} catch (OTransactionException ote) {
 			}
 		}
-
 		graph.shutdown();
+
 		return returned;
 	}
 
 	public boolean deleteUser(User user) {
-		OrientGraph graph = factory.getTx();
+		OrientGraph graph = GraphConnection.getGraph();
 		boolean deleted = false;
-		try {
-			for (int i = 0; i < maxRetries; i++) {
-				Vertex userVertex = graph.getVertexByKey("User.username", user.getUsername());
+
+		for (int i = 0; i < maxRetries; i++) {
+			try {
+				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
 				if (userVertex != null) {
 					graph.removeVertex(userVertex);
 					deleted = true;
@@ -110,26 +105,25 @@ public class UserDAO {
 				graph.commit();
 				LOGGER.info("Successfully deleted account of " + user.getUsername());
 				break;
+			} catch (OTransactionException ote) {
 			}
-		} catch (OTransactionException e) {
-			//let retry loop try this again
-		} finally {
-			graph.shutdown();
 		}
+
+		graph.shutdown();
 		return deleted;
 	}
 
 	public User getUser(String username) {
-		OrientGraph graph = factory.getTx();
+		OrientGraph graph = GraphConnection.getGraph();
 		User returnedUser = null;
 		try {
-			Vertex userVertex = graph.getVertexByKey("User.username", username);
-			if (userVertex != null) {
-				boolean confirmed = userVertex.getProperty("emailConfirmed");
+			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, username);
+			boolean confirmed = userVertex.getProperty(UserProps.EMAIL_CONFIRMED);
 
-				if (confirmed)
-					returnedUser = buildUser(userVertex);
+			if (confirmed) {
+				returnedUser = buildUser(userVertex);
 			}
+
 		} finally {
 			graph.shutdown();
 		}
@@ -137,62 +131,97 @@ public class UserDAO {
 	}
 
 	public User confirmUserCreation(String email, String confirmKey) {
-		OrientGraph graph = factory.getTx();
-		try {
-			Vertex userVertex = graph.getVertexByKey("User.username", email);
-			if (userVertex != null) {
-				String storedConfirmKey = userVertex.getProperty("emailConfirmKey");
+		OrientGraph graph = GraphConnection.getGraph();
+		User confirmedUser = null;
+
+		for (int i = 0; i < maxRetries; i++) {
+			try {
+				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
+				String storedConfirmKey = userVertex.getProperty(UserProps.EMAIL_CONF_KEY);
+
 				if (storedConfirmKey.equals(confirmKey)) {
-					userVertex.setProperty("emailConfirmed", true);
+					userVertex.setProperty(UserProps.EMAIL_CONFIRMED, true);
 				}
+
 				graph.commit();
+
+				confirmedUser = buildUser(userVertex);
+
 				LOGGER.info("Successfully confirmed user account for " + email);
+				break;
+			} catch (OTransactionException ote) {
 			}
-		} finally {
-			graph.shutdown();
 		}
-		return getUser(email);
+
+		graph.shutdown();
+		return confirmedUser;
 	}
 
 	public User forgotPassword(String email) {
-		OrientGraph graph = factory.getTx();
+		OrientGraph graph = GraphConnection.getGraph();
+		User user = null;
 		try {
-			Vertex userVertex = graph.getVertexByKey("User.username", email);
+			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
 
 			String confirmationKey = randomizer.nextString();
-			userVertex.setProperty("passwordChangeKey", confirmationKey);
+			userVertex.setProperty(UserProps.PASS_CHANGE_KEY, confirmationKey);
 
 			changePasswordMailer.sendPasswordChangeConfirmationEmail(email, confirmationKey);
+
+			user = buildUser(userVertex);
 		} finally {
 			graph.shutdown();
 		}
-		return getUser(email);
+
+		return user;
 	}
 
 	public User confirmPasswordChange(String email, String newPassword, String confirmKey) {
-		OrientGraph graph = factory.getTx();
-		try {
-			Vertex userVertex = graph.getVertexByKey("User.username", email);
-			if (userVertex != null) {
-				String storedConfirmKey = userVertex.getProperty("passwordChangeKey");
-				if (storedConfirmKey.equals(confirmKey)) {
-					byte[] salt = userVertex.getProperty("salt");
-					SaltedHasher newHasher = new SaltedHasher(newPassword, salt);
-					userVertex.setProperty("hash", newHasher.getHash());
+		OrientGraph graph = GraphConnection.getGraph();
+		User user = null;
+
+		for (int i = 0; i < maxRetries; i++) {
+			try {
+
+				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
+				if (userVertex != null) {
+					String storedConfirmKey = userVertex.getProperty(UserProps.PASS_CHANGE_KEY);
+
+					if (storedConfirmKey.equals(confirmKey)) {
+
+						byte[] salt = userVertex.getProperty(UserProps.SALT);
+						SaltedHasher newHasher = new SaltedHasher(newPassword, salt);
+						userVertex.setProperty(UserProps.HASH, newHasher.getHash());
+
+						user = buildUser(userVertex);
+					}
 				}
+				graph.commit();
+				break;
+
+			} catch (OTransactionException ote) {
 			}
-		} finally {
-			graph.shutdown();
 		}
-		return getUser(email);
+		graph.shutdown();
+		return user;
 	}
 
 	public User buildUser(Vertex userVertex) {
-		String unameFromDB = userVertex.getProperty("username");
-		byte[] saltFromDB = userVertex.getProperty("salt");
-		byte[] hashFromDB = userVertex.getProperty("hash");
-		User built = new User(unameFromDB, saltFromDB, hashFromDB);
-		built.setEmailConfirmed(userVertex.getProperty("emailConfirmed"));
+		OrientGraph graph = GraphConnection.getGraph();
+		User built = null;
+		try {
+			Vertex newVertex = graph.getVertex(userVertex.getId());
+
+			String unameFromDB = newVertex.getProperty(UserProps.USERNAME);
+			byte[] saltFromDB = newVertex.getProperty(UserProps.SALT);
+			byte[] hashFromDB = newVertex.getProperty(UserProps.HASH);
+
+			built = new User(unameFromDB, saltFromDB, hashFromDB);
+			built.setEmailConfirmed(userVertex.getProperty(UserProps.EMAIL_CONFIRMED));
+
+		} finally {
+			graph.shutdown();
+		}
 		return built;
 	}
 }

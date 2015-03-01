@@ -2,20 +2,13 @@ package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.cache.CacheBuilderSpec;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import io.dropwizard.Configuration;
-import ru.vyarus.dropwizard.orient.configuration.HasOrientServerConfiguration;
-import ru.vyarus.dropwizard.orient.configuration.OrientServerConfiguration;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-public class BaconConfiguration extends Configuration implements HasOrientServerConfiguration {
-	private static OrientGraphFactory factory;
-	@NotNull
-	private static int maxDbRetries;
-	@NotNull
-	private static int warmupIterations;
+public class BaconConfiguration extends Configuration {
+
+
 	@NotNull
 	private static String accountCreationConfirmURL;
 	@NotNull
@@ -25,28 +18,95 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 	@NotNull
 	private static String sendgridPassword;
 	@NotNull
-	private static String amazonPrefix;
+	private static String omdbAPIKey;
 	@NotNull
-	private String dbLocalPath;
+	private static String omdbDownloadURL;
 	@NotNull
-	private String dbBackupPath;
+	private static String orientConnectionString;
 	@NotNull
-	private String dbRemotePath;
+	private static String orientUsername;
 	@NotNull
-	private String omdbAPIKey;
+	private static String orientPassword;
 	@NotNull
-	private String omdbDBEmail;
+	private static int dbPoolMin;
 	@NotNull
-	@Valid
-	private OrientServerConfiguration orientServer;
+	private static int dbPoolMax;
 	@NotNull
-	private int dbPoolMin;
+	private static int maxRetries;
 	@NotNull
-	private int dbPoolMax;
-	@NotNull
-	private boolean restrictUserCreation;
+	private static String omdbPosterURL;
 	@NotNull
 	private CacheBuilderSpec authenticationCachePolicy;
+
+	@JsonProperty("orient-username")
+	public static String getOrientUsername() {
+		return orientUsername;
+	}
+
+	@JsonProperty("orient-username")
+	public void setOrientUsername(String orientUsername) {
+		BaconConfiguration.orientUsername = orientUsername;
+	}
+
+	@JsonProperty("orient-password")
+	public static String getOrientPassword() {
+		return orientPassword;
+	}
+
+	@JsonProperty("orient-password")
+	public void setOrientPassword(String orientPassword) {
+		BaconConfiguration.orientPassword = orientPassword;
+	}
+
+	@JsonProperty("omdb-poster-url")
+	public static String getOmdbPosterURL() {
+		return omdbPosterURL.replace("%k", omdbAPIKey);
+	}
+
+	@JsonProperty("omdb-poster-url")
+	public void setOmdbPosterURL(String omdbPosterURL) {
+		BaconConfiguration.omdbPosterURL = omdbPosterURL;
+	}
+
+	@JsonProperty("max-db-retries")
+	public static int getMaxRetries() {
+		return maxRetries;
+	}
+
+	@JsonProperty("max-db-retries")
+	public void setMaxRetries(int maxRetries) {
+		BaconConfiguration.maxRetries = maxRetries;
+	}
+
+	@JsonProperty("db-pool-min")
+	public static int getDbPoolMax() {
+		return dbPoolMax;
+	}
+
+	@JsonProperty("db-pool-max")
+	public void setDbPoolMax(int dbPoolMax) {
+		BaconConfiguration.dbPoolMax = dbPoolMax;
+	}
+
+	@JsonProperty("db-pool-min")
+	public static int getDbPoolMin() {
+		return dbPoolMin;
+	}
+
+	@JsonProperty("db-pool-min")
+	public void setDbPoolMin(int dbPoolMin) {
+		BaconConfiguration.dbPoolMin = dbPoolMin;
+	}
+
+	@JsonProperty("orient-conn-string")
+	public static String getOrientConnectionString() {
+		return orientConnectionString;
+	}
+
+	@JsonProperty("orient-conn-string")
+	public void setOrientConnectionString(String orientConnectionString) {
+		BaconConfiguration.orientConnectionString = orientConnectionString;
+	}
 
 	@JsonProperty("password-change-confirm-url")
 	public static String getPasswordChangeConfirmURL() {
@@ -78,30 +138,6 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		BaconConfiguration.sendgridPassword = sendgridPassword;
 	}
 
-	@JsonProperty("max-db-write-retries")
-	public static int getMaxDbRetries() {
-		return maxDbRetries;
-	}
-
-	@JsonProperty("max-db-write-retries")
-	public void setMaxDbRetries(int maxDbRetries) {
-		BaconConfiguration.maxDbRetries = maxDbRetries;
-	}
-
-	@JsonProperty("warmup-iterations")
-	public static int getWarmupIterations() {
-		return warmupIterations;
-	}
-
-	@JsonProperty("warmup-iterations")
-	public void setWarmupIterations(int warmupIterations) {
-		BaconConfiguration.warmupIterations = warmupIterations;
-	}
-
-	public static OrientGraphFactory getFactory() {
-		return factory;
-	}
-
 	@JsonProperty("account-creation-confirm-url")
 	public static String getAccountCreationConfirmURL() {
 		return accountCreationConfirmURL;
@@ -112,14 +148,14 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		BaconConfiguration.accountCreationConfirmURL = accountCreationConfirmURL;
 	}
 
-	@JsonProperty("amazon-url-prefix")
-	public static String getAmazonPrefix() {
-		return amazonPrefix;
+	@JsonProperty("omdb-download-url")
+	public static String getOMDBDownloadURL() {
+		return omdbDownloadURL;
 	}
 
-	@JsonProperty("amazon-url-prefix")
-	public void setAmazonPrefix(String amazonPrefix) {
-		BaconConfiguration.amazonPrefix = amazonPrefix;
+	@JsonProperty("omdb-download-url")
+	public void setOMDBDownloadURL(String omdbDownloadURL) {
+		BaconConfiguration.omdbDownloadURL = omdbDownloadURL;
 	}
 
 	@JsonProperty("authenticationCachePolicy")
@@ -132,97 +168,8 @@ public class BaconConfiguration extends Configuration implements HasOrientServer
 		this.authenticationCachePolicy = authenticationCachePolicy;
 	}
 
-	@JsonProperty("omdb-download-url")
-	public String getOmdbDBEmail() {
-		return omdbDBEmail;
-	}
-
-	@JsonProperty("omdb-download-url")
-	public void setOmdbDBEmail(String omdbDBEmail) {
-		this.omdbDBEmail = omdbDBEmail;
-	}
-
-	@JsonProperty("restrict-create-user")
-	public boolean isRestrictUserCreation() {
-		return restrictUserCreation;
-	}
-
-	@JsonProperty("restrict-create-user")
-	public void setRestrictUserCreation(boolean restrictUserCreation) {
-		this.restrictUserCreation = restrictUserCreation;
-	}
-
-	@JsonProperty("db-pool-min")
-	public int getDbPoolMin() {
-		return dbPoolMin;
-	}
-
-	@JsonProperty("db-pool-min")
-	public void setDbPoolMin(int dbPoolMin) {
-		this.dbPoolMin = dbPoolMin;
-	}
-
-	@JsonProperty("db-pool-max")
-	public int getDbPoolMax() {
-		return dbPoolMax;
-	}
-
-	@JsonProperty("db-pool-max")
-	public void setDbPoolMax(int dbPoolMax) {
-		this.dbPoolMax = dbPoolMax;
-	}
-
-	@JsonProperty("db-path")
-	public String getDBLocalPath() {
-		return dbLocalPath;
-	}
-
-	@JsonProperty("db-path")
-	public void setDbLocalPath(String dbLocalPath) {
-		this.dbLocalPath = dbLocalPath;
-	}
-
-	@JsonProperty("backup-path")
-	public String getDbBackupPath() {
-		return dbBackupPath;
-	}
-
-	@JsonProperty("backup-path")
-	public void setDbBackupPath(String dbBackupPath) {
-		this.dbBackupPath = dbBackupPath;
-	}
-
-	@JsonProperty("omdb-api-key")
-	public String getOMDBAPIKey() {
-		return omdbAPIKey;
-	}
-
 	@JsonProperty("omdb-api-key")
 	public void setOmdbAPIKey(String newKey) {
 		omdbAPIKey = newKey;
-	}
-
-	@Override
-	public OrientServerConfiguration getOrientServerConfiguration() {
-		return orientServer;
-	}
-
-	@JsonProperty("orient-server")
-	void setOrientServer(OrientServerConfiguration orientServer) {
-		this.orientServer = orientServer;
-	}
-
-	@JsonProperty("db-binary-conn-path")
-	public String getDbRemotePath() {
-		return dbRemotePath;
-	}
-
-	@JsonProperty("db-binary-conn-path")
-	public void setDbRemotePath(String dbRemotePath) {
-		this.dbRemotePath = dbRemotePath;
-	}
-
-	public void initFactory() {
-		factory = new OrientGraphFactory(dbLocalPath).setupPool(dbPoolMin, dbPoolMax);
 	}
 }
