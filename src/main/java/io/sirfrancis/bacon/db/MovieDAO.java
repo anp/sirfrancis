@@ -10,6 +10,8 @@ import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.db.enums.*;
 import io.sirfrancis.bacon.tasks.DBUpdateTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -17,7 +19,7 @@ import java.util.List;
 import java.util.Set;
 
 public class MovieDAO {
-
+	Logger LOGGER = LoggerFactory.getLogger(MovieDAO.class);
 	private String omdbPosterURL;
 	private int maxRetries;
 
@@ -46,11 +48,15 @@ public class MovieDAO {
 		try {
 			String luceneSearch = rawSearch.replaceAll("[']", "").replaceAll("[^A-Za-z0-9]", " ").toLowerCase();
 
-			String baseQuery = "select from Movie where indexTitle LUCENE ? LIMIT " + maxNumberOfResults;
+			String baseQuery = "select from " +
+					Vertices.MOVIE +
+					" where " + MovieProps.INDEXTITLE + " LUCENE ?";// LIMIT " + maxNumberOfResults;
 
 			Iterable<Vertex> results = graph.command(new OCommandSQL(baseQuery)).execute(luceneSearch);
 
 			for (Vertex v : results) {
+				if (searchResults.size() >= maxNumberOfResults) break;
+
 				searchResults.add(buildMovie(v));
 			}
 		} finally {
@@ -104,12 +110,12 @@ public class MovieDAO {
 			thisMovie.setMetascore(metascore);
 			thisMovie.setImdbRating(imdbRating);
 			thisMovie.setImdbVotes(imdbVotes);
-			thisMovie.setRtRating(rtRating);
-			thisMovie.setTomatoMeter(tomatoMeter);
-			thisMovie.setRtNumReviews(rtNumReviews);
-			thisMovie.setRtNumFreshReviews(rtNumFreshReviews);
-			thisMovie.setRtNumRottenReviews(rtNumRottenReviews);
-			thisMovie.setRtConsensus(rtConsensus);
+			thisMovie.setRottenTomatoRating(rtRating);
+			thisMovie.setRottenTomatoMeter(tomatoMeter);
+			thisMovie.setRottenTomatoesNumReviews(rtNumReviews);
+			thisMovie.setRottenTomatoesNumFreshReviews(rtNumFreshReviews);
+			thisMovie.setRottenTomatoesNumRottenReviews(rtNumRottenReviews);
+			thisMovie.setRottenTomatoesConsensus(rtConsensus);
 
 			thisMovie.setUpdated(updated);
 
@@ -151,9 +157,12 @@ public class MovieDAO {
 
 				if (movieVertex == null) {
 					movieVertex = graph.addVertex("class:" + Vertices.MOVIE);
+					movieVertex.setProperty(MovieProps.OMDBID, movie.getOmdbID());
+					movieVertex.setProperty(MovieProps.IMDBID, movie.getImdbID());
+					movieVertex.setProperty(MovieProps.TITLE, movie.getTitle());
 				}
 
-				movieVertex.setProperty(MovieProps.TITLE, movie.getTitle());
+				movieVertex.setProperty(MovieProps.INDEXTITLE, movie.getIndexTitle());
 				movieVertex.setProperty(MovieProps.RUNTIME, movie.getRuntime());
 				movieVertex.setProperty(MovieProps.RELEASED, movie.getReleased());
 				movieVertex.setProperty(MovieProps.LANGUAGE, movie.getLanguage());
@@ -165,12 +174,12 @@ public class MovieDAO {
 				movieVertex.setProperty(MovieProps.METASCORE, movie.getMetascore());
 				movieVertex.setProperty(MovieProps.IMDBRATING, movie.getImdbRating());
 				movieVertex.setProperty(MovieProps.IMDBVOTES, movie.getImdbVotes());
-				movieVertex.setProperty(MovieProps.RTRATING, movie.getRtRating());
-				movieVertex.setProperty(MovieProps.RTMETER, movie.getTomatoMeter());
-				movieVertex.setProperty(MovieProps.RTNREVIEWS, movie.getRtNumReviews());
-				movieVertex.setProperty(MovieProps.RTNFRESHREVIEWS, movie.getRtNumFreshReviews());
-				movieVertex.setProperty(MovieProps.RTNROTTENREVIEWS, movie.getRtNumRottenReviews());
-				movieVertex.setProperty(MovieProps.RTCONSENSUS, movie.getRtConsensus());
+				movieVertex.setProperty(MovieProps.RTRATING, movie.getRottenTomatoRating());
+				movieVertex.setProperty(MovieProps.RTMETER, movie.getRottenTomatoMeter());
+				movieVertex.setProperty(MovieProps.RTNREVIEWS, movie.getRottenTomatoesNumReviews());
+				movieVertex.setProperty(MovieProps.RTNFRESHREVIEWS, movie.getRottenTomatoesNumFreshReviews());
+				movieVertex.setProperty(MovieProps.RTNROTTENREVIEWS, movie.getRottenTomatoesNumRottenReviews());
+				movieVertex.setProperty(MovieProps.RTCONSENSUS, movie.getRottenTomatoesConsensus());
 
 				movieVertex.setProperty(Vertices.UPDATED, DBUpdateTask.currentInitTimestamp);
 

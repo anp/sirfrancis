@@ -25,7 +25,7 @@ repositories {
 }
 
 dependencies {
-    def dropwizardVersion = '0.8.0-rc3'
+    def dropwizardVersion = '0.8.0'
     def orientDBVersion = '2.0.3'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,

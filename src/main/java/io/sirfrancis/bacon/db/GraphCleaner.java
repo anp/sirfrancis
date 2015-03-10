@@ -7,6 +7,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.db.enums.Edges;
+import io.sirfrancis.bacon.db.enums.Indexes;
 import io.sirfrancis.bacon.db.enums.Vertices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +30,10 @@ public class GraphCleaner {
 	public void cleanGraph() {
 		OrientGraph graph = GraphConnection.getGraph();
 		graph.declareIntent(new OIntentMassiveRead());
+
+		Vertex naVertex = graph.getVertexByKey(Indexes.PERSON_NAME, "N/A");
+		if (naVertex != null) graph.removeVertex(naVertex);
+
 		List<Vertex> outOfDate = new ArrayList<>();
 
 		StreamSupport.stream(graph.getVerticesOfClass(Vertices.MOVIE).spliterator(), false)

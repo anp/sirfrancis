@@ -1,13 +1,9 @@
 package io.sirfrancis.bacon.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
 
-/**
- * Created by adam on 1/23/15.
- */
 public class Movie {
 	private long omdbID;
 	private String imdbID;
@@ -25,16 +21,17 @@ public class Movie {
 	private double imdbRating;
 	private int imdbVotes;
 	private String posterURL;
-	private double rtRating;
-	private int tomatoMeter;
-	private int rtNumReviews;
-	private int rtNumFreshReviews;
-	private int rtNumRottenReviews;
-	private String rtConsensus;
+	private double rottenTomatoRating;
+	private int rottenTomatoMeter;
+	private int rottenTomatoesNumReviews;
+	private int rottenTomatoesNumFreshReviews;
+	private int rottenTomatoesNumRottenReviews;
+	private String rottenTomatoesConsensus;
 	private Set<String> actors;
 	private Set<String> directors;
 	private Set<String> writers;
 	private String updated;
+
 	public Movie(String imdbID, long omdbID, String title) {
 		this.imdbID = imdbID;
 		this.omdbID = omdbID;
@@ -61,104 +58,104 @@ public class Movie {
 		this.updated = updated;
 	}
 
-	@JsonProperty
+
 	public Set<String> getActors() {
 		return actors;
 	}
 
-	@JsonProperty
+
 	public void setActors(Set<String> actors) {
 		this.actors = actors;
 	}
 
-	@JsonProperty
+
 	public Set<String> getDirectors() {
 		return directors;
 	}
 
-	@JsonProperty
+
 	public void setDirectors(Set<String> directors) {
 		this.directors = directors;
 	}
 
-	@JsonProperty
+
 	public Set<String> getWriters() {
 		return writers;
 	}
 
-	@JsonProperty
+
 	public void setWriters(Set<String> writers) {
 		this.writers = writers;
 	}
 
-	@JsonProperty
+
 	public String getGenres() {
 		return genres;
 	}
 
-	@JsonProperty
+
 	public void setGenres(String genres) {
 		this.genres = genres;
 	}
 
-	@JsonProperty
-	public String getRtConsensus() {
-		return rtConsensus;
+
+	public String getRottenTomatoesConsensus() {
+		return rottenTomatoesConsensus;
 	}
 
-	@JsonProperty
-	public void setRtConsensus(String rtConsensus) {
-		this.rtConsensus = rtConsensus;
+
+	public void setRottenTomatoesConsensus(String rottenTomatoesConsensus) {
+		this.rottenTomatoesConsensus = rottenTomatoesConsensus;
 	}
 
-	@JsonProperty
-	public double getRtRating() {
-		return rtRating;
+
+	public double getRottenTomatoRating() {
+		return rottenTomatoRating;
 	}
 
-	@JsonProperty
-	public void setRtRating(double rtRating) {
-		this.rtRating = rtRating;
+
+	public void setRottenTomatoRating(double rottenTomatoRating) {
+		this.rottenTomatoRating = rottenTomatoRating;
 	}
 
-	@JsonProperty
-	public int getTomatoMeter() {
-		return tomatoMeter;
+
+	public int getRottenTomatoMeter() {
+		return rottenTomatoMeter;
 	}
 
-	@JsonProperty
-	public void setTomatoMeter(int tomatoMeter) {
-		this.tomatoMeter = tomatoMeter;
+
+	public void setRottenTomatoMeter(int rottenTomatoMeter) {
+		this.rottenTomatoMeter = rottenTomatoMeter;
 	}
 
-	@JsonProperty
-	public int getRtNumReviews() {
-		return rtNumReviews;
+
+	public int getRottenTomatoesNumReviews() {
+		return rottenTomatoesNumReviews;
 	}
 
-	@JsonProperty
-	public void setRtNumReviews(int rtNumReviews) {
-		this.rtNumReviews = rtNumReviews;
+
+	public void setRottenTomatoesNumReviews(int rottenTomatoesNumReviews) {
+		this.rottenTomatoesNumReviews = rottenTomatoesNumReviews;
 	}
 
-	@JsonProperty
-	public int getRtNumFreshReviews() {
-		return rtNumFreshReviews;
+
+	public int getRottenTomatoesNumFreshReviews() {
+		return rottenTomatoesNumFreshReviews;
 	}
 
-	@JsonProperty
-	public void setRtNumFreshReviews(int rtNumFreshReviews) {
-		this.rtNumFreshReviews = rtNumFreshReviews;
+
+	public void setRottenTomatoesNumFreshReviews(int rottenTomatoesNumFreshReviews) {
+		this.rottenTomatoesNumFreshReviews = rottenTomatoesNumFreshReviews;
 	}
 
-	@JsonProperty
-	public int getRtNumRottenReviews() {
-		return rtNumRottenReviews;
+
+	public int getRottenTomatoesNumRottenReviews() {
+		return rottenTomatoesNumRottenReviews;
 	}
 
-	@JsonProperty
-	public void setRtNumRottenReviews(int rtNumRottenReviews) {
-		this.rtNumRottenReviews = rtNumRottenReviews;
+
+	public void setRottenTomatoesNumRottenReviews(int rottenTomatoesNumRottenReviews) {
+		this.rottenTomatoesNumRottenReviews = rottenTomatoesNumRottenReviews;
 	}
 
 	@JsonIgnore
@@ -166,127 +163,127 @@ public class Movie {
 		return omdbID;
 	}
 
-	@JsonProperty
+
 	public String getImdbID() {
 		return imdbID;
 	}
 
-	@JsonProperty
+
 	public void setImdbID(String imdbID) {
 		this.imdbID = imdbID;
 	}
 
-	@JsonProperty
+
 	public String getTitle() {
 		return title;
 	}
 
-	@JsonProperty
+
 	public String getRuntime() {
 		return runtime;
 	}
 
-	@JsonProperty
+
 	public void setRuntime(String runtime) {
 		this.runtime = runtime;
 	}
 
-	@JsonProperty
+
 	public String getReleased() {
 		return released;
 	}
 
-	@JsonProperty
+
 	public void setReleased(String released) {
 		this.released = released;
 	}
 
-	@JsonProperty
+
 	public String getLanguage() {
 		return language;
 	}
 
-	@JsonProperty
+
 	public void setLanguage(String language) {
 		this.language = language;
 	}
 
-	@JsonProperty
+
 	public String getCountry() {
 		return country;
 	}
 
-	@JsonProperty
+
 	public void setCountry(String country) {
 		this.country = country;
 	}
 
-	@JsonProperty
+
 	public int getYear() {
 		return year;
 	}
 
-	@JsonProperty
+
 	public void setYear(int year) {
 		this.year = year;
 	}
 
-	@JsonProperty
+
 	public String getAwards() {
 		return awards;
 	}
 
-	@JsonProperty
+
 	public void setAwards(String awards) {
 		this.awards = awards;
 	}
 
-	@JsonProperty
+
 	public String getMpaaRating() {
 		return mpaaRating;
 	}
 
-	@JsonProperty
+
 	public void setMpaaRating(String mpaaRating) {
 		this.mpaaRating = mpaaRating;
 	}
 
-	@JsonProperty
+
 	public int getMetascore() {
 		return metascore;
 	}
 
-	@JsonProperty
+
 	public void setMetascore(int metascore) {
 		this.metascore = metascore;
 	}
 
-	@JsonProperty
+
 	public double getImdbRating() {
 		return imdbRating;
 	}
 
-	@JsonProperty
+
 	public void setImdbRating(double imdbRating) {
 		this.imdbRating = imdbRating;
 	}
 
-	@JsonProperty
+
 	public int getImdbVotes() {
 		return imdbVotes;
 	}
 
-	@JsonProperty
+
 	public void setImdbVotes(int imdbVotes) {
 		this.imdbVotes = imdbVotes;
 	}
 
-	@JsonProperty
+
 	public String getPosterURL() {
 		return posterURL;
 	}
 
-	@JsonProperty
+
 	public void setPosterURL(String posterURL) {
 		this.posterURL = posterURL;
 	}

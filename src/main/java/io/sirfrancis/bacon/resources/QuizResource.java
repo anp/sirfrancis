@@ -27,6 +27,6 @@ public class QuizResource {
 
 		if (perPage < 1 || pageNumber < 0) throw new IllegalArgumentException("Invalid parameters");
 
-		return dao.getQuizMovies(perPage, pageNumber);
+		return dao.getQuizMovies(perPage, pageNumber, user);
 	}
 }

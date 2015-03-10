@@ -18,18 +18,20 @@ public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> 
 
 		String username = creds.getUsername();
 		User user = dao.getUser(username);
+		Optional<User> returned = Optional.absent();
 
 		if (user != null) {
+			LOGGER.debug("Authenticator has found account for " + username);
 			SaltedHasher hasher = new SaltedHasher(creds.getPassword(), user.getSalt());
 
 			if (hashEquals(hasher.getHash(), (user.getHash()))) {
-				LOGGER.info("Successfully authenticated " + username);
-				return Optional.of(user);
+				LOGGER.info("Successfully authenticated password for " + username);
+				returned = Optional.of(user);
+			} else {
+				LOGGER.info("Failed to authenticate " + username);
 			}
 		}
-
-		LOGGER.info("Failed to authenticate " + username);
-		return Optional.absent();
+		return returned;
 	}
 
 	public boolean hashEquals(byte[] first, byte[] second) {

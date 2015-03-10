@@ -22,4 +22,5 @@ public class MovieProps {
 	public static final String RTNFRESHREVIEWS = "rtNumFreshReviews";
 	public static final String RTNROTTENREVIEWS = "rtNumRottenReviews";
 	public static final String RTCONSENSUS = "rtConsensus";
+	public static final String QUIZ_ORDER = "quizOrder";
 }

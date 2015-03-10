@@ -1,39 +1,34 @@
 package io.sirfrancis.bacon.db;
 
 import com.orientechnologies.orient.core.exception.OTransactionException;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Direction;
-import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import edu.uci.ics.jung.algorithms.scoring.BetweennessCentrality;
-import edu.uci.ics.jung.algorithms.scoring.ClosenessCentrality;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.graph.UndirectedSparseMultigraph;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
-import io.sirfrancis.bacon.db.enums.Edges;
-import io.sirfrancis.bacon.db.enums.MovieProps;
-import io.sirfrancis.bacon.db.enums.Vertices;
-import io.sirfrancis.bacon.util.StringRandomizer;
+import io.sirfrancis.bacon.core.Rating;
+import io.sirfrancis.bacon.core.User;
+import io.sirfrancis.bacon.db.enums.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 
 public class QuizDAO {
 	private static Logger LOGGER = LoggerFactory.getLogger(QuizDAO.class);
 	private MovieDAO movieDAO;
+	private RatingDAO ratingDAO;
 	private int maxRetries;
-	private StringRandomizer randomStrings = new StringRandomizer(25);
-	private JungGraphFactory jFactory;
 
 	public QuizDAO() {
 		this.movieDAO = new MovieDAO();
+		this.ratingDAO = new RatingDAO();
 		maxRetries = BaconConfiguration.getMaxRetries();
-		jFactory = new JungGraphFactory();
 	}
 
 	private static <K, V extends Comparable<? super V>> List<K> reverseSortKeysByValue(Map<K, V> map) {
@@ -49,175 +44,162 @@ public class QuizDAO {
 		return result;
 	}
 
-	public List<Movie> getQuizMovies(int perPage, int pageNumber) {
+	public List<Movie> getQuizMovies(int perPage, int pageNumber, User user) {
 		OrientGraph graph = GraphConnection.getGraph();
 		List<Movie> quizItems = new LinkedList<>();
 
-		Vertex quizVertex = graph.getVerticesOfClass(Vertices.QUIZSTART).iterator().next();
+		HashSet<String> ratedIMDBIDs = new HashSet<>();
 
-		int endIndex = perPage * pageNumber;
-		int startIndex = endIndex - perPage;
+		ratingDAO.getRatings(user)
+				.stream()
+				.map(Rating::getMovie)
+				.map(Movie::getImdbID)
+				.forEach(ratedIMDBIDs::add);
 
-		for (int i = 0; i < endIndex; i++) {
+		try {
+			String baseQuery = "select from " + Vertices.MOVIE + " where " + Indexes.MOVIE_QUIZORDER + " > -1";
 
-			if (i >= startIndex) {
-				Vertex nextVertex = null;
-				nextVertex = quizVertex.getVertices(Direction.BOTH, Vertices.MOVIE).iterator().next();
+			Iterable<Vertex> results = graph.command(new OCommandSQL(baseQuery)).execute();
 
-				if (nextVertex != null) {
-					quizItems.add(movieDAO.buildMovie(nextVertex));
-				} else {
-					break;
-				}
+			for (Vertex v : results) {
+				String id = v.getProperty(MovieProps.IMDBID);
+
+				if (!ratedIMDBIDs.contains(id))
+					quizItems.add(movieDAO.buildMovie(v));
 			}
+
+		} finally {
+			graph.shutdown();
 		}
 
-		graph.shutdown();
+		int startIndex = perPage * pageNumber;
+		int endIndex = perPage * (pageNumber + 1);
+
+		if (quizItems.size() >= endIndex) {
+			quizItems = quizItems.subList(startIndex, endIndex);
+		}
+
 		return quizItems;
 	}
 
 	public void writeQuizPath() {
-		Set<String> quizOrderList = calculateCentralityRatings();
+		List<String> quizOrderList = calculateCentralityRatings();
 		OrientGraph graph = GraphConnection.getGraph();
 
-		LOGGER.info("Adding edges for quiz path to graph.");
+		LOGGER.info("Adding order for quiz list to graph.");
 
-		for (int i = 0; i < maxRetries; i++) {
-			try {
-				for (Edge e : graph.getEdgesOfClass(Edges.QUIZPATH)) {
-					graph.removeEdge(e);
+		for (Vertex m : graph.getVerticesOfClass(Vertices.MOVIE)) {
+			for (int i = 0; i < maxRetries; i++) {
+				try {
+					m.setProperty(MovieProps.QUIZ_ORDER, -1);
+
+					graph.commit();
+					break;
+				} catch (OTransactionException ote) {
 				}
-				graph.commit();
-				break;
-			} catch (OTransactionException ote) {
-				graph.rollback();
 			}
 		}
 
-		for (int i = 0; i < maxRetries; i++) {
-			try {
-				Vertex quizVertex = graph.getVertexByKey(Vertices.QUIZSTART + "." + Vertices.QUIZSTART, Vertices.QUIZSTART);
-				if (quizVertex == null) graph.addVertex("class:" + Vertices.QUIZSTART);
+		//Vertex quizVertex = graph.getVerticesOfClass(Vertices.QUIZSTART).iterator().next();
+		//if (quizVertex == null) graph.addVertex("class:" + Vertices.QUIZSTART);
 
-				for (String id : quizOrderList) {
-					Vertex nextVertex = graph.getVertexByKey(Vertices.MOVIE + "." + MovieProps.IMDBID, id);
-					nextVertex.addEdge(Edges.QUIZPATH, quizVertex);
-					quizVertex = nextVertex;
+		int currQuizPos = 0;
+		for (String id : quizOrderList) {
+			for (int i = 0; i < maxRetries; i++) {
+				try {
+					Vertex nextVertex = graph.getVertexByKey(Indexes.MOVIE_IMDBID, id);
+					nextVertex.setProperty(MovieProps.QUIZ_ORDER, currQuizPos);
+					graph.commit();
+					currQuizPos++;
+					break;
+				} catch (OTransactionException ote2) {
 				}
-				graph.commit();
-				break;
-			} catch (OTransactionException ote2) {
-				graph.rollback();
 			}
 		}
-
 		graph.shutdown();
 	}
 
-	private Set<String> calculateCentralityRatings() {
+	private List<String> calculateCentralityRatings() {
 
-		Callable<List<String>> betweenCallable = () -> {
-			Graph<String, String> jGraph = jFactory.buildJungGraph();
+		Graph<String, Integer> jGraph = buildJungGraph();
+		LOGGER.info("In-memory JUNG graph loaded for betweenness calculations.");
+		Map<String, Double> betweenRankings = new LinkedHashMap<>();
 
-			Map<String, Double> betweenRankings = new LinkedHashMap<>();
+		BetweennessCentrality<String, Integer> betweennessCentrality = new BetweennessCentrality<>(jGraph);
 
-			BetweennessCentrality<String, String> betweennessCentrality = new BetweennessCentrality<>(jGraph);
-
-			int verticesProcessed = 0;
-			for (String v : jGraph.getVertices()) {
-				if (v.startsWith("tt")) {
-					betweenRankings.put(v, betweennessCentrality.getVertexScore(v));
-					verticesProcessed++;
-
-					LOGGER.info("Betweenness centrality calculated for "
-							+ verticesProcessed + " vertices.");
-				}
+		for (String v : jGraph.getVertices()) {
+			if (v.startsWith("tt")) {
+				betweenRankings.put(v, betweennessCentrality.getVertexScore(v));
 			}
-
-			return reverseSortKeysByValue(betweenRankings);
-		};
-
-		Callable<List<String>> closenessCallable = () -> {
-			Graph<String, String> jGraph = jFactory.buildJungGraph();
-
-			ClosenessCentrality<String, String> closenessCentrality = new ClosenessCentrality<>(jGraph);
-
-			Map<String, Double> closenessRankings = new LinkedHashMap<>();
-
-			int verticesProcessed = 0;
-			for (String v : jGraph.getVertices()) {
-				if (v.startsWith("tt")) {
-					closenessRankings.put(v, closenessCentrality.getVertexScore(v));
-
-					verticesProcessed++;
-
-					LOGGER.info("Closeness centrality calculated for "
-							+ verticesProcessed + " vertices.");
-				}
-			}
-
-			return reverseSortKeysByValue(closenessRankings);
-		};
-
-		Set<String> quizOrderList = new LinkedHashSet<>();
-		try {
-
-			FutureTask<List<String>> betweenTask = new FutureTask<>(betweenCallable);
-			FutureTask<List<String>> closenessTask = new FutureTask<>(closenessCallable);
-
-			betweenTask.run();
-			closenessTask.run();
-
-			Iterator<String> betweenIterator = betweenTask.get().iterator();
-			Iterator<String> closenessIterator = closenessTask.get().iterator();
-
-			while (betweenIterator.hasNext() || closenessIterator.hasNext()) {
-				try {
-					String nextBetween = betweenIterator.next();
-					quizOrderList.add(nextBetween);
-				} catch (NoSuchElementException nsee) {
-					//do nothing, we don't care
-				}
-
-				try {
-					String nextCloseness = closenessIterator.next();
-					quizOrderList.add(nextCloseness);
-				} catch (NoSuchElementException nsee) {
-					//do nothing, we don't care
-				}
-
-			}
-
-		} catch (InterruptedException ie) {
-			LOGGER.error("FutureTask interrupted", ie);
-		} catch (ExecutionException ee) {
-			LOGGER.error("Threaded execution problem", ee);
 		}
+		LOGGER.info("Done with betweenness calculations.");
+
+		/*jGraph = buildJungGraph();
+		LOGGER.info("In-memory JUNG graph loaded for closeness calculations.");
+		Map<String, Double> closenessRankings = new LinkedHashMap<>();
+
+		ClosenessCentrality<String, Integer> closenessCentrality = new ClosenessCentrality<>(jGraph);
+
+		for (String v : jGraph.getVertices()) {
+			if (v.startsWith("tt")) {
+				//closenessRankings.put(v, closenessCentrality.getVertexScore(v));
+			}
+		}
+		LOGGER.info("Done with closeness calculations.");*/
+
+		List<String> quizOrderList = new LinkedList<>();
+
+		//Iterator<String> closenessIterator = reverseSortKeysByValue(closenessRankings).iterator();
+
+		//|| closenessIterator.hasNext()) {
+/*try {
+	String nextCloseness = closenessIterator.next();
+
+	if (!quizOrderList.contains(nextCloseness))
+		quizOrderList.add(nextCloseness);
+} catch (NoSuchElementException nsee) {
+	//do nothing, we don't care
+}*/
+		reverseSortKeysByValue(betweenRankings).stream().filter(
+				s -> !quizOrderList.contains(s)).forEach(quizOrderList::add);
+
 		return quizOrderList;
 	}
 
-	private class JungGraphFactory {
-		public Graph<String, String> buildJungGraph() {
-			Graph<String, String> jGraph = new UndirectedSparseMultigraph<>();
-			OrientGraph graph = GraphConnection.getGraph();
 
-			for (Vertex movieVertex : graph.getVertices("vertexType", "Movie")) {
-				String imdbID = movieVertex.getProperty("imdbID");
+	public Graph<String, Integer> buildJungGraph() {
+		Graph<String, Integer> jGraph = new UndirectedSparseMultigraph<>();
+		OrientGraph graph = GraphConnection.getGraph();
+		SecureRandom random = new SecureRandom();
 
+		int numVertices = 0;
+		for (Vertex movieVertex : graph.getVerticesOfClass(Vertices.MOVIE)) {
+			String imdbID = movieVertex.getProperty(MovieProps.IMDBID);
+			double tomatoMeter = movieVertex.getProperty(MovieProps.RTRATING);
+
+			if (tomatoMeter > 0) {
+				numVertices++;
 				jGraph.addVertex(imdbID);
 
 				for (Vertex personVertex : movieVertex.getVertices(
-						Direction.BOTH, "Acted", "Directed", "Wrote")) {
+						Direction.BOTH, Edges.ACTED, Edges.DIRECTED, Edges.WROTE)) {
 
-					String name = personVertex.getProperty("name");
+					String name = personVertex.getProperty(PersonProps.NAME);
 
-					jGraph.addVertex(name);
-					jGraph.addEdge(randomStrings.nextString(), imdbID, name);
+					if (!jGraph.containsVertex(name)) jGraph.addVertex(name);
+
+					int randomEdge = random.nextInt();
+					while (jGraph.containsEdge(randomEdge)) randomEdge = random.nextInt();
+
+					jGraph.addEdge(randomEdge, imdbID, name);
 
 				}
 			}
-
-			return jGraph;
 		}
+		LOGGER.info("Creating JUNG graph with " + numVertices + " movies parsed.");
+
+		return jGraph;
 	}
+
+
 }
