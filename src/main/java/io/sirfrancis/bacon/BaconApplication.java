@@ -15,6 +15,7 @@ import io.sirfrancis.bacon.health.DBHealthCheck;
 import io.sirfrancis.bacon.resources.*;
 import io.sirfrancis.bacon.tasks.CreateQuizPathTask;
 import io.sirfrancis.bacon.tasks.DBUpdateTask;
+import io.sirfrancis.bacon.tasks.SchemaInitTask;
 
 public class BaconApplication extends Application<BaconConfiguration> {
 
@@ -48,6 +49,8 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.jersey().register(new UserForgotPasswordResource(userDAO));
 
 		environment.jersey().register(new UserChangePasswordResource(userDAO));
+
+		environment.jersey().register(new UserExistsResource(userDAO));
 
 		//movie search api resource
 		MovieDAO movieDAO = new MovieDAO();
@@ -92,5 +95,7 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 		//db update task
 		environment.admin().addTask(new DBUpdateTask(movieDAO, BaconConfiguration.getOMDBDownloadURL()));
+
+		environment.admin().addTask(new SchemaInitTask());
 	}
 }

@@ -5,6 +5,7 @@ import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
+import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.Rating;
@@ -35,10 +36,10 @@ public class RatingDAO {
 
 		for (int i = 0; i < maxRetries; i++) {
 			try {
-				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
-				Vertex movieVertex = graph.getVertexByKey(Indexes.MOVIE_IMDBID, imdbID);
+				OrientVertex userVertex = graph.getVertex(graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername()).getId());
+				OrientVertex movieVertex = graph.getVertex(graph.getVertexByKey(Indexes.MOVIE_IMDBID, imdbID).getId());
 
-				for (Edge e : userVertex.getEdges(Direction.OUT, Edges.RATED)) {
+				for (Edge e : userVertex.getEdges(movieVertex, Direction.OUT, Edges.RATED)) {
 					graph.removeEdge(e);
 				}
 

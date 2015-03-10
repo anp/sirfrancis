@@ -5,6 +5,7 @@ import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import io.sirfrancis.bacon.BaconConfiguration;
+import io.sirfrancis.bacon.api.responses.UserExists;
 import io.sirfrancis.bacon.auth.SaltedHasher;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.enums.Indexes;
@@ -118,10 +119,14 @@ public class UserDAO {
 		User returnedUser = null;
 		try {
 			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, username);
-			boolean confirmed = userVertex.getProperty(UserProps.EMAIL_CONFIRMED);
+			if (userVertex != null) {
+				LOGGER.debug("Found account for " + username);
+				boolean confirmed = userVertex.getProperty(UserProps.EMAIL_CONFIRMED);
 
-			if (confirmed) {
-				returnedUser = buildUser(userVertex);
+				if (confirmed) {
+					LOGGER.debug("Account is confirmed by email for " + username);
+					returnedUser = buildUser(userVertex);
+				}
 			}
 
 		} finally {
@@ -166,9 +171,9 @@ public class UserDAO {
 			String confirmationKey = randomizer.nextString();
 			userVertex.setProperty(UserProps.PASS_CHANGE_KEY, confirmationKey);
 
-			changePasswordMailer.sendPasswordChangeConfirmationEmail(email, confirmationKey);
-
+			graph.commit();
 			user = buildUser(userVertex);
+			changePasswordMailer.sendPasswordChangeConfirmationEmail(email, confirmationKey);
 		} finally {
 			graph.shutdown();
 		}
@@ -223,5 +228,20 @@ public class UserDAO {
 			graph.shutdown();
 		}
 		return built;
+	}
+
+	public UserExists doesUserExist(String username) {
+		OrientGraph graph = GraphConnection.getGraph();
+		UserExists exists = new UserExists();
+		exists.setUsername(username);
+		try {
+			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, username);
+
+			if (userVertex != null) exists.setExists(true);
+
+		} finally {
+			graph.shutdown();
+		}
+		return exists;
 	}
 }

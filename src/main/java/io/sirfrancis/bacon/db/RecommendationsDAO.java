@@ -2,7 +2,7 @@ package io.sirfrancis.bacon.db;
 
 import com.codahale.metrics.annotation.Metered;
 import com.codahale.metrics.annotation.Timed;
-import com.orientechnologies.orient.core.exception.OTransactionException;
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.intent.OIntentMassiveRead;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
@@ -145,21 +145,20 @@ public class RecommendationsDAO {
 				}
 
 			}
-			graph.commit();
 
 			Map<String, Integer> sortedRecMap = sortByValues(recMap);
 
-			sortedRecMap
-					.entrySet()
-					.stream()    //get a stream
-					.filter(
-							//don't show any crappy recommendations or ones we've ignored
-							entry -> entry.getValue() >= MIN_SCORE &&
-									!ignoredMovies.contains(entry.getKey()))
-					.limit(maxRecommendations)  //only show the first n recommendations
-					.forEach(entry -> {
-						//handle problems with concurrent version exceptions
-							try {
+			for (int i = 0; i < 10; i++) {
+				try {
+					sortedRecMap
+							.entrySet()
+							.stream()    //get a stream
+							.filter(
+									//don't show any crappy recommendations or ones we've ignored
+									entry -> entry.getValue() >= MIN_SCORE &&
+											!ignoredMovies.contains(entry.getKey()))
+							.limit(maxRecommendations)  //only show the first n recommendations
+							.forEach(entry -> {
 								//send the first n recommendations back to the database
 								String imdbID = entry.getKey();
 								int score = entry.getValue();
@@ -168,16 +167,18 @@ public class RecommendationsDAO {
 
 								Edge e = graph.addEdge(null, movieToRecommend, userVertex, Edges.RECOMMENDED);
 								e.setProperty(Edges.SCORE, score);
+							});
 
-							} catch (OTransactionException ote) {
-								//no need to take action, next iteration will reload variables
-							}
-					});
 
-			recommendationsUpdated = System.currentTimeMillis();
-			userVertex.setProperty(UserProps.REC_UPDATED, recommendationsUpdated);
+					recommendationsUpdated = System.currentTimeMillis();
+					userVertex.setProperty(UserProps.REC_UPDATED, recommendationsUpdated);
 
-			graph.commit();
+					graph.commit();
+					break;
+				} catch (OConcurrentModificationException ocme) {
+				}
+			}
+
 		} catch (Exception e) {
 			throw e;
 		}

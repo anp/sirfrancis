@@ -19,7 +19,7 @@ import java.util.zip.ZipFile;
 public class DBUpdateTask extends Task {
 	private static final Logger LOGGER = LoggerFactory.getLogger(DBUpdateTask.class);
 	private static final String[] IGNORED_GENRES_ARRAY =
-			{ "Short", "Talk-Show", "Reality-TV", "Game-Show", "Adult", "News" };
+			{ "Short", "Talk-Show", "Reality-TV", "Game-Show", "Adult", "News", "Documentary" };
 	private static final HashSet<String> IGNORED_GENRES = new HashSet<>();
 	public static String currentInitTimestamp;
 	private MovieDAO dao;
@@ -88,12 +88,12 @@ public class DBUpdateTask extends Task {
 		} catch (Exception e) {
 		}
 
-		movie.setRtRating(rtRating);
-		movie.setTomatoMeter(rtTomatoMeter);
-		movie.setRtNumReviews(rtNumReviews);
-		movie.setRtNumFreshReviews(rtNumFreshReviews);
-		movie.setRtNumRottenReviews(rtNumRottenReviews);
-		movie.setRtConsensus(consensus);
+		movie.setRottenTomatoRating(rtRating);
+		movie.setRottenTomatoMeter(rtTomatoMeter);
+		movie.setRottenTomatoesNumReviews(rtNumReviews);
+		movie.setRottenTomatoesNumFreshReviews(rtNumFreshReviews);
+		movie.setRottenTomatoesNumRottenReviews(rtNumRottenReviews);
+		movie.setRottenTomatoesConsensus(consensus);
 	}
 
 	private static String getTimestamp() {
@@ -131,6 +131,7 @@ public class DBUpdateTask extends Task {
 				System.err.println(e.getLocalizedMessage());
 				omdbID = (long) (Math.random() * -1000000);
 			}
+
 
 			int imdbVotes;
 			try {
@@ -180,7 +181,12 @@ public class DBUpdateTask extends Task {
 				actors.add(a);
 			}
 
-			Movie movie = new Movie(imdbID, omdbID, title);
+			Movie movie;
+			if (movies.containsKey(omdbID)) {
+				movie = movies.get(omdbID);
+			} else {
+				movie = new Movie(imdbID, omdbID, title);
+			}
 
 			movie.setIndexTitle(QueryParserUtil.escape(title).toLowerCase());
 
@@ -248,7 +254,6 @@ public class DBUpdateTask extends Task {
 			while ((line = reader.readLine()) != null) {
 
 				parseOMDBLineToMovie(line, movies);
-
 				numMovies++;
 			}
 			LOGGER.info("Parsed " + numMovies + " total lines.");
@@ -266,13 +271,13 @@ public class DBUpdateTask extends Task {
 				parseRTRatingsToDB(line, movies);
 				tomatoRatings++;
 			}
-			LOGGER.info("Parsed " + tomatoRatings + " RT ratings into database.");
+			LOGGER.info("Parsed " + tomatoRatings + " RT ratings into movies.");
 
 			for (Map.Entry<Long, Movie> entry : movies.entrySet()) {
 				Movie m = entry.getValue();
 
-				if (m.getRtConsensus() == null)
-					m.setRtConsensus("N/A");
+				if (m.getRottenTomatoesConsensus() == null)
+					m.setRottenTomatoesConsensus("N/A");
 			}
 
 			reader.close();
@@ -284,7 +289,7 @@ public class DBUpdateTask extends Task {
 				Map.Entry<Long, Movie> entry = iter.next();
 				Movie m = entry.getValue();
 				dao.writeMovie(m);
-
+				LOGGER.debug("Wrote " + m.getTitle() + " to DB.");
 				iter.remove();
 			}
 
@@ -295,6 +300,9 @@ public class DBUpdateTask extends Task {
 			cleaner.cleanGraph();
 
 			LOGGER.info("Done cleaning up graph.");
+
+			zipTemp.delete();
+			LOGGER.info("Deleted temporary zip download.");
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		}
