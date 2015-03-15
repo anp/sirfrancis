@@ -21,6 +21,8 @@ public class GraphConnection implements Managed {
 	private static Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GraphConnection.class);
 
 	public static OrientGraph getGraph() {
+		while (factory == null) {
+		}
 		return factory.getTx();
 	}
 
@@ -153,14 +155,15 @@ public class GraphConnection implements Managed {
 		} catch (OIndexException oie) {
 		}
 
+
 		try {
-			String indexCreationQuery = "CREATE INDEX "
-					+ Indexes.MOVIE_INDEXTITLE + " ON " + Vertices.MOVIE
-					+ " (" + MovieProps.INDEXTITLE + ") FULLTEXT ENGINE LUCENE";
+			String indexCreationQuery = "CREATE INDEX " + Indexes.MOVIE_INDEXTITLE
+					+ " ON " + Vertices.MOVIE + " (" + MovieProps.INDEXTITLE + ") FULLTEXT ENGINE LUCENE";
 			graph.command(new OCommandSQL(indexCreationQuery)).execute();
-		} catch (OIndexException oie) {
+		} catch (Exception oie) {
 			LOGGER.info("Fulltext index already exists.");
 		}
+
 		graph.shutdown();
 	}
 
@@ -183,6 +186,9 @@ public class GraphConnection implements Managed {
 		started = true;
 
 		LOGGER.info("OrientDB Graph connection pool started at " + dbFile.getAbsolutePath() + ".");
+
+		QuizDAO quizDAO = new QuizDAO();
+		quizDAO.initQuiz();
 	}
 
 	public void stop() throws Exception {

@@ -36,7 +36,43 @@ public class BaconConfiguration extends Configuration {
 	@NotNull
 	private static String omdbPosterURL;
 	@NotNull
+	private static String omdbExportPath;
+	@NotNull
+	private static String omdbMoviesFilename;
+	@NotNull
+	private static String omdbTomatoesFilename;
+	@NotNull
 	private CacheBuilderSpec authenticationCachePolicy;
+
+	@JsonProperty("omdb-export-path")
+	public static String getOmdbExportPath() {
+		return omdbExportPath;
+	}
+
+	@JsonProperty("omdb-export-path")
+	public void setOmdbExportPath(String omdbExportPath) {
+		BaconConfiguration.omdbExportPath = omdbExportPath;
+	}
+
+	@JsonProperty("omdb-movies-filename")
+	public static String getOmdbMoviesFilename() {
+		return omdbMoviesFilename;
+	}
+
+	@JsonProperty("omdb-movies-filename")
+	public void setOmdbMoviesFilename(String omdbMoviesFilename) {
+		BaconConfiguration.omdbMoviesFilename = omdbMoviesFilename;
+	}
+
+	@JsonProperty("omdb-tomatoes-filename")
+	public static String getOmdbTomatoesFilename() {
+		return omdbTomatoesFilename;
+	}
+
+	@JsonProperty("omdb-tomatoes-filename")
+	public void setOmdbTomatoesFilename(String omdbTomatoesFilename) {
+		BaconConfiguration.omdbTomatoesFilename = omdbTomatoesFilename;
+	}
 
 	@JsonProperty("orient-username")
 	public static String getOrientUsername() {

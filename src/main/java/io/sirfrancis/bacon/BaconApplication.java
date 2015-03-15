@@ -13,7 +13,7 @@ import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.*;
 import io.sirfrancis.bacon.health.DBHealthCheck;
 import io.sirfrancis.bacon.resources.*;
-import io.sirfrancis.bacon.tasks.CreateQuizPathTask;
+import io.sirfrancis.bacon.tasks.BackupAndDownloadOMDBExportTask;
 import io.sirfrancis.bacon.tasks.DBUpdateTask;
 import io.sirfrancis.bacon.tasks.SchemaInitTask;
 
@@ -90,12 +90,14 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		//db healthcheck
 		environment.healthChecks().register("database", new DBHealthCheck());
 
-		//db quiz path task
-		environment.admin().addTask(new CreateQuizPathTask());
-
 		//db update task
-		environment.admin().addTask(new DBUpdateTask(movieDAO, BaconConfiguration.getOMDBDownloadURL()));
+		environment.admin().addTask(new DBUpdateTask());
 
 		environment.admin().addTask(new SchemaInitTask());
+
+		environment.admin().addTask(new BackupAndDownloadOMDBExportTask());
+
+		//while (GraphConnection.factoryIsNull()) {}
+		//quizDAO.initQuiz();
 	}
 }

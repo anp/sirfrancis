@@ -18,23 +18,18 @@ repositories {
     maven {
         url "https://oss.sonatype.org/content/repositories/snapshots"
     }
-    maven {
-        url "http://www.wingnest.com/mvn-repo/"
-    }
     mavenLocal()
 }
 
 dependencies {
     def dropwizardVersion = '0.8.0'
-    def orientDBVersion = '2.0.3'
+    def orientDBVersion = '2.0.4'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
             'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
             'com.orientechnologies:orientdb-lucene:' + orientDBVersion,
-            'com.sendgrid:sendgrid-java:2.0.0',
-            'net.sf.jung:jung-algorithms:2.0.1',
-            'net.sf.jung:jung-graph-impl:2.0.1'
+            'com.sendgrid:sendgrid-java:2.0.0'
     )
     testCompile (
             'junit:junit:4.11',

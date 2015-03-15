@@ -1,19 +1,21 @@
 orient-conn-string: /opt/bacon/databases/bacon
-#orient-conn-string: remote:sirfrancis-db0.cloudapp.net:2490/bacon
-orient-username: admin #frank
-orient-password: admin #yZNMYE0bfXAWyfDLtT2E8IzlX
+orient-username: admin
+orient-password: admin
 
 db-pool-min: 20
 db-pool-max: 100
 max-db-retries: 10
 
+omdb-export-path: /opt/bacon/databases/omdb/omdb.zip
+omdb-movies-filename: omdbMovies.txt
+omdb-tomatoes-filename: tomatoes.txt
 omdb-api-key: 2af3daf2
 omdb-download-url: http://beforethecode.com/projects/omdb/download.aspx?e=adam.n.perry%40gmail.com&tsv=movies
 omdb-poster-url: http://img.omdbapi.com/?i=%i&apikey=%k
 
 #%e for email %k for confirmkey
 account-creation-confirm-url: http://localhost:8080/user/create/confirm/%e/%k/
-password-change-confirm-url: http://localhost:8080/user/password/change/%e/%p/%k/
+password-change-confirm-url: http://localhost:8080/user/password/change/%e/__insert_password_here__/%k/
 
 authenticationCachePolicy: maximumSize=10000, expireAfterAccess=10m
 

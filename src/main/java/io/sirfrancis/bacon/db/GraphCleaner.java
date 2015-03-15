@@ -2,6 +2,7 @@ package io.sirfrancis.bacon.db;
 
 import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.orientechnologies.orient.core.intent.OIntentMassiveRead;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
@@ -73,6 +74,11 @@ public class GraphCleaner {
 		} catch (OTransactionException ote) {
 			//retry
 		}
+
+		//rebuild indexes after modifying a lot of the graph
+		String rebuildIndexes = "rebuild index *";
+		graph.command(new OCommandSQL(rebuildIndexes)).execute();
+
 		graph.shutdown();
 	}
 
