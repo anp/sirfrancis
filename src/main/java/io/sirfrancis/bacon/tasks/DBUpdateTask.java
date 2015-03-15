@@ -2,18 +2,23 @@ package io.sirfrancis.bacon.tasks;
 
 import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
+import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.db.GraphCleaner;
 import io.sirfrancis.bacon.db.MovieDAO;
+import io.sirfrancis.bacon.util.Timestamper;
 import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
-import java.net.URL;
-import java.net.URLConnection;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.zip.ZipFile;
 
 public class DBUpdateTask extends Task {
@@ -23,19 +28,17 @@ public class DBUpdateTask extends Task {
 	private static final HashSet<String> IGNORED_GENRES = new HashSet<>();
 	public static String currentInitTimestamp;
 	private MovieDAO dao;
-	private String downloadPath;
 
 
-	public DBUpdateTask(MovieDAO dao, String downloadPath) {
+	public DBUpdateTask() {
 		super("update-db");
-		this.dao = dao;
-		this.downloadPath = downloadPath;
+		this.dao = new MovieDAO();
 
 		IGNORED_GENRES.addAll(Arrays.asList(IGNORED_GENRES_ARRAY));
-		currentInitTimestamp = getTimestamp();
+		currentInitTimestamp = Timestamper.getTimestamp();
 	}
 
-	private static void parseRTRatingsToDB(String line, Map<Long, Movie> movies) {
+	private static void parseRTRatingsToDB(String line, Map<String, Movie> movies, Map<Long, String> omdbMap) {
 
 		String[] fields = line.split("\\t");
 		String omdbID = fields[0];
@@ -48,7 +51,7 @@ public class DBUpdateTask extends Task {
 			id = (long) (Math.random() * -1000000);
 		}
 
-		Movie movie = movies.get(id);
+		Movie movie = movies.get(omdbMap.get(id));
 		if (movie == null) return;
 
 		String rating = fields[2];
@@ -96,11 +99,8 @@ public class DBUpdateTask extends Task {
 		movie.setRottenTomatoesConsensus(consensus);
 	}
 
-	private static String getTimestamp() {
-		return new SimpleDateFormat("yyyyMMdd.HHmmss").format(new Date());
-	}
 
-	private void parseOMDBLineToMovie(String line, Map<Long, Movie> movies) {
+	private void parseOMDBLineToMovie(String line, Map<String, Movie> movies, Map<Long, String> omdbMap) {
 		String[] fields = line.split("\\t");
 		if (fields.length == 21 || (fields.length == 22 && fields[21].equalsIgnoreCase("movie"))) {
 			String omdbIDStr = fields[0];
@@ -181,11 +181,9 @@ public class DBUpdateTask extends Task {
 				actors.add(a);
 			}
 
-			Movie movie;
-			if (movies.containsKey(omdbID)) {
-				movie = movies.get(omdbID);
-			} else {
-				movie = new Movie(imdbID, omdbID, title);
+			Movie movie = new Movie(imdbID, omdbID, title);
+			if (movies.containsKey(imdbID)) {
+				movie = movies.get(imdbID);
 			}
 
 			movie.setIndexTitle(QueryParserUtil.escape(title).toLowerCase());
@@ -208,42 +206,35 @@ public class DBUpdateTask extends Task {
 
 			movie.setUpdated(currentInitTimestamp);
 
-			movies.put(omdbID, movie);
+			omdbMap.put(omdbID, imdbID);
+			movies.put(imdbID, movie);
 		}
 	}
 
 	@Override
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
 
-		LOGGER.info("Updating database. Beginning OMDB API file download.");
+		LOGGER.info("Updating database from OMDB export.");
 
-		currentInitTimestamp = getTimestamp();
-
-		File zipTemp = File.createTempFile("omdb-export-", ".zip");
-		OutputStream outputStream = new FileOutputStream(zipTemp);
-
-		URL omdbDownloadURL = new URL(downloadPath);
-		URLConnection omdbConnection = omdbDownloadURL.openConnection();
-		omdbConnection.setRequestProperty("Accept", "application/zip");
-		InputStream input = omdbConnection.getInputStream();
-
-		byte[] buffer = new byte[4096];
-		int n = -1;
-
-		while ((n = input.read(buffer)) != -1) {
-			outputStream.write(buffer, 0, n);
+		File currentZip = new File(BaconConfiguration.getOmdbExportPath());
+		if (!currentZip.exists()) {
+			LOGGER.error("OMDB export file does not exist. Try running the \"download-omdb\" task first.");
+			return;
 		}
-		outputStream.flush();
-		outputStream.close();
 
-		ZipFile omdbZip = new ZipFile(zipTemp);
+		currentInitTimestamp = Timestamper.getTimestamp();
 
-		Map<Long, Movie> movies = new HashMap<>();
+		ZipFile omdbZip = new ZipFile(currentZip);
+
+		Map<String, Movie> movies = new HashMap<>();
+		Map<Long, String> omdbMap = new HashMap<>();
 
 		try {
 			BufferedReader reader = new BufferedReader(
 					new InputStreamReader(
-							omdbZip.getInputStream(omdbZip.getEntry("omdb.txt")), "UTF8"));
+							omdbZip.getInputStream(
+									omdbZip.getEntry(
+											BaconConfiguration.getOmdbMoviesFilename())), "UTF8"));
 
 			//ignore headers
 			String line;
@@ -253,7 +244,7 @@ public class DBUpdateTask extends Task {
 			int numMovies = 0;
 			while ((line = reader.readLine()) != null) {
 
-				parseOMDBLineToMovie(line, movies);
+				parseOMDBLineToMovie(line, movies, omdbMap);
 				numMovies++;
 			}
 			LOGGER.info("Parsed " + numMovies + " total lines.");
@@ -261,37 +252,32 @@ public class DBUpdateTask extends Task {
 
 			reader = new BufferedReader(
 					new InputStreamReader(
-							omdbZip.getInputStream(omdbZip.getEntry("tomatoes.txt")), "UTF8"));
+							omdbZip.getInputStream(
+									omdbZip.getEntry(
+											BaconConfiguration.getOmdbTomatoesFilename())), "UTF8"));
 
 			reader.readLine();
 			LOGGER.info("Tomatoes file reader successfully initialized.");
 
 			int tomatoRatings = 0;
 			while ((line = reader.readLine()) != null) {
-				parseRTRatingsToDB(line, movies);
+				parseRTRatingsToDB(line, movies, omdbMap);
 				tomatoRatings++;
 			}
 			LOGGER.info("Parsed " + tomatoRatings + " RT ratings into movies.");
 
-			for (Map.Entry<Long, Movie> entry : movies.entrySet()) {
-				Movie m = entry.getValue();
-
-				if (m.getRottenTomatoesConsensus() == null)
-					m.setRottenTomatoesConsensus("N/A");
-			}
+			movies.entrySet().stream()
+					.map(Map.Entry::getValue)
+					.filter(m -> m.getRottenTomatoesConsensus() == null)
+					.forEach(m -> m.setRottenTomatoesConsensus("N/A"));
 
 			reader.close();
 
 			LOGGER.info("Writing updated movie info to DB.");
 
-			Iterator<Map.Entry<Long, Movie>> iter = movies.entrySet().iterator();
-			while (iter.hasNext()) {
-				Map.Entry<Long, Movie> entry = iter.next();
-				Movie m = entry.getValue();
-				dao.writeMovie(m);
-				LOGGER.debug("Wrote " + m.getTitle() + " to DB.");
-				iter.remove();
-			}
+			movies.entrySet().stream()
+					.map(Map.Entry::getValue)
+					.forEach(dao::writeMovie);
 
 			LOGGER.info("Finished writing movies to DB.");
 			LOGGER.info("Cleaning up graph.");
@@ -300,9 +286,6 @@ public class DBUpdateTask extends Task {
 			cleaner.cleanGraph();
 
 			LOGGER.info("Done cleaning up graph.");
-
-			zipTemp.delete();
-			LOGGER.info("Deleted temporary zip download.");
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		}

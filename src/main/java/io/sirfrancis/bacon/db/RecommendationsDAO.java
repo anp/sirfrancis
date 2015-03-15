@@ -11,10 +11,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.Recommendation;
 import io.sirfrancis.bacon.core.User;
-import io.sirfrancis.bacon.db.enums.Edges;
-import io.sirfrancis.bacon.db.enums.Indexes;
-import io.sirfrancis.bacon.db.enums.MovieProps;
-import io.sirfrancis.bacon.db.enums.UserProps;
+import io.sirfrancis.bacon.db.enums.*;
 
 import java.util.*;
 
@@ -89,7 +86,7 @@ public class RecommendationsDAO {
 			if (recommendationsUpdated > ratingsUpdated) return getRecommendations(user);
 
 			//clear previous recommendations
-			for (Edge e : userVertex.getEdges(Direction.IN, Edges.RECOMMENDED)) {
+			for (Edge e : userVertex.getEdges(Direction.BOTH, Edges.RECOMMENDED)) {
 				graph.removeEdge(e);
 			}
 
@@ -107,9 +104,11 @@ public class RecommendationsDAO {
 				Vertex likedMovie = e.getVertex(Direction.IN);
 
 				//for each person that is rated implicitly by movie rating
-				String[] personRels = { Edges.ACTED, Edges.DIRECTED, Edges.WROTE };
-				for (String rel : personRels) {
-					Iterable<Vertex> peopleVertices = likedMovie.getVertices(Direction.IN, rel);
+				//String[] personRels = { Edges.ACTED, Edges.DIRECTED, Edges.WROTE };
+				Set<String> people = new HashSet<>();
+
+				//for (String rel : personRels) {
+				Iterable<Vertex> peopleVertices = likedMovie.getVertices(Direction.IN, Edges.ACTED, Edges.DIRECTED, Edges.WROTE);
 
 					//count number of people with this role to decide on score amount
 					int numPeopleOnMovieInRole = 0;
@@ -124,9 +123,15 @@ public class RecommendationsDAO {
 					int itemScore = (topLevelScore * 100) / numPeopleOnMovieInRole;
 
 					for (Vertex likedPerson : peopleVertices) {
+						String name = likedPerson.getProperty(PersonProps.NAME);
+						if (people.contains(name)) {
+							continue;
+						} else {
+							people.add(name);
+						}
 
 						//go through each movie they've worked on
-						for (Vertex toRecMovie : likedPerson.getVertices(Direction.OUT, rel)) {
+						for (Vertex toRecMovie : likedPerson.getVertices(Direction.OUT, Edges.ACTED, Edges.DIRECTED, Edges.WROTE)) {
 							String imdbID = toRecMovie.getProperty(MovieProps.IMDBID);
 
 							//add the score to the map or increment the previous score
@@ -137,7 +142,7 @@ public class RecommendationsDAO {
 							}
 						}
 					}
-				}
+				//}
 
 				String likedIMDBID = likedMovie.getProperty(MovieProps.IMDBID);
 				if (!ignoredMovies.contains(likedIMDBID)) {

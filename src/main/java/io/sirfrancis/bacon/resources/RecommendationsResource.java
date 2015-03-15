@@ -6,7 +6,10 @@ import io.sirfrancis.bacon.core.Recommendation;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.RecommendationsDAO;
 
-import javax.ws.rs.*;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -25,16 +28,9 @@ public class RecommendationsResource {
 
 	@GET
 	@Timed
-	public List<Recommendation> getRecommendations(@Auth User user) {
-		return dao.getRecommendations(user);
-	}
-
-	@POST
-	@Timed
 	public List<Recommendation> buildRecommedations(@PathParam("numReturned") int numRecommendations,
 													@Auth User user) {
-		dao.buildRecommendations(user, numRecommendations);
-		return dao.getRecommendations(user);
+		return dao.buildRecommendations(user, numRecommendations);
 	}
 
 }

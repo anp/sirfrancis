@@ -1,7 +1,9 @@
 package io.sirfrancis.bacon.db;
 
+import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OTransactionException;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
+import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -48,9 +50,7 @@ public class MovieDAO {
 		try {
 			String luceneSearch = rawSearch.replaceAll("[']", "").replaceAll("[^A-Za-z0-9]", " ").toLowerCase();
 
-			String baseQuery = "select from " +
-					Vertices.MOVIE +
-					" where " + MovieProps.INDEXTITLE + " LUCENE ?";// LIMIT " + maxNumberOfResults;
+			String baseQuery = "select from " + Vertices.MOVIE + " where " + MovieProps.INDEXTITLE + " LUCENE ?";// LIMIT " + maxNumberOfResults;
 
 			Iterable<Vertex> results = graph.command(new OCommandSQL(baseQuery)).execute(luceneSearch);
 
@@ -159,9 +159,9 @@ public class MovieDAO {
 					movieVertex = graph.addVertex("class:" + Vertices.MOVIE);
 					movieVertex.setProperty(MovieProps.OMDBID, movie.getOmdbID());
 					movieVertex.setProperty(MovieProps.IMDBID, movie.getImdbID());
-					movieVertex.setProperty(MovieProps.TITLE, movie.getTitle());
 				}
 
+				movieVertex.setProperty(MovieProps.TITLE, movie.getTitle());
 				movieVertex.setProperty(MovieProps.INDEXTITLE, movie.getIndexTitle());
 				movieVertex.setProperty(MovieProps.RUNTIME, movie.getRuntime());
 				movieVertex.setProperty(MovieProps.RELEASED, movie.getReleased());
@@ -211,7 +211,7 @@ public class MovieDAO {
 
 				graph.commit();
 				break;
-			} catch (OTransactionException ote) {
+			} catch (OTransactionException | OConcurrentModificationException ote) {
 				//ignore, will retry
 			}
 		}
@@ -235,7 +235,7 @@ public class MovieDAO {
 
 				graph.commit();
 				break;
-			} catch (OTransactionException ote) {
+			} catch (OTransactionException | OConcurrentModificationException | ORecordDuplicatedException ote) {
 				//ignore, will retry
 			}
 		}
