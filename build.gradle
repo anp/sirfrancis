@@ -6,7 +6,7 @@ plugins {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-version = '0.1-CAPSULE'
+version = '0.2'
 
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
@@ -23,7 +23,7 @@ repositories {
 
 dependencies {
     def dropwizardVersion = '0.8.0'
-    def orientDBVersion = '2.0.4'
+    def orientDBVersion = '2.0.5'
     compile(
             'io.dropwizard:dropwizard-core:' + dropwizardVersion,
             'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
@@ -44,9 +44,18 @@ task capsule(type: FatCapsule) {
     applicationClass mainClassName
 }
 
-def execJarPath = './build/libs/sirfrancis-' + version + '-capsule.jar'
+def artifactName = 'sirfrancis - ' + version + ' - capsule.jar'
+def execJarPath = './build/libs/' + artifactName
 
 task runServer(type: Exec, dependsOn: capsule) {
     //MAKE SURE CONFIG PATH IS CORRECT
-    commandLine('java', '-jar', execJarPath, 'server', 'bacon-local.yml')
+    commandLine('java', '-jar', execJarPath, 'server', 'config.yml')
+}
+
+task copyToServer(type: Exec, dependsOn: capsule) {
+    commandLine('scp', execJarPath, 'azureuser@sirfrancis-db0.cloudapp.net:/opt/sirfrancis/api')
+}
+
+task restartWithNewVersion(type: Exec, dependsOn: copyToServer) {
+    commandLine('ssh', 'azureuser@sirfrancis-db0.cloudapp.net', '"sudo service sirfrancis stop && mv /opt/sirfrancis/api/' + artifactName + ' && sudo service sirfrancis start"')
 }
