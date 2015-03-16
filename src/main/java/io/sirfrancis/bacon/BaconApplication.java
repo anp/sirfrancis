@@ -15,7 +15,6 @@ import io.sirfrancis.bacon.health.DBHealthCheck;
 import io.sirfrancis.bacon.resources.*;
 import io.sirfrancis.bacon.tasks.BackupAndDownloadOMDBExportTask;
 import io.sirfrancis.bacon.tasks.DBUpdateTask;
-import io.sirfrancis.bacon.tasks.SchemaInitTask;
 
 public class BaconApplication extends Application<BaconConfiguration> {
 
@@ -92,8 +91,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 		//db update task
 		environment.admin().addTask(new DBUpdateTask());
-
-		environment.admin().addTask(new SchemaInitTask());
 
 		environment.admin().addTask(new BackupAndDownloadOMDBExportTask());
 
