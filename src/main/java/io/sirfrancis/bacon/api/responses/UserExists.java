@@ -12,7 +12,7 @@ public class UserExists {
 		this.username = username;
 	}
 
-	public boolean isExists() {
+	public boolean exists() {
 		return exists;
 	}
 

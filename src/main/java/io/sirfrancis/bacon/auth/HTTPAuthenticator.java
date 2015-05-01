@@ -11,10 +11,29 @@ import org.slf4j.LoggerFactory;
 
 public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HTTPAuthenticator.class);
+	private UserDAO dao;
+
+	public HTTPAuthenticator(UserDAO dao) {
+		this.dao = dao;
+	}
+
+	public static boolean hashEquals(byte[] first, byte[] second) {
+		if (first == null || second == null)
+			return false;
+
+		if (first.length != second.length)
+			return false;
+
+		for (int i = 0; i < first.length; i++) {
+			if (first[i] != second[i])
+				return false;
+		}
+
+		return true;
+	}
 
 	@Override
 	public Optional<User> authenticate(BasicCredentials creds) throws AuthenticationException {
-		UserDAO dao = new UserDAO();
 
 		String username = creds.getUsername();
 		User user = dao.getUser(username);
@@ -30,19 +49,9 @@ public class HTTPAuthenticator implements Authenticator<BasicCredentials, User> 
 			} else {
 				LOGGER.info("Failed to authenticate " + username);
 			}
+		} else {
+			LOGGER.debug("Failed to locate user " + username);
 		}
 		return returned;
-	}
-
-	public boolean hashEquals(byte[] first, byte[] second) {
-		if (first.length != second.length)
-			return false;
-
-		for (int i = 0; i < first.length; i++) {
-			if (first[i] != second[i])
-				return false;
-		}
-
-		return true;
 	}
 }

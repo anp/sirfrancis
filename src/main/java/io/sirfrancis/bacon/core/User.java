@@ -2,6 +2,7 @@ package io.sirfrancis.bacon.core;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.sirfrancis.bacon.auth.HTTPAuthenticator;
 
 import javax.validation.constraints.NotNull;
 
@@ -63,4 +64,15 @@ public class User {
 		this.salt = salt;
 	}
 
+	public boolean equals(Object other) {
+		if (other instanceof User) {
+			User otherUser = (User) other;
+
+			return username.equals(otherUser.getUsername()) &&
+					HTTPAuthenticator.hashEquals(hash, otherUser.getHash()) &&
+					HTTPAuthenticator.hashEquals(salt, otherUser.getSalt()) &&
+					emailConfirmed == otherUser.isEmailConfirmed();
+		}
+		return false;
+	}
 }
