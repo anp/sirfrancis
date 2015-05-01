@@ -9,14 +9,20 @@ import io.dropwizard.auth.basic.BasicAuthFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.sirfrancis.bacon.auth.HTTPAuthenticator;
+import io.sirfrancis.bacon.auth.SaltedHasher;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.*;
 import io.sirfrancis.bacon.health.DBHealthCheck;
 import io.sirfrancis.bacon.resources.*;
 import io.sirfrancis.bacon.tasks.BackupAndDownloadOMDBExportTask;
 import io.sirfrancis.bacon.tasks.DBUpdateTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.security.NoSuchAlgorithmException;
 
 public class BaconApplication extends Application<BaconConfiguration> {
+	private static Logger log = LoggerFactory.getLogger(BaconApplication.class);
 
 	public static void main(String[] args) throws Exception {
 		new BaconApplication().run(args);
@@ -35,6 +41,13 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 	@Override
 	public void run(BaconConfiguration config, Environment environment) {
+		try {
+			SaltedHasher.setSecretKeyFactory();
+		} catch (NoSuchAlgorithmException nsae) {
+			log.error("Unable to initialize password hasher -- default algorithm not found. Exiting.");
+			throw new RuntimeException("Exiting -- password hashing algorithm unavailable.");
+		}
+
 		environment.lifecycle().manage(new GraphConnection());
 		//user creation/deletion api resources
 		UserDAO userDAO = new UserDAO();
@@ -77,7 +90,7 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 		//authentication
 		MetricRegistry metricRegistry = new MetricRegistry();
-		HTTPAuthenticator httpAuthenticator = new HTTPAuthenticator();
+		HTTPAuthenticator httpAuthenticator = new HTTPAuthenticator(new UserDAO());
 		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.from(config.getAuthenticationCachePolicy());
 
 		BasicAuthFactory<User> authFactory = new BasicAuthFactory<>(

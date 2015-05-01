@@ -1,5 +1,8 @@
 package io.sirfrancis.bacon.auth;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
@@ -10,16 +13,13 @@ import java.security.spec.KeySpec;
  * Created by Adam on 1/19/2015.
  */
 public class SaltedHasher {
+	private static Logger log = LoggerFactory.getLogger(SaltedHasher.class);
 	private static SecretKeyFactory f = null;
 	private byte[] salt;
 	private byte[] hash;
 
 	public SaltedHasher(String password, byte[] salt) {
 		this.salt = salt;
-
-		if (f == null) {
-			setSecretKeyFactory();
-		}
 
 		KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, 65536, 128);
 
@@ -30,13 +30,8 @@ public class SaltedHasher {
 		}
 	}
 
-	private void setSecretKeyFactory() {
-		try {
-			f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-			return;
-		} catch (NoSuchAlgorithmException nsae) {
-			System.err.println("NO SHA512 PBKDF2 algo.");
-		}
+	public static void setSecretKeyFactory() throws NoSuchAlgorithmException {
+		f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
 	}
 
 	public byte[] getSalt() {
