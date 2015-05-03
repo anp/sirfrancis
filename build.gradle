@@ -1,7 +1,8 @@
 plugins {
     id 'java'
     id 'application'
-    id "us.kirchmeier.capsule" version "0.10.0"
+    id "us.kirchmeier.capsule" version "1.0-rc1"
+    id 'jacoco'
 }
 
 sourceCompatibility = 1.8
@@ -21,6 +22,13 @@ repositories {
     mavenLocal()
 }
 
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integration-test/java')
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
 dependencies {
     def dropwizardVersion = '0.8.0'
     def orientDBVersion = '2.1-rc1'
@@ -33,8 +41,15 @@ dependencies {
     )
     testCompile (
             'junit:junit:4.11',
-            'org.mockito:mockito-core:2.+'
+            'org.mockito:mockito-core:2.+',
+            'org.powermock:powermock-module-junit4:1.6.2',
+            'org.powermock:powermock-api-mockito:1.6.2'
     )
+    integrationTestCompile 'commons-collections:commons-collections:3.2'
+    integrationTestCompile sourceSets.main.output
+    integrationTestCompile configurations.testCompile
+    integrationTestCompile sourceSets.test.output
+    integrationTestRuntime configurations.testRuntime
 }
 
 task wrapper(type: Wrapper) {
@@ -46,17 +61,29 @@ task capsule(type: FatCapsule) {
 }
 
 def artifactName = 'sirfrancis - ' + version + ' - capsule.jar'
-def execJarPath = './build/libs/' + artifactName
+def execJarPath = 'build/libs/' + artifactName
 
 task runServer(type: Exec, dependsOn: capsule) {
     //MAKE SURE CONFIG PATH IS CORRECT
     commandLine('java', '-jar', execJarPath, 'server', 'config.yml')
 }
 
-task copyToServer(type: Exec, dependsOn: capsule) {
-    commandLine('scp', execJarPath, 'azureuser@sirfrancis-db0.cloudapp.net:/opt/sirfrancis/api')
+test {
+    afterTest { desc, result ->
+        println "Executing unit test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
 }
 
-task restartWithNewVersion(type: Exec, dependsOn: copyToServer) {
-    commandLine('ssh', 'azureuser@sirfrancis-db0.cloudapp.net', '"sudo service sirfrancis stop && mv /opt/sirfrancis/api/' + artifactName + ' && sudo service sirfrancis start"')
+task integrationTest(type: Test, dependsOn: capsule) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    systemProperties['jar.path'] = execJarPath
+
+    afterTest { desc, result ->
+        println "Executing integration test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+}
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
 }

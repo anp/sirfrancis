@@ -188,8 +188,6 @@ public class GraphConnection implements Managed {
 		LOGGER.info("OrientDB Graph connection pool started at " + dbFile.getAbsolutePath() + ".");
 
 		initSchemaTypes();
-
-		new QuizDAO().initQuiz();
 	}
 
 	public void stop() throws Exception {

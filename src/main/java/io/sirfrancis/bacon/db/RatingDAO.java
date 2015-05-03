@@ -29,8 +29,6 @@ public class RatingDAO {
 
 	public Rating addRating(User user, String imdbID, int rating) {
 		OrientGraph graph = GraphConnection.getGraph();
-		if (rating < 0 || rating > 10)
-			throw new IllegalArgumentException("Invalid number for rating.");
 
 		Rating addedRating = null;
 

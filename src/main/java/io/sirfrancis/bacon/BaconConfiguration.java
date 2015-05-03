@@ -2,6 +2,7 @@ package io.sirfrancis.bacon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.cache.CacheBuilderSpec;
+import com.sendgrid.SendGrid;
 import io.dropwizard.Configuration;
 
 import javax.validation.constraints.NotNull;
@@ -192,6 +193,10 @@ public class BaconConfiguration extends Configuration {
 	@JsonProperty("omdb-download-url")
 	public void setOMDBDownloadURL(String omdbDownloadURL) {
 		BaconConfiguration.omdbDownloadURL = omdbDownloadURL;
+	}
+
+	public static SendGrid buildSendGrid() {
+		return new SendGrid(sendgridUsername, sendgridPassword);
 	}
 
 	@JsonProperty("authenticationCachePolicy")

@@ -6,7 +6,6 @@ package io.sirfrancis.bacon.db.enums;
 public class UserProps {
 	public static final String USERNAME = "username";
 	public static final String EMAIL = "email";
-	public static final String PASSWORD = "password";
 	public static final String SALT = "salt";
 	public static final String HASH = "hash";
 	public static final String RAT_UPDATED = "ratingsUpdated";
