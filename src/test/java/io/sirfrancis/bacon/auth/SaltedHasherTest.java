@@ -22,8 +22,10 @@ public class SaltedHasherTest {
 		SaltedHasher salter = new SaltedHasher("firstTestPassword", salt);
 
 		//the hasher default to all 0's for the hash if the keyspec is bad
+		boolean allZeroes = true;
 		for (byte b : salter.getHash()) {
-			assertFalse(b == 0);
+			if (b != 0) allZeroes = false;
 		}
+		assertFalse(allZeroes);
 	}
 }

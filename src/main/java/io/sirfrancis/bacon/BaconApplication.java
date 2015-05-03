@@ -35,7 +35,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 	@Override
 	public void initialize(final Bootstrap<BaconConfiguration> bootstrap) {
-		//bootstrap.addBundle(new OrientServerBundle<>(getConfigurationClass()));
 
 	}
 
@@ -82,11 +81,6 @@ public class BaconApplication extends Application<BaconConfiguration> {
 
 		environment.jersey().register(new RecommendationsResource(recommendationsDAO));
 
-		//quiz resource
-		QuizDAO quizDAO = new QuizDAO();
-
-		environment.jersey().register(new QuizResource(quizDAO));
-
 
 		//authentication
 		MetricRegistry metricRegistry = new MetricRegistry();
@@ -106,8 +100,5 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		environment.admin().addTask(new DBUpdateTask());
 
 		environment.admin().addTask(new BackupAndDownloadOMDBExportTask());
-
-		//while (GraphConnection.factoryIsNull()) {}
-		//quizDAO.initQuiz();
 	}
 }

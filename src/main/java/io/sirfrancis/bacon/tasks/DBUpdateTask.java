@@ -6,7 +6,6 @@ import io.sirfrancis.bacon.BaconConfiguration;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.db.GraphCleaner;
 import io.sirfrancis.bacon.db.MovieDAO;
-import io.sirfrancis.bacon.db.QuizDAO;
 import io.sirfrancis.bacon.util.Timestamper;
 import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
 import org.slf4j.Logger;
@@ -287,8 +286,6 @@ public class DBUpdateTask extends Task {
 			cleaner.cleanGraph();
 
 			LOGGER.info("Done cleaning up graph.");
-
-			new QuizDAO().initQuiz();
 		} catch (Exception e) {
 			e.printStackTrace(System.err);
 		}

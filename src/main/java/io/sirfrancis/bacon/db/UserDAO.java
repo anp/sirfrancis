@@ -11,49 +11,29 @@ import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.enums.Indexes;
 import io.sirfrancis.bacon.db.enums.UserProps;
 import io.sirfrancis.bacon.db.enums.Vertices;
-import io.sirfrancis.bacon.mailers.ChangePasswordMailer;
-import io.sirfrancis.bacon.mailers.NewUserMailer;
-import io.sirfrancis.bacon.util.StringRandomizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 
 public class UserDAO {
-	private static final Logger LOGGER = LoggerFactory.getLogger(UserDAO.class);
-
-	private int maxRetries;
+	private static final Logger log = LoggerFactory.getLogger(UserDAO.class);
 	private SecureRandom random;
-	private StringRandomizer randomizer;
-	private NewUserMailer newUserMailer;
-	private ChangePasswordMailer changePasswordMailer;
+
 
 	public UserDAO() {
-		maxRetries = BaconConfiguration.getMaxRetries();
-
-		String sendgridUsername = BaconConfiguration.getSendgridUsername();
-		String sendgridPassword = BaconConfiguration.getSendgridPassword();
-
 		random = new SecureRandom();
-		randomizer = new StringRandomizer(30);
-		newUserMailer = new NewUserMailer(sendgridUsername,
-				sendgridPassword,
-				BaconConfiguration.getAccountCreationConfirmURL());
-
-		changePasswordMailer = new ChangePasswordMailer(sendgridUsername, sendgridPassword,
-				BaconConfiguration.getPasswordChangeConfirmURL());
 	}
 
-	public Optional<User> createUser(String email, String password) {
+	public Optional<User> createUser(String email, String password, String confirmationKey) {
 		OrientGraph graph = GraphConnection.getGraph();
 		Optional<User> returned = Optional.absent();
 
-		for (int i = 0; i < maxRetries; i++) {
+		for (int i = 0; i < BaconConfiguration.getMaxRetries(); i++) {
 			try {
 				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
 				if (userVertex != null) break;
 
-				if (password.length() < 6) throw new IllegalArgumentException("Password too short.");
 				byte[] salt = new byte[16];
 				random.nextBytes(salt);
 
@@ -66,7 +46,6 @@ public class UserDAO {
 				userVertex.setProperty(UserProps.SALT, hasher.getSalt());
 				userVertex.setProperty(UserProps.HASH, hasher.getHash());
 
-				String confirmationKey = randomizer.nextString();
 				userVertex.setProperty(UserProps.EMAIL_CONFIRMED, false);
 				userVertex.setProperty(UserProps.EMAIL_CONF_KEY, confirmationKey);
 
@@ -74,14 +53,11 @@ public class UserDAO {
 				userVertex.setProperty(UserProps.RAT_UPDATED, timestamp);
 				userVertex.setProperty(UserProps.REC_UPDATED, timestamp);
 
-
-				newUserMailer.sendAccountCreationConfirmationEmail(email, confirmationKey);
-
 				User user = buildUser(userVertex);
 				returned = Optional.of(user);
 				graph.commit();
 
-				LOGGER.info("Created unconfirmed account for " + email);
+				log.info("Created unconfirmed account for " + email);
 				break;
 			} catch (OTransactionException ote) {
 			}
@@ -95,7 +71,7 @@ public class UserDAO {
 		OrientGraph graph = GraphConnection.getGraph();
 		boolean deleted = false;
 
-		for (int i = 0; i < maxRetries; i++) {
+		for (int i = 0; i < BaconConfiguration.getMaxRetries(); i++) {
 			try {
 				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, user.getUsername());
 				if (userVertex != null) {
@@ -104,7 +80,7 @@ public class UserDAO {
 				}
 
 				graph.commit();
-				LOGGER.info("Successfully deleted account of " + user.getUsername());
+				log.info("Successfully deleted account of " + user.getUsername());
 				break;
 			} catch (OTransactionException ote) {
 			}
@@ -120,11 +96,11 @@ public class UserDAO {
 		try {
 			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, username);
 			if (userVertex != null) {
-				LOGGER.debug("Found account for " + username);
+				log.debug("Found account for " + username);
 				boolean confirmed = userVertex.getProperty(UserProps.EMAIL_CONFIRMED);
 
 				if (confirmed) {
-					LOGGER.debug("Account is confirmed by email for " + username);
+					log.debug("Account is confirmed by email for " + username);
 					returnedUser = buildUser(userVertex);
 				}
 			}
@@ -139,7 +115,7 @@ public class UserDAO {
 		OrientGraph graph = GraphConnection.getGraph();
 		User confirmedUser = null;
 
-		for (int i = 0; i < maxRetries; i++) {
+		for (int i = 0; i < BaconConfiguration.getMaxRetries(); i++) {
 			try {
 				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
 				String storedConfirmKey = userVertex.getProperty(UserProps.EMAIL_CONF_KEY);
@@ -152,7 +128,7 @@ public class UserDAO {
 
 				confirmedUser = buildUser(userVertex);
 
-				LOGGER.info("Successfully confirmed user account for " + email);
+				log.info("Successfully confirmed user account for " + email);
 				break;
 			} catch (OTransactionException ote) {
 			}
@@ -162,18 +138,16 @@ public class UserDAO {
 		return confirmedUser;
 	}
 
-	public User forgotPassword(String email) {
+	public User forgotPassword(String email, String confirmationKey) {
 		OrientGraph graph = GraphConnection.getGraph();
 		User user = null;
 		try {
 			Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);
 
-			String confirmationKey = randomizer.nextString();
 			userVertex.setProperty(UserProps.PASS_CHANGE_KEY, confirmationKey);
 
 			graph.commit();
 			user = buildUser(userVertex);
-			changePasswordMailer.sendPasswordChangeConfirmationEmail(email, confirmationKey);
 		} finally {
 			graph.shutdown();
 		}
@@ -185,7 +159,7 @@ public class UserDAO {
 		OrientGraph graph = GraphConnection.getGraph();
 		User user = null;
 
-		for (int i = 0; i < maxRetries; i++) {
+		for (int i = 0; i < BaconConfiguration.getMaxRetries(); i++) {
 			try {
 
 				Vertex userVertex = graph.getVertexByKey(Indexes.USER_USERNAME, email);

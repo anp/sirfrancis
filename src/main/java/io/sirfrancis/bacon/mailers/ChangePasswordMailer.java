@@ -8,11 +8,8 @@ public class ChangePasswordMailer {
 	private SendGrid sender;
 	private String confirmURLFormat;
 
-	public ChangePasswordMailer(String sendGridUserName,
-								String sendGridPassword,
-								String confirmURLFormat) {
-
-		sender = new SendGrid(sendGridUserName, sendGridPassword);
+	public ChangePasswordMailer(SendGrid sender, String confirmURLFormat) {
+		this.sender = sender;
 		this.confirmURLFormat = confirmURLFormat;
 	}
 

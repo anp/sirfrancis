@@ -6,6 +6,8 @@ import io.sirfrancis.bacon.db.UserDAO;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.security.SecureRandom;
 
@@ -18,7 +20,7 @@ import static org.mockito.Mockito.when;
  * Created by adam on 4/30/15.
  */
 public class HTTPAuthenticatorTest {
-
+	Logger log = LoggerFactory.getLogger(HTTPAuthenticatorTest.class);
 	SecureRandom random;
 
 	@Before
@@ -50,17 +52,17 @@ public class HTTPAuthenticatorTest {
 		}
 
 		//null array references should always be false
-		assertFalse(auth.hashEquals(null, null));
-		assertFalse(auth.hashEquals(null, equalFirst));
-		assertFalse(auth.hashEquals(equalSecond, null));
+		assertFalse(HTTPAuthenticator.hashEquals(null, null));
+		assertFalse(HTTPAuthenticator.hashEquals(null, equalFirst));
+		assertFalse(HTTPAuthenticator.hashEquals(equalSecond, null));
 
 		//different lengths should always be false
-		assertFalse(auth.hashEquals(equalFirst, unequalSecond));
+		assertFalse(HTTPAuthenticator.hashEquals(equalFirst, unequalSecond));
 
 		//different contents should always be false
-		assertFalse(auth.hashEquals(unequalFirst, unequalSecond));
+		assertFalse(HTTPAuthenticator.hashEquals(unequalFirst, unequalSecond));
 
-		assertTrue(auth.hashEquals(equalFirst, equalSecond));
+		assertTrue(HTTPAuthenticator.hashEquals(equalFirst, equalSecond));
 	}
 
 	@Test
@@ -77,6 +79,7 @@ public class HTTPAuthenticatorTest {
 
 		when(mockDAO.getUser(credsOne.getUsername())).thenReturn(one);
 
+		log.debug("This authentication should be successful:");
 		assertTrue(one.equals(auth.authenticate(credsOne).get()));
 
 		//test a failed authentication for a user that exists
@@ -84,12 +87,14 @@ public class HTTPAuthenticatorTest {
 		User two = new User(credsTwo.getUsername(), salt, new SaltedHasher("differentPassword", salt).getHash());
 		when(mockDAO.getUser(credsTwo.getUsername())).thenReturn(two);
 
+		log.debug("This authentication should be unsuccesful (wrong password):");
 		assertFalse(auth.authenticate(credsTwo).isPresent());
 
 		//test a failed authentication for a user that doesn't exist
 		BasicCredentials credsThree = new BasicCredentials("nonExistantUser", "doesn'tMatter");
 		when(mockDAO.getUser(credsThree.getUsername())).thenReturn(null);
 
+		log.debug("This authentication should be unsuccessul (no such user):");
 		assertFalse(auth.authenticate(credsThree).isPresent());
 
 	}
