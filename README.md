@@ -1,6 +1,8 @@
 sirfrancis
 ==========
 
+*Note to employers: If you're serious I'm more than willing to make the private repo's commit history available, but as it was a private repo I was sloppy about keeping credentials out of there, so I'm not making it public.*
+
 SirFrancis is my experimental project to create a lightweight movie-recommendation engine. This repository is for the pseudo-RESTful backend.
 
 Originally I had intended to deploy this as a side project and try to find ways to monetize it, but now I'm just interested in sharing what a simple Dropwizard + OrientDB app might look like.
