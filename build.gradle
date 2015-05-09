@@ -2,7 +2,6 @@ plugins {
     id 'java'
     id 'application'
     id "us.kirchmeier.capsule" version "1.0-rc1"
-    id 'jacoco'
 }
 
 sourceCompatibility = 1.8
@@ -58,10 +57,14 @@ task wrapper(type: Wrapper) {
 
 task capsule(type: FatCapsule) {
     applicationClass mainClassName
+
+    capsuleManifest {
+        minJavaVersion = '1.8.0'
+    }
 }
 
-def artifactName = 'sirfrancis - ' + version + ' - capsule.jar'
-def execJarPath = 'build/libs/' + artifactName
+def artifactName = 'sirfrancis-' + version + '-capsule.jar'
+def execJarPath = libsDir.getCanonicalPath() + File.separator + artifactName
 
 task runServer(type: Exec, dependsOn: capsule) {
     //MAKE SURE CONFIG PATH IS CORRECT

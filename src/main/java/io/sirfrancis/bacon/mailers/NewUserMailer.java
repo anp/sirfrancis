@@ -19,6 +19,8 @@ public class NewUserMailer {
 		String confirmURL = confirmURLFormat.replace("%e", email).replace("%k", confirmKey);
 
 		message.addTo(email);
+
+		//TODO make this a configuration value
 		message.setFrom("admin@sirfrancis.io");
 		message.setSubject("New SirFrancis Account Confirmation");
 		message.setText(
