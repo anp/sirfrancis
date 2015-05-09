@@ -1,6 +1,8 @@
 sirfrancis
 ==========
 
+*NOTE: Some files (notably build.gradle) have no commit history, they were cleaned of private data using [bfg-repo-cleaner](https://rtyley.github.io/bfg-repo-cleaner/). This repository started out private, and I decided to share the code, so I had to remove several files from the history before making it public.*
+
 SirFrancis is my project to create a lightweight movie-recommendation engine. The data is parsed into the database by an automated reproducible process which downloads bulk exports from [The OMDB API](http://www.omdbapi.com/). This process takes atomic movie listings, deduplicates actor, director and writer entries, and connects them all in an OrientDB graph database which allows for faster graph traversals than in a traditional relational database.
 
 Originally I had intended to deploy this as a side project and try to find ways to monetize it, but now I'm just interested in sharing what a simple Dropwizard + OrientDB app might look like.
