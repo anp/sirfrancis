@@ -3,9 +3,9 @@ sirfrancis
 
 *NOTE: Some files (notably build.gradle) have no commit history, they were cleaned of private data using [bfg-repo-cleaner](https://rtyley.github.io/bfg-repo-cleaner/). This repository started out private, and I decided to share the code, so I had to remove several files from the history before making it public.*
 
-SirFrancis is my project to create a lightweight movie-recommendation engine. The data is parsed into the database by an automated reproducible process which downloads bulk exports from [The OMDB API](http://www.omdbapi.com/). This process takes atomic movie listings, deduplicates actor, director and writer entries, and connects them all in an OrientDB graph database which allows for faster graph traversals than in a traditional relational database.
+SirFrancis is my project to create a lightweight movie-recommendation engine. The data is parsed into the database by an automated reproducible process which downloads bulk exports from [The OMDB API](http://www.omdbapi.com/). This process takes atomic movie listings, deduplicates actor, director and writer entries, and connects them all in an OrientDB graph database which allows for faster graph traversals than in a traditional relational database. Users can then add ratings for movies they like (or don't) and these are then filtered against the overall movie graph to generate potential recommendations based on a process similar to collaborative filtering. However, no user data is required to bootstrap these recommendations, as in traditional collaborative filtering processes. This recommendation process is based on the structure of the graph itself, as opposed to preferences expressed by other users.
 
-Originally I had intended to deploy this as a side project and try to find ways to monetize it, but now I'm just interested in sharing what a simple Dropwizard + OrientDB app might look like.
+Originally I had intended to deploy this as a side project and try to find ways to monetize it, but now I'm just interested in sharing what a Dropwizard + OrientDB app might look like. I intend to eventually complement this back-end work with a front-end, but for now SirFrancis can only serve data over HTTP requests.
 
 SirFrancis' backend is built on Java 8 and Gradle using the following technologies:
 
@@ -25,13 +25,21 @@ If you'd like to try it out:
   * `sendgrid-username`: Your SendGrid password.
 3. Further edit `config.yml.example` to match your environment. Note that `config.yml.example` is coded with Linux paths by default. Whatever path you choose, make sure it's owned by the account you run Java with. 
 4. Rename `config.yml.example` to `config.yml` and leave it in the project root.
-5. Execute `gradle runServer`, this will build the fat JAR and run the server with `config.yml`.
+5. Ensure that port 8081 is firewalled. Dropwizard by default accepts unauthenticated admin requests over this port.
+6. Execute `gradle runServer`, this will build the fat JAR and run the server with `config.yml`.
 
 ##Using SirFrancis
 
-There are a number of server-side administrative URL endpoints for updating the database, running healthchecks, etc. See the initial console output when running SirFrancis for more information.
+###Admin HTTP endpoints
 
-These are the client-facing URL endpoints to use. They mostly require basic HTTP auth headers. I run SirFrancis behind an SSL-terminating nginx proxy, so the plaintext auth is always over TLS. All of these endpoints are listed assuming that you'll prefix them with the URL of the host.
+There are a number of server-side administrative URL endpoints for updating the database, running healthchecks, etc. Dropwizard listens for POST requests to these endpoints on port 8081 by default.
+
+* `POST    /tasks/download-omdb` will download the most up-to-date monthly OMDB database dump, and store it in the directory configured in `config.yml`. It will also back up any previous database dump that may have been "current" previously.
+* `POST    /tasks/update-db` will take the most recent database dump in the directory configured in `config.yml`, and will parse that to either bootstrap or update the database. This operation is more-or-less idempotent, and can be run multiple times. After parsing the database dump, this process will then clean the graph, removing out of date movies (those that are no longer contained in the dump files), and deleting any orphaned nodes (movies that have no actors, directors, or writers).
+
+###Client HTTP endpoints
+
+These are the client-facing URL endpoints to use, and are by default listened to on port 8080. They mostly require basic HTTP auth headers. I run SirFrancis behind an SSL-terminating nginx proxy, so the plaintext auth is always over TLS. All of these endpoints are listed assuming that you'll prefix them with the URL of the host.
 
 ####To create a new account:
 

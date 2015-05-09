@@ -32,8 +32,8 @@ public class GraphCleaner {
 		OrientGraph graph = GraphConnection.getGraph();
 		graph.declareIntent(new OIntentMassiveRead());
 
-		Vertex naVertex = graph.getVertexByKey(Indexes.PERSON_NAME, "N/A");
-		if (naVertex != null) graph.removeVertex(naVertex);
+        Vertex naVertex = graph.getVertexByKey(Indexes.PERSON_NAME, "null");
+        if (naVertex != null) graph.removeVertex(naVertex);
 
 		List<Vertex> outOfDate = new ArrayList<>();
 
