@@ -1,0 +1,92 @@
+plugins {
+    id 'java'
+    id 'application'
+    id "us.kirchmeier.capsule" version "1.0-rc1"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = '0.2'
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+//fill this out and uncomment
+mainClassName = 'io.sirfrancis.bacon.BaconApplication'
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+    mavenLocal()
+}
+
+sourceSets {
+    integrationTest {
+        java.srcDir file('src/integration-test/java')
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+
+dependencies {
+    def dropwizardVersion = '0.8.0'
+    def orientDBVersion = '2.1-rc1'
+    compile(
+            'io.dropwizard:dropwizard-core:' + dropwizardVersion,
+            'io.dropwizard:dropwizard-auth:' + dropwizardVersion,
+            'com.orientechnologies:orientdb-graphdb:' + orientDBVersion,
+            'com.orientechnologies:orientdb-lucene:' + orientDBVersion,
+            'com.sendgrid:sendgrid-java:2.0.0'
+    )
+    testCompile (
+            'junit:junit:4.11',
+            'org.mockito:mockito-core:2.+',
+            'org.powermock:powermock-module-junit4:1.6.2',
+            'org.powermock:powermock-api-mockito:1.6.2'
+    )
+    integrationTestCompile 'commons-collections:commons-collections:3.2'
+    integrationTestCompile sourceSets.main.output
+    integrationTestCompile configurations.testCompile
+    integrationTestCompile sourceSets.test.output
+    integrationTestRuntime configurations.testRuntime
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.2.1'
+}
+
+task capsule(type: FatCapsule) {
+    applicationClass mainClassName
+
+    capsuleManifest {
+        minJavaVersion = '1.8.0'
+    }
+}
+
+def artifactName = 'sirfrancis-' + version + '-capsule.jar'
+def execJarPath = libsDir.getCanonicalPath() + File.separator + artifactName
+
+task runServer(type: Exec, dependsOn: capsule) {
+    //MAKE SURE CONFIG PATH IS CORRECT
+    commandLine('java', '-jar', execJarPath, 'server', 'config.yml')
+}
+
+test {
+    afterTest { desc, result ->
+        println "Executing unit test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+}
+
+task integrationTest(type: Test, dependsOn: capsule) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    systemProperties['jar.path'] = execJarPath
+
+    afterTest { desc, result ->
+        println "Executing integration test ${desc.name} [${desc.className}] with result: ${result.resultType}"
+    }
+}
+
+tasks.withType(Test) {
+    reports.html.destination = file("${reporting.baseDir}/${name}")
+}

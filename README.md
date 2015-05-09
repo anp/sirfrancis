@@ -1,17 +1,15 @@
 sirfrancis
 ==========
 
-*Note to employers: If you're serious I'm more than willing to make the private repo's commit history available, but as it was a private repo I was sloppy about keeping credentials out of there, so I'm not making it public.*
-
-SirFrancis is my experimental project to create a lightweight movie-recommendation engine. This repository is for the pseudo-RESTful backend.
+SirFrancis is my project to create a lightweight movie-recommendation engine. The data is parsed into the database by an automated reproducible process which downloads bulk exports from [The OMDB API](http://www.omdbapi.com/). This process takes atomic movie listings, deduplicates actor, director and writer entries, and connects them all in an OrientDB graph database which allows for faster graph traversals than in a traditional relational database.
 
 Originally I had intended to deploy this as a side project and try to find ways to monetize it, but now I'm just interested in sharing what a simple Dropwizard + OrientDB app might look like.
 
-SirFrancis' backend is built on Java 8, Gradle, and JUnit using the following technologies:
+SirFrancis' backend is built on Java 8 and Gradle using the following technologies:
 
-* Dropwizard 0.8.0 (http://www.dropwizard.io/)
-* OrientDB 2.1 (http://orientdb.com/docs/last/)
-* SendGrid (https://sendgrid.com/)
+* [Dropwizard 0.8.0](http://www.dropwizard.io/)
+* [OrientDB 2.1](http://orientdb.com/docs/last/)
+* [SendGrid](https://sendgrid.com/)
 
 ##Running SirFrancis
 
@@ -24,12 +22,14 @@ If you'd like to try it out:
   * `sendgrid-username`: Your SendGrid username. SendGrid is apparently in the process of changing to key-based auth, but this works for now.
   * `sendgrid-username`: Your SendGrid password.
 3. Further edit `config.yml.example` to match your environment. Note that `config.yml.example` is coded with Linux paths by default. Whatever path you choose, make sure it's owned by the account you run Java with. 
-4. Rename `config.yml.example` to `config.yml`
+4. Rename `config.yml.example` to `config.yml` and leave it in the project root.
 5. Execute `gradle runServer`, this will build the fat JAR and run the server with `config.yml`.
 
 ##Using SirFrancis
 
-These are the URL endpoints to use. They mostly require basic HTTP auth headers. I run SirFrancis behind an SSL-terminating nginx proxy, so the plaintext auth is always over TLS. All of these endpoints are listed assuming that you'll prefix them with the URL of the host.
+There are a number of server-side administrative URL endpoints for updating the database, running healthchecks, etc. See the initial console output when running SirFrancis for more information.
+
+These are the client-facing URL endpoints to use. They mostly require basic HTTP auth headers. I run SirFrancis behind an SSL-terminating nginx proxy, so the plaintext auth is always over TLS. All of these endpoints are listed assuming that you'll prefix them with the URL of the host.
 
 ####To create a new account:
 
