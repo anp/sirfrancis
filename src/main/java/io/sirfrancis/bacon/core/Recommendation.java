@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 /**
  * Created by adam on 1/26/15.
  */
-public class Recommendation {
+public class Recommendation implements Comparable<Recommendation>{
 	@NotNull
 	private Movie movie;
 
@@ -37,5 +37,23 @@ public class Recommendation {
 	@JsonProperty
 	public void setScore(int score) {
 		this.score = score;
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Recommendation) {
+			return movie.equals(((Recommendation) other).getMovie());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return movie.hashCode();
+	}
+
+	@Override
+	public int compareTo(Recommendation other) {
+		return score - other.getScore();
 	}
 }

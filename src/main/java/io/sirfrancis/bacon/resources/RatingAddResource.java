@@ -28,6 +28,9 @@ public class RatingAddResource {
 	@POST
 	@Timed
 	public Rating addRating(@Auth User user, @PathParam("imdbID") String imdbID, @PathParam("rating") int rating) {
+		if (rating < 0 || rating > 10)
+			throw new IllegalArgumentException("Invalid number for rating.");
+
 		return dao.addRating(user, imdbID, rating);
 	}
 }

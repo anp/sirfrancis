@@ -2,6 +2,7 @@ package io.sirfrancis.bacon.resources;
 
 import com.codahale.metrics.annotation.Timed;
 import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.caching.CacheControl;
 import io.sirfrancis.bacon.core.Movie;
 import io.sirfrancis.bacon.core.User;
 import io.sirfrancis.bacon.db.MovieDAO;
@@ -12,6 +13,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by adam on 1/24/15.
@@ -29,6 +31,7 @@ public class MovieSearchResource {
 
 	@GET
 	@Timed
+	@CacheControl(maxAge = 6, maxAgeUnit = TimeUnit.HOURS)
 	public List<Movie> searchMovies(@PathParam("query") String query,
 									@PathParam("numResults") int numResults,
 									@Auth User user) {

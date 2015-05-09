@@ -3,7 +3,7 @@ package io.sirfrancis.bacon.util;
 import java.security.SecureRandom;
 
 public class StringRandomizer {
-	SecureRandom random = new SecureRandom();
+	private static SecureRandom random = new SecureRandom();
 
 	private char[] symbols;
 	private char[] buf;
