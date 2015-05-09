@@ -79,7 +79,7 @@ public class BaconApplication extends Application<BaconConfiguration> {
 		//recommendations resource
 		RecommendationsDAO recommendationsDAO = new RecommendationsDAO();
 
-		environment.jersey().register(new RecommendationsResource(recommendationsDAO));
+		environment.jersey().register(new RecommendationsResource(recommendationsDAO, ratingDAO));
 
 
 		//authentication

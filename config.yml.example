@@ -1,0 +1,50 @@
+# This is an example SirFrancis config file.
+#
+
+# this is arbitrary if storing locally, need rw perms
+# remote databases not currently enabled
+orient-conn-string: /opt/bacon/database/
+orient-username: admin
+orient-password: admin
+
+# connection pool size
+db-pool-min: 20
+db-pool-max: 100
+
+# MVCC retry limit
+max-db-retries: 10
+
+# info for the omdb info
+omdb-export-path: /opt/bacon/databases/omdb/omdb.zip
+omdb-movies-filename: omdbMovies.txt
+omdb-tomatoes-filename: tomatoes.txt
+omdb-poster-url: http://img.omdbapi.com/?i=%i&apikey=%k
+
+# both of these are received after donating to OMDB
+omdb-api-key: your-api-key-here
+omdb-download-url: http://beforethecode.com/projects/omdb/download.aspx?e=YOUR-EMAIL-HERE&tsv=movies
+
+
+# URL templates for user emails
+# %e for email %k for confirmkey
+account-creation-confirm-url: http://localhost:8080/user/create/confirm/%e/%k/
+
+# pre front-end, this needs to be POSTed
+# this would need to be replaced with a reset password url
+password-change-confirm-url: http://localhost:8080/user/password/change/%e/__insert_password_here__/%k/
+
+# default auth cache policy
+authenticationCachePolicy: maximumSize=10000, expireAfterAccess=10m
+
+# sendgrid info -- account required
+sendgrid-username: insert-your-SG-user-here
+sendgrid-password: insert-your-SG-pass-here
+
+# logging
+logging:
+  level: INFO
+
+  appenders:
+    - type: console
+      threshold: INFO
+      target: stderr

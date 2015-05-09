@@ -25,6 +25,9 @@ public class BackupAndDownloadOMDBExportTask extends Task {
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
 		File currentZip = new File(BaconConfiguration.getOmdbExportPath());
 
+		//make the path to the specified directory if it doesn't exist
+		currentZip.getParentFile().mkdirs();
+
 		if (currentZip.exists()) {
 			if (!currentZip.renameTo(new File(currentZip.getAbsolutePath() + "." + Timestamper.getTimestamp()))) {
 				LOGGER.error("Unable to move existing OMDB export.");

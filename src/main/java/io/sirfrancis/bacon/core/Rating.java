@@ -38,4 +38,17 @@ public class Rating {
 	public void setRating(int rating) {
 		this.rating = rating;
 	}
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof Rating) {
+			return movie.equals(((Rating) other).getMovie());
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return movie.hashCode();
+	}
 }
