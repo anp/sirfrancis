@@ -11,7 +11,7 @@ SirFrancis' backend is built on Java 8, Gradle, and JUnit using the following te
 * OrientDB 2.1 (http://orientdb.com/docs/last/)
 * SendGrid (https://sendgrid.com/)
 
-#Running SirFrancis
+##Running SirFrancis
 
 If you'd like to try it out:
 
@@ -25,11 +25,11 @@ If you'd like to try it out:
 4. Rename `config.yml.example` to `config.yml`
 5. Execute `gradle runServer`, this will build the fat JAR and run the server with `config.yml`.
 
-#Using SirFrancis
+##Using SirFrancis
 
-These are the URL endpoints to use. Except when creating a new account, they require basic HTTP auth headers. I typically run SirFrancis behind an SSL-terminating nginx proxy, so the plaintext auth is always over TLS. All of these endpoints are listed assuming that you'll prefix them with the URL of the host.
+These are the URL endpoints to use. They mostly require basic HTTP auth headers. I run SirFrancis behind an SSL-terminating nginx proxy, so the plaintext auth is always over TLS. All of these endpoints are listed assuming that you'll prefix them with the URL of the host.
 
-###To create a new account:
+####To create a new account:
 
 No authentication required.
 
@@ -37,81 +37,75 @@ No authentication required.
 2. `GET  /user/create/confirm/{email}/{confirmationKey}`
   * `confirmationKey`: Received in email.
   
-###Finding Movie IDs to Rate:
+####Finding Movie IDs to Rate:
 
 Requires auth:
 * `GET  /search/movies/{query}/{numResults}`
   * `query`: full text query
   * `numResults`: limit number of results
 
-###Rating Movies
+####Rating Movies
 
 * To view all of your ratings, auth required: `GET  /ratings/`
 * To add a rating, 1-10, auth required: `POST  /ratings/add/{imdbID}/{rating}`
   * `imdbID`: This field is returned in the search results. Can also be found in the URL of any IMDB page.
   * `rating`: valid values are 1-10.
-* To ignore a movie that you haven't seen: `POST  /ratings/ignore/{imdbID}`
+* To ignore a movie that you haven't seen (i.e. don't recommend it anymore): `POST  /ratings/ignore/{imdbID}`
   * `imdbID`: This field is returned in the search results. Can also be found in the URL of any IMDB page.
 
-###Viewing Recommendations
+####Viewing Recommendations
 
 The whole reason for creating SirFrancis! Best when an account already has >20 ratings. Auth required.
 
 `GET  /recommendations/{numReturned}`
 
-###Change password:
+####Change password:
 
 1. Forgot password, no auth required: `POST  /user/password/forgot/{email}/`
 2. Change password, no auth required: `POST  /user/password/change/{email}/{newPassword}/{confirmKey}`
   * `confirmKey`: Received in email.
 
-###Other user account endpoints:
+####Other user account endpoints:
 
 * Check if a user exists, no auth required (for a hypothetical login screen): `GET  /user/exists/{username}`
 * Delete user, auth required: `POST  /user/delete/`
 
-#Structure
+##Structure
 
 Rather than creating separate READMEs for each folder and package, this section describes how the important elements of the project are organized.
 
-* `sirfrancis`
-  * `src`
-    * `integration-test` -- separate test root for integration tests
-    * `main`
-      * `java`
-        * `io.sirfrancis.bacon`
-          * `api.responses`
-            * POJOs that are just for responses. You can craft custom responses, but it's much easier if you just return a POJO.
-          * `auth`
-            * Dropwizard provides parsing functionality for authentication headers, but it's up to the app to plug it in to the DB and to validate it. This uses built-in Java crypto and stores all user passwords as a salted hash.
-          * `core`
-            * Dropwizard serializes and deserializes domain POJOs, which live here.
-          * `db`
-           * `enums`
-             * Because I've written a pseudo-custom ORM-not-really, I decided to house all important string literals in this package.
-           * This package is where all the bugs live! It's responsible for interacting directly with the OrientDB graph database. It's possible to use a JDBC-compatible ORM with OrientDB, but that defeats the purpose of using a graph database which looks up relationships in O(1).
-          * `health`
-            * Database health check is it for now, and it's pretty rudimentary.
-          * `mailers`
-            * These classes are meant to encapsulate some of the SendGrid functionality to allow a change to a different email service. Need to make a couple changes still.
-          * `resources`
-            * All URL endpoints are defined here. I've done a fair amount to contain the business logic here, but the DB layer still has a bit.
-          * `tasks`
-            * The two tasks here are used to initialize and update the content in the database.
-          * `util`
-            * Could also be called "misc" -- this just has a few things that are used in multiple packages.
-          * `BaconApplication`
-            * This is the main application class, and it spins up everything that will be called.
-          * `BaconConfiguration`
-            * This object is used by Dropwizard to serialize the config.yml file.
-      * `resources`
-        * Dropwizard is awesome in many ways, one of which is that it automatically inserts this banner at the top of your logs and console.
-    * `test`
-  * `build.gradle`
-    * Nothing too fancy here. A few custom tasks. Uses the capsule plugin (https://github.com/danthegoodman/gradle-capsule-plugin) for creating a fat JAR.
-  * `config.yml.example`
-    * A version of the config file with credentials stripped out.
+* `src/integration-test` -- separate test root for integration tests
+* `src/main/java/io.sirfrancis.bacon/api.responses`
+  * POJOs that are just for responses. You can craft custom responses, but it's much easier if you just return a POJO.
+* `src/main/java/io.sirfrancis.bacon/auth`
+  * Dropwizard provides parsing functionality for authentication headers, but it's up to the app to plug it in to the DB and to validate it. This uses built-in Java crypto and stores all user passwords as a salted hash.
+* `src/main/java/io.sirfrancis.bacon/core`
+  * Dropwizard serializes and deserializes domain POJOs, which live here.
+* `src/main/java/io.sirfrancis.bacon/db`
+  * `enums`
+    * Because I've written a pseudo-custom ORM-not-really, I decided to house all important string literals in this package.
+  * This package is where all the bugs live! It's responsible for interacting directly with the OrientDB graph database. It's possible to use a JDBC-compatible ORM with OrientDB, but that defeats the purpose of using a graph database which looks up relationships in O(1).
+* `src/main/java/io.sirfrancis.bacon/health`
+  * Database health check is it for now, and it's pretty rudimentary.
+* `src/main/java/io.sirfrancis.bacon/mailers`
+  * These classes are meant to encapsulate some of the SendGrid functionality to allow a change to a different email service. Need to make a couple changes still.
+* `src/main/java/io.sirfrancis.bacon/resources`
+  * All URL endpoints are defined here. I've done a fair amount to contain the business logic here, but the DB layer still has a bit.
+* `src/main/java/io.sirfrancis.bacon/tasks`
+  * The two tasks here are used to initialize and update the content in the database.
+* `src/main/java/io.sirfrancis.bacon/util`
+  * Could also be called "misc" -- this just has a few things that are used in multiple packages.
+* `src/main/java/io.sirfrancis.bacon/BaconApplication.java`
+  * This is the main application class, and it spins up everything that will be called.
+* `src/main/java/io.sirfrancis.bacon/BaconConfiguration.java`
+  * This object is used by Dropwizard to serialize the config.yml file.
+* `src/main/resources`
+  * Dropwizard is awesome in many ways, one of which is that it automatically inserts this banner at the top of your logs and console.
+* `build.gradle`
+  * Nothing too fancy here. A few custom tasks. Uses the capsule plugin (https://github.com/danthegoodman/gradle-capsule-plugin) for creating a fat JAR.
+* `config.yml.example`
+  * A version of the config file with credentials stripped out.
 
-#Running SirFrancis's Tests
+##Running SirFrancis's Tests
 
 There are two Gradle tasks (run `clean` first): `test` and `integrationTest`. Tests are very limited coverage right now. *TODO!*
